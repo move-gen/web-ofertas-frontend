@@ -1,103 +1,143 @@
-import Image from "next/image";
+import { Search, Bell, User, ChevronDown } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card"
+import Image from "next/image"
+import Header from "@/components/Header" // Importar el nuevo componente
 
-export default function Home() {
+export default function Component() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-white">
+      <Header /> {/* Usar el nuevo componente Header */}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Hero Section with exact curved shape */}
+      <section className="relative bg-white overflow-hidden">
+        <div className="absolute inset-0 w-full h-full">
+          <div
+            className="w-full h-full bg-gradient-to-b from-[#2364c4] via-blue-400 to-cyan-400"
+            style={{
+              clipPath: "ellipse(120% 100% at 50% 0%)",
+              height: "400px",
+            }}
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="relative z-10 text-white pt-12 pb-20 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl font-bold mb-12">{"Encuentra tu coche "}</h1>
+
+            {/* Search Bar */}
+            <div className="relative mb-8 max-w-2xl mx-auto">
+              <div className="flex items-center bg-white rounded-full px-6 py-4 shadow-lg">
+                <Search className="w-5 h-5 text-gray-400 mr-4" />
+                <Input
+                  placeholder="Encontramos el coche que estás buscando"
+                  className="flex-1 border-none bg-transparent text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0 text-base"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap justify-center gap-4 mb-12">
+              <Button
+                variant="outline"
+                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-500 px-6 py-2 rounded-full font-medium"
+              >
+                Shop Used
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-500 px-6 py-2 rounded-full font-medium"
+              >
+                Shop New
+              </Button>
+              <Button
+                variant="outline"
+                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-500 px-6 py-2 rounded-full font-medium"
+              >
+                Appraise My Car
+              </Button>
+            </div>
+
+            {/* Recently Viewed */}
+            <div className="text-sm">
+              <span className="text-blue-100 mr-4">Ver más coches</span>
+              <a href="#" className="underline hover:no-underline">
+                Miguel León 2025
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Research By Type */}
+      <section className="py-16 px-4 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-12 text-gray-900">Research By Type</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+            {[
+              { type: "EV", hasPlug: true },
+              { type: "SUV", hasPlug: false },
+              { type: "Truck", hasPlug: false },
+              { type: "Sedan", hasPlug: false },
+              { type: "Hybrid", hasPlug: false },
+            ].map((vehicle) => (
+              <div key={vehicle.type} className="text-center cursor-pointer group">
+                <div className="bg-blue-50 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                  <div className="relative">
+                    {/* Car silhouette */}
+                    <svg className="w-16 h-10 text-blue-500" viewBox="0 0 64 40" fill="currentColor">
+                      <path d="M8 32h4c0 2.2 1.8 4 4 4s4-1.8 4-4h24c0 2.2 1.8 4 4 4s4-1.8 4-4h4c2.2 0 4-1.8 4-4V16c0-2.2-1.8-4-4-4h-8l-4-8H16l-4 8H4c-2.2 0-4 1.8-4 4v12c0 2.2 1.8 4 4 4z" />
+                      <circle cx="16" cy="32" r="2" fill="white" />
+                      <circle cx="48" cy="32" r="2" fill="white" />
+                    </svg>
+                    {/* EV plug icon */}
+                    {vehicle.hasPlug && (
+                      <div className="absolute -top-2 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
+                        <div className="w-1 h-1 bg-white rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <h3 className="font-semibold text-gray-900 text-sm">{vehicle.type}</h3>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Promotional Cards */}
+      <section className="py-16 px-4 bg-white">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8">
+          <Card className="overflow-hidden rounded-lg shadow-lg">
+            <div className="relative h-64">
+              <Image src="/placeholder.svg" alt="2025 Mazda CX-5" fill className="object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute top-4 right-4 bg-black/50 text-white text-xs px-2 py-1 rounded">Ad</div>
+              <CardContent className="absolute bottom-0 left-0 p-6 text-white">
+                <p className="text-xs mb-1 opacity-80">Photo Sponsored By</p>
+                <h3 className="text-xl font-bold mb-2">2025 Mazda CX-5</h3>
+                <p className="text-sm underline cursor-pointer hover:no-underline">View Offers at MazdaUSA.com ↗</p>
+              </CardContent>
+            </div>
+          </Card>
+
+          <Card className="overflow-hidden rounded-lg shadow-lg">
+            <div className="relative h-64">
+              <Image src="/placeholder.svg" alt="2025 Ford Bronco" fill className="object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <CardContent className="absolute bottom-0 left-0 p-6 text-white">
+                <h3 className="text-xl font-bold mb-2">2025 Ford Bronco</h3>
+                <p className="text-sm underline cursor-pointer hover:no-underline">Learn More ↗</p>
+              </CardContent>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* Sponsored Content Label */}
+      <div className="text-center py-8 bg-gray-50">
+        <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Sponsored Content</p>
+      </div>
     </div>
-  );
+  )
 }

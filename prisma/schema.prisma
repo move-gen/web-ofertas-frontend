@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Car {
+  id                Int          @id @default(autoincrement())
+  sku               String       @unique // Make SKU non-optional and truly unique
+  name              String
+  published         Boolean      @default(true)
+  isFeatured        Boolean      @default(false)
+  visibility        String       @default("visible")
+  shortDescription  String?
+  description       String?      @db.Text
+  regularPrice      Float
+  salePrice         Float?
+  currency          String?      @default("EUR")
+  inStock           Boolean      @default(true)
+  stock             Int?         @default(1)
+  
+  images            Image[]
+  attributes        Attribute[]
+  
+  offers            Offer[]      @relation("CarToOffer")
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Offer {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  cars      Car[]    @relation("CarToOffer")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Image {
+  id        Int      @id @default(autoincrement())
+  url       String
+  car       Car      @relation(fields: [carId], references: [id])
+  carId     Int
+}
+
+model Attribute {
+  id        Int      @id @default(autoincrement())
+  name      String
+  value     String
+  car       Car      @relation(fields: [carId], references: [id])
+  carId     Int
+}
