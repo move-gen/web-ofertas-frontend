@@ -1,8 +1,8 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
+import Sidebar from '@/components/admin/Sidebar'; // Import the new sidebar
 
 export const metadata: Metadata = {
-  title: 'Admin Section',
+  title: 'Admin Panel',
   description: 'Admin tools for the website.',
 };
 
@@ -12,19 +12,16 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="text-xl font-bold text-gray-800 hover:text-blue-600">
-            ← Volver al Sitio Principal
-          </Link>
-        </div>
-      </header>
-      <main className="py-10">
-        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="bg-white shadow-sm h-16 flex items-center justify-end px-6">
+          {/* Header content like user profile, notifications can go here */}
+        </header>
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 } 

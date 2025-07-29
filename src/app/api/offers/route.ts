@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+const generateSlug = (title: string) => {
+  const slug = title
+    .toLowerCase()
+    .replace(/ /g, '-')
+    .replace(/[^\w-]+/g, '');
+  return `${slug}-${Date.now()}`; // Add timestamp for uniqueness
+};
+
 export async function POST(req: NextRequest) {
   const token = req.headers.get('authorization');
   if (!token) {
@@ -14,9 +22,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid data: Title and at least one car are required' }, { status: 400 });
     }
 
+    const slug = generateSlug(title);
+
     const newOffer = await prisma.offer.create({
       data: {
         title,
+        slug,
         cars: {
           connect: cars.map((carId: number) => ({ id: carId })),
         },
@@ -35,4 +46,29 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+
+export async function GET(req: NextRequest) {
+    const token = req.headers.get('authorization');
+    if (!token) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    try {
+        const offers = await prisma.offer.findMany({
+            include: {
+                _count: {
+                    select: { cars: true },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+        return NextResponse.json(offers);
+    } catch (error) {
+        console.error('Failed to fetch offers:', error);
+        return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
+    }
 } 

@@ -21,59 +21,64 @@ export async function POST(req: NextRequest) {
     const csvText = await response.text();
     const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
 
-    const carIds = [];
-
-    for (const row of parsed.data as any[]) {
-      const carData = {
-        sku: row['SKU'],
-        name: row['Name'],
-        published: row['Published'] === '1',
-        isFeatured: row['Is featured?'] === '1',
-        visibility: row['Visibility in catalog'],
-        shortDescription: row['Short description'],
-        description: row['Description'],
-        regularPrice: parseFloat(row['Regular price']),
-        salePrice: row['Sale price'] ? parseFloat(row['Sale price']) : null,
-        currency: row['Currency'] || 'EUR',
-        inStock: row['In stock?'] === '1',
-        stock: row['Stock'] ? parseInt(row['Stock'], 10) : 1,
-      };
-
-      if (!carData.sku || !carData.name || isNaN(carData.regularPrice)) {
-        console.warn('Skipping row due to missing SKU, name, or invalid price:', row);
-        continue;
-      }
-
-      const car = await prisma.car.upsert({
-        where: { sku: carData.sku },
-        update: { ...carData },
-        create: { ...carData },
-      });
-      carIds.push(car.id);
-
-      // Clear old images and attributes before adding new ones
-      await prisma.image.deleteMany({ where: { carId: car.id } });
-      await prisma.attribute.deleteMany({ where: { carId: car.id } });
-
-      const imageUrls = (row['Images'] || '').split(',').map((url: string) => url.trim()).filter(Boolean);
-      if (imageUrls.length > 0) {
-        await prisma.image.createMany({
-          data: imageUrls.map((url: string) => ({ url, carId: car.id })),
-        });
-      }
-
-      const attributes = [];
-      for (let i = 1; i <= 5; i++) {
-        const name = row[`Attribute ${i} name`];
-        const value = row[`Attribute ${i} value(s)`];
-        if (name && value) {
-          attributes.push({ name, value, carId: car.id });
+    const carIds = await prisma.$transaction(async (tx) => {
+      const ids = [];
+      for (const row of parsed.data as any[]) {
+        const regularPrice = parseFloat(row['Regular price']);
+        if (!row['SKU'] || !row['Name'] || isNaN(regularPrice)) {
+          console.warn('Skipping row due to missing SKU, name, or invalid price:', row);
+          continue;
         }
+
+        const carData = {
+          name: row['Name'],
+          published: row['Published'] === '1',
+          isFeatured: row['Is featured?'] === '1',
+          visibility: row['Visibility in catalog'],
+          shortDescription: row['Short description'],
+          description: row['Description'],
+          regularPrice: regularPrice,
+          salePrice: row['Sale price'] ? parseFloat(row['Sale price']) : null,
+          currency: row['Currency'] || 'EUR',
+          inStock: row['In stock?'] === '1',
+          stock: row['Stock'] ? parseInt(row['Stock'], 10) : 1,
+        };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const imageUrls = (row['Images'] || '').split(',').map((url: string) => ({ url })).filter(img => img.url);
+        const attributes = [];
+        for (let i = 1; i <= 5; i++) {
+          const name = row[`Attribute ${i} name`];
+          const value = row[`Attribute ${i} value(s)`];
+          if (name && value) {
+            attributes.push({ name, value });
+          }
+        }
+
+        const car = await tx.car.upsert({
+          where: { sku: row['SKU'] },
+          update: {
+            ...carData,
+            images: {
+              deleteMany: {},
+              create: imageUrls,
+            },
+            attributes: {
+              deleteMany: {},
+              create: attributes,
+            },
+          },
+          create: {
+            sku: row['SKU'],
+            ...carData,
+            images: { create: imageUrls },
+            attributes: { create: attributes },
+          },
+        });
+        ids.push(car.id);
       }
-      if (attributes.length > 0) {
-        await prisma.attribute.createMany({ data: attributes });
-      }
-    }
+      return ids;
+    });
 
     const offerSlug = generateSlug(offerTitle);
     const newOffer = await prisma.offer.create({

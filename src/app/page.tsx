@@ -1,73 +1,13 @@
-import { Search, Bell, User, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import Image from "next/image"
-import Header from "@/components/Header" // Importar el nuevo componente
+import Header from "@/components/Header";
+import { Card, CardContent } from "@/components/ui/card";
+import Image from "next/image";
+import Hero from "@/components/Hero";
 
 export default function Component() {
   return (
     <div className="min-h-screen bg-white">
-      <Header /> {/* Usar el nuevo componente Header */}
-
-      {/* Hero Section with exact curved shape */}
-      <section className="relative bg-white overflow-hidden">
-        <div className="absolute inset-0 w-full h-full">
-          <div
-            className="w-full h-full bg-gradient-to-b from-[#2364c4] via-blue-400 to-cyan-400"
-            style={{
-              clipPath: "ellipse(120% 100% at 50% 0%)",
-              height: "400px",
-            }}
-          />
-        </div>
-        <div className="relative z-10 text-white pt-12 pb-20 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl font-bold mb-12">{"Encuentra tu coche "}</h1>
-
-            {/* Search Bar */}
-            <div className="relative mb-8 max-w-2xl mx-auto">
-              <div className="flex items-center bg-white rounded-full px-6 py-4 shadow-lg">
-                <Search className="w-5 h-5 text-gray-400 mr-4" />
-                <Input
-                  placeholder="Encontramos el coche que estás buscando"
-                  className="flex-1 border-none bg-transparent text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-0 text-base"
-                />
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap justify-center gap-4 mb-12">
-              <Button
-                variant="outline"
-                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-500 px-6 py-2 rounded-full font-medium"
-              >
-                Shop Used
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-500 px-6 py-2 rounded-full font-medium"
-              >
-                Shop New
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-500 px-6 py-2 rounded-full font-medium"
-              >
-                Appraise My Car
-              </Button>
-            </div>
-
-            {/* Recently Viewed */}
-            <div className="text-sm">
-              <span className="text-blue-100 mr-4">Ver más coches</span>
-              <a href="#" className="underline hover:no-underline">
-                Miguel León 2025
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Header />
+      <Hero />
 
       {/* Research By Type */}
       <section className="py-16 px-4 bg-gray-50">
@@ -120,7 +60,6 @@ export default function Component() {
               </CardContent>
             </div>
           </Card>
-
           <Card className="overflow-hidden rounded-lg shadow-lg">
             <div className="relative h-64">
               <Image src="/placeholder.svg" alt="2025 Ford Bronco" fill className="object-cover" />

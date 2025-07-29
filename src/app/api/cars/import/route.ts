@@ -18,48 +18,79 @@ export async function POST(req: NextRequest) {
 
     const fileContent = await file.text();
     
+    const parsed = Papa.parse(fileContent, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: header => header.trim(),
+    });
+
     let createdCount = 0;
     let updatedCount = 0;
     const errors: string[] = [];
 
-    const parsed = Papa.parse(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-      transform: (value, header) => {
-        if (header === 'year' || header === 'price') {
-          return parseFloat(value);
+    await prisma.$transaction(async (tx) => {
+      for (const row of parsed.data as any[]) {
+        const regularPrice = parseFloat(row['Regular price']);
+        if (!row['SKU'] || !row['Name'] || isNaN(regularPrice)) {
+          errors.push(`Skipping row due to missing SKU, name, or invalid price: ${JSON.stringify(row)}`);
+          continue;
         }
-        return value;
+
+        const carData = {
+          name: row['Name'],
+          published: row['Published'] === '1',
+          isFeatured: row['Is featured?'] === '1',
+          visibility: row['Visibility in catalog'],
+          shortDescription: row['Short description'],
+          description: row['Description'],
+          regularPrice: regularPrice,
+          salePrice: row['Sale price'] ? parseFloat(row['Sale price']) : null,
+          currency: row['Currency'] || 'EUR',
+          inStock: row['In stock?'] === '1',
+          stock: row['Stock'] ? parseInt(row['Stock'], 10) : 1,
+        };
+        
+        const imageUrlsRaw = (row['Images'] || '').split(',');
+        const imageUrls = imageUrlsRaw.map((url: string) => ({ url: url.trim() })).filter((img: {url: string}) => img.url);
+
+        const attributes = [];
+        for (let i = 1; i <= 5; i++) {
+          const name = row[`Attribute ${i} name`];
+          const value = row[`Attribute ${i} value(s)`];
+          if (name && value) {
+            attributes.push({ name, value });
+          }
+        }
+
+        try {
+          const car = await tx.car.upsert({
+            where: { sku: row['SKU'] },
+            update: {
+              ...carData,
+              images: { deleteMany: {}, create: imageUrls },
+              attributes: { deleteMany: {}, create: attributes },
+            },
+            create: {
+              sku: row['SKU'],
+              ...carData,
+              images: { create: imageUrls },
+              attributes: { create: attributes },
+            },
+          });
+          
+          if (car.createdAt.getTime() === car.updatedAt.getTime()) {
+            createdCount++;
+          } else {
+            updatedCount++;
+          }
+        } catch (e: any) {
+          errors.push(`Failed to process row for car "${row['Name']}": ${e.message}`);
+        }
       }
     });
 
-    for (const row of parsed.data as any[]) {
-      const { name, brand, model, year, price } = row;
-
-      if (!name || !brand || !model || !year || !price) {
-        errors.push(`Skipping row due to missing data: ${JSON.stringify(row)}`);
-        continue;
-      }
-
-      try {
-        const result = await prisma.car.upsert({
-          where: { name },
-          update: { brand, model, year, price },
-          create: { name, brand, model, year, price },
-        });
-
-        if (result.createdAt.getTime() === result.updatedAt.getTime()) {
-          createdCount++;
-        } else {
-          updatedCount++;
-        }
-      } catch (e: any) {
-        errors.push(`Failed to process row for car "${name}": ${e.message}`);
-      }
-    }
-
     return NextResponse.json({
-      message: 'CSV import completed.',
+      message: `Coches creados: ${createdCount}, Coches actualizados: ${updatedCount}. Errores: ${errors.length}`,
       created: createdCount,
       updated: updatedCount,
       errors: errors,
@@ -67,6 +98,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('Import error:', error);
-    return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 } 

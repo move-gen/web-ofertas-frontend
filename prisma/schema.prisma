@@ -22,27 +22,54 @@ model User {
 }
 
 model Car {
-  id                Int          @id @default(autoincrement())
-  sku               String       @unique // Make SKU non-optional and truly unique
-  name              String
-  published         Boolean      @default(true)
-  isFeatured        Boolean      @default(false)
-  visibility        String       @default("visible")
-  shortDescription  String?
-  description       String?      @db.Text
-  regularPrice      Float
-  salePrice         Float?
-  currency          String?      @default("EUR")
-  inStock           Boolean      @default(true)
-  stock             Int?         @default(1)
+  id                      Int       @id @default(autoincrement())
+  sku                     String    @unique // From <id>
+  name                    String    // From <title>
+  version                 String?   // From <version>
+  vin                     String?   @unique // From <vin>
   
-  images            Image[]
-  attributes        Attribute[]
-  
-  offers            Offer[]      @relation("CarToOffer")
+  // Pricing
+  regularPrice            Float     // From <price>
+  financedPrice           Float?    // From <financed_price>
+  monthlyFinancingFee     Float?    // From <monthly_financing_fee>
+  vatDeductible           Boolean   @default(false) // From <vat>
 
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  // Core Details
+  make                    String?   // From <make>
+  model                   String?   // From <model>
+  bodytype                String?   // From <bodytype>
+  year                    Int?      // From <year>
+  month                   Int?      // From <month>
+  kms                     Int?      // From <kms>
+  fuel                    String?   // From <fuel>
+  power                   Int?      // From <power> (CV)
+  transmission            String?   // From <transmission>
+  color                   String?   // From <color>
+  doors                   Int?      // From <doors>
+  seats                   Int?      // From <seats>
+  engineSize              Int?      // From <engine_size> (cc)
+  gears                   Int?      // From <gears>
+
+  // Location
+  store                   String?   // From <store>
+  city                    String?   // From <city>
+  address                 String?   // From <address>
+
+  // Technical & Status
+  numberplate             String?   // From <numberplate>
+  guarantee               String?   // From <guarantee>
+  environmentalBadge      String?   // From <environmental_badge>
+  crashed                 Boolean   @default(false) // From <crashed>
+
+  // Descriptions
+  description             String?   @db.Text // From <content>
+  equipment               String?   @db.Text // From <equipment>
+  
+  images                  Image[]
+  offers                  Offer[]   @relation("CarToOffer")
+
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 }
 
 model Offer {
@@ -58,14 +85,8 @@ model Offer {
 model Image {
   id        Int      @id @default(autoincrement())
   url       String
-  car       Car      @relation(fields: [carId], references: [id])
+  car       Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
   carId     Int
-}
-
-model Attribute {
-  id        Int      @id @default(autoincrement())
-  name      String
-  value     String
-  car       Car      @relation(fields: [carId], references: [id])
-  carId     Int
+  isPrimary Boolean  @default(false)
+  source    String   @default("feed") // "feed" or "manual"
 }
