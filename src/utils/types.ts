@@ -1,15 +1,28 @@
-import type { Car as PrismaCar, Image as PrismaImage, Offer as PrismaOffer } from "@prisma/client";
+import { Car as PrismaCar, Image as PrismaImage, Offer as PrismaOffer } from '@prisma/client';
 
-// We re-export the Prisma types and can extend them if needed.
-// This ensures our frontend types always match the database schema.
 export type CarImage = PrismaImage;
-
-export type Car = PrismaCar & {
-  images: CarImage[];
-  numberplate?: string | null; // Manually adding because it's optional
-};
-
 export type Offer = PrismaOffer;
+
+export type Car = Omit<PrismaCar, 'createdAt' | 'updatedAt'> & {
+    id: number;
+    name: string;
+    description: string | null;
+    sku: string;
+    numberplate: string | null;
+    kms: number;
+    year: number;
+    fuel: string;
+    bodytype: string;
+    version: string | null;
+    createdAt?: Date;
+    updatedAt?: Date;
+    images?: CarImage[];
+  };
+  
+export interface ApiResponse<T> {
+    data: T;
+    message?: string;
+}
 
 
 // Other interfaces for services like Strapi can go here
