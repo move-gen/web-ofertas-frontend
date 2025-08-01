@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer"; // Import the Footer component
 import TransitionProvider from "@/components/animations/TransitionProvider";
+import ConditionalHeader from "@/components/ConditionalHeader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
         <TransitionProvider>
+          <ConditionalHeader />
           <main className="flex-grow">{children}</main>
           <Footer />
         </TransitionProvider>

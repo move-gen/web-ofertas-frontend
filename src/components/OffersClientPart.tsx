@@ -54,10 +54,10 @@ export default function OffersClientPart() {
   const debouncedFilters = useDebounce(filters, 300);
 
   useEffect(() => {
-    const fetchCars = async () => {
-      try {
-        const response = await fetch('/api/cars');
-        const data = await response.json();
+  const fetchCars = async () => {
+    try {
+      const response = await fetch('/api/cars');
+      const data = await response.json();
         setAllCars(data);
       } catch (error) { console.error('Error fetching cars:', error); }
       finally { setLoading(false); }
@@ -117,7 +117,8 @@ export default function OffersClientPart() {
     children: <CarCard car={car} />
   }));
 
-  const getSortButtonVariant = (sort: SortType) => activeSort === sort ? 'default' : 'secondary';
+  const getSortButtonVariant = (sort: SortType) => activeSort === sort ? 'default' : 'outline';
+  
   const getCarTypeButtonVariant = (type: CarTypeFilter) => filters.carType === type ? 'default' : 'outline';
 
   return (
@@ -135,12 +136,12 @@ export default function OffersClientPart() {
               <div>
                 <label className="text-sm font-medium">Marca y modelo</label>
                 <Input placeholder="Ej: Audi A3" value={filters.makeAndModel} onChange={(e) => handleFilterChange('makeAndModel', e.target.value)} />
-              </div>
+                  </div>
               <div>
                 <label className="text-sm font-medium">Versión</label>
                 <div className="relative mt-1"><Input placeholder="Ejemplo: Elegance, TDI" value={filters.version} onChange={(e) => handleFilterChange('version', e.target.value)} /><Info className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /></div>
+                </div>
               </div>
-            </div>
           </CollapsibleFilterSection>
 
           <CollapsibleFilterSection title="Precio" icon={<Tag className="h-5 w-5" />}><div className="space-y-4"><Slider value={[filters.priceRange[1]]} onValueChange={(value) => handleFilterChange('priceRange', [0, value[0]])} max={50000} step={1000} /><div className="flex justify-between text-sm"><p>Hasta</p><p>{filters.priceRange[1].toLocaleString()} €</p></div></div></CollapsibleFilterSection>
@@ -151,13 +152,15 @@ export default function OffersClientPart() {
           <CollapsibleFilterSection title="Vendedores" icon={<Building className="h-5 w-5" />}><div className="space-y-2"><Checkbox label="Certificados por la marca" checked={filters.sellers.certified} onChange={val => handleFilterChange('sellers', {...filters.sellers, certified: val})} /><Checkbox label="En stock" checked={filters.sellers.inStock} onChange={val => handleFilterChange('sellers', {...filters.sellers, inStock: val})} /><Checkbox label="Solo con foto" checked={filters.sellers.withPhoto} onChange={val => handleFilterChange('sellers', {...filters.sellers, withPhoto: val})} /></div></CollapsibleFilterSection>
           <CollapsibleFilterSection title="Carrocería" icon={<Car className="h-5 w-5" />}><div className="grid grid-cols-3 gap-2 text-center">{['Berlina', 'Familiar', 'Coupe', 'Monovolumen', 'SUV', 'Cabrio', 'Pick Up'].map(type => <Button key={type} variant={filters.bodyType.includes(type) ? 'default' : 'outline'} onClick={() => handleBodyTypeToggle(type)}>{type}</Button>)}</div></CollapsibleFilterSection>
           <CollapsibleFilterSection title="Motor" icon={<SlidersHorizontal className="h-5 w-5" />}><div className="flex gap-2"><Button variant={filters.transmission === 'all' ? 'default' : 'outline'} onClick={() => handleFilterChange('transmission', 'all')}>Todos</Button><Button variant={filters.transmission === 'automatic' ? 'default' : 'outline'} onClick={() => handleFilterChange('transmission', 'automatic')}>Automático</Button><Button variant={filters.transmission === 'manual' ? 'default' : 'outline'} onClick={() => handleFilterChange('transmission', 'manual')}>Manual</Button></div></CollapsibleFilterSection>
-        </div>
-      </div>
-      <div className="lg:w-3/4">
+            </div>
+          </div>
+          <div className="lg:w-3/4">
         <div className="flex justify-between items-center mb-6"><h1 className="text-2xl font-bold text-gray-800">{filteredCars.length} Coches de km 0 al mejor precio</h1><div className="flex items-center gap-2 flex-wrap">{['all', 'lowest_fee', 'lowest_kms', 'newest'].map(sort => <Button key={sort} onClick={() => setActiveSort(sort as SortType)} variant={getSortButtonVariant(sort as SortType)} size="sm">{ {all: 'Todos', lowest_fee: 'Menos cuota', lowest_kms: 'Menos kilómetros', newest: 'Más nuevos'}[sort] }</Button>)}</div></div>
+        
         <HoverEffect items={carItems} />
+
         <div className="mt-8 text-center"><button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Ver más coches</button></div>
-      </div>
+            </div>
     </div></div></div>
   );
 }

@@ -21,7 +21,7 @@ export default function Header() {
   const isBlue = true;
 
   const navItems = [
-    { name: "Empresa", link: "#" },
+    { name: "Inicio", link: "/" },
     { name: "Coches", link: "/buscador" },
     { name: "Ofertas", link: "/buscador" },
     { name: "Contacto", link: "#" },

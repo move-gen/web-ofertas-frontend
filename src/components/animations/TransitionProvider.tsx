@@ -27,7 +27,7 @@ const TransitionProvider = ({ children }: { children: React.ReactNode }) => {
         const url = new URL(link.href);
         const path = url.pathname;
         
-        if (path !== pathName && !isTransitioning) {
+        if ((path !== pathName || path === '/') && !isTransitioning) {
           console.log('Starting transition to:', path);
           setIsTransitioning(true);
           setPendingPath(path);

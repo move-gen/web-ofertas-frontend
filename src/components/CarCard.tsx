@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { Clock, Droplet, Zap, Gauge } from 'lucide-react';
 
 // This is the single source of truth for the car card's data structure.
@@ -34,7 +33,7 @@ export default function CarCard({ car }: CarCardProps) {
     const primaryImage = car.images.find(img => img.isPrimary) || car.images[0];
 
     return (
-        <Link href={`/car/${car.id}`} className="bg-transparent group flex flex-col transition hover:-translate-y-1 h-full">
+        <div className="bg-transparent group flex flex-col transition hover:-translate-y-1 h-full">
             <div className="relative w-full aspect-[4/3] bg-gray-100">
                 <Image
                   src={primaryImage?.url || '/placeholder.svg'}
@@ -72,6 +71,6 @@ export default function CarCard({ car }: CarCardProps) {
                 </div>
               </div>
             </div>
-        </Link>
+        </div>
     );
 }
