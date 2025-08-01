@@ -4,6 +4,7 @@ import FeaturedOffers from '@/components/FeaturedOffers';
 import FeaturedCars from '@/components/FeaturedCars';
 import FeaturedCarsSkeleton from '@/components/FeaturedCarsSkeleton';
 import AboutAndStats from '@/components/AboutAndStats';
+import Reviews from '@/components/Reviews';
 
 export default function HomePage() {
   return (
@@ -13,6 +14,7 @@ export default function HomePage() {
       <Suspense fallback={<FeaturedCarsSkeleton />}>
         <FeaturedCars />
       </Suspense>
+      <Reviews />
       <AboutAndStats />
     </div>
   );
