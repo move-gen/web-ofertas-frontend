@@ -7,7 +7,7 @@ export default function Component() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <Hero />
+      
 
       {/* Research By Type */}
       <section className="py-16 px-4 bg-gray-50">
