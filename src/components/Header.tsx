@@ -22,8 +22,8 @@ export default function Header() {
 
   const navItems = [
     { name: "Empresa", link: "#" },
-    { name: "Coches", link: "/offers" },
-    { name: "Ofertas", link: "/offers" },
+    { name: "Coches", link: "/buscador" },
+    { name: "Ofertas", link: "/buscador" },
     { name: "Contacto", link: "#" },
   ];
 

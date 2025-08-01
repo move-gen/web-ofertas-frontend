@@ -1,304 +1,163 @@
 "use client";
 import { useState, useEffect } from 'react';
 import CarCard from './CarCard';
-import { Heart, Filter, ArrowUpDown, MapPin, Phone, Clock } from 'lucide-react';
+import { Car, CarFront, Tag, ShoppingCart, MapPin, SlidersHorizontal, ChevronRight, Info, Building, Star, Image as ImageIcon, Calendar, Gauge, DoorOpen, Armchair, Briefcase, Droplet, GitCommitVertical, Atom, Leaf, Snowflake, Palette, Check } from 'lucide-react';
+import { HoverEffect } from './ui/card-hover-effect';
+import Link from 'next/link';
+import OffersSkeleton from './OffersSkeleton';
+import { Button } from './ui/button';
+import { CollapsibleFilterSection } from './ui/CollapsibleFilterSection';
+import { Input } from './ui/input';
+import { Slider } from './ui/slider';
+import { useDebounce } from '@/hooks/useDebounce';
 
-
-interface Car {
-  id: number;
-  name: string; // Add name
-  make: string;
-  model: string;
-  version: string;
-  year: number | null; // Allow null
-  kms: number | null; // Allow null
-  power: number;
-  fuel: string | null; // Allow null
-  transmission: string | null; // Allow null
-  regularPrice: number;
-  financedPrice: number | null; // Allow null
-  monthlyFinancingFee: number;
-  environmentalBadge: string;
+interface CarData {
+  id: number; name: string; make: string; model: string; version: string;
+  year: number | null; kms: number | null; power: number; fuel: string | null;
+  transmission: string | null; regularPrice: number; financedPrice: number | null;
+  monthlyFinancingFee: number; environmentalBadge: string;
   images: { url: string; isPrimary: boolean }[];
+  bodytype?: string;
 }
 
+type SortType = 'all' | 'lowest_kms' | 'newest' | 'lowest_fee';
+type CarTypeFilter = 'all' | 'occasion' | 'km0' | 'new';
+
+const Checkbox = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) => (
+    <label className="flex items-center gap-2 cursor-pointer text-sm">
+        <input type="checkbox" className="rounded border-gray-300 text-primary focus:ring-primary" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+        <span>{label}</span>
+    </label>
+);
+
 export default function OffersClientPart() {
-  const [cars, setCars] = useState<Car[]>([]);
+  const [allCars, setAllCars] = useState<CarData[]>([]);
+  const [filteredCars, setFilteredCars] = useState<CarData[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const [activeSort, setActiveSort] = useState<SortType>('all');
+  
   const [filters, setFilters] = useState({
-    makers: [],
-    priceRange: [0, 40000],
-    fuel: [],
-    bodyType: [],
-    mileageRange: [0, 10000],
-    yearRange: [2013, 2025]
+    carType: 'all' as CarTypeFilter,
+    makeAndModel: '',
+    version: '',
+    priceRange: [0, 50000],
+    yearRange: [2010, 2024],
+    kmsRange: [0, 200000],
+    onlineServices: { reserve: false },
+    location: { peninsula: false },
+    sellers: { certified: false, inStock: false, withPhoto: false },
+    bodyType: [] as string[],
+    transmission: 'all',
   });
 
+  const debouncedFilters = useDebounce(filters, 300);
+
   useEffect(() => {
+    const fetchCars = async () => {
+      try {
+        const response = await fetch('/api/cars');
+        const data = await response.json();
+        setAllCars(data);
+      } catch (error) { console.error('Error fetching cars:', error); }
+      finally { setLoading(false); }
+    };
     fetchCars();
   }, []);
 
-  const fetchCars = async () => {
-    try {
-      const response = await fetch('/api/cars');
-      const data = await response.json();
-      setCars(data);
-    } catch (error) {
-      console.error('Error fetching cars:', error);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    let carsToProcess = [...allCars];
+
+    carsToProcess = carsToProcess.filter(car => {
+      const { carType, makeAndModel, version, priceRange, yearRange, kmsRange, bodyType, transmission } = debouncedFilters;
+      
+      const kms = car.kms ?? 0;
+      if (carType !== 'all') {
+        if (carType === 'new' && kms !== 0) return false;
+        if (carType === 'km0' && (kms <= 0 || kms >= 100)) return false;
+        if (carType === 'occasion' && kms < 100) return false;
+      }
+
+      if (makeAndModel && !car.name.toLowerCase().includes(makeAndModel.toLowerCase())) return false;
+      if (version && !car.version?.toLowerCase().includes(version.toLowerCase())) return false;
+      if (car.regularPrice < priceRange[0] || car.regularPrice > priceRange[1]) return false;
+      if ((car.year || 0) < yearRange[0] || (car.year || 0) > yearRange[1]) return false;
+      if (kms < kmsRange[0] || kms > kmsRange[1]) return false;
+      if (bodyType.length > 0 && !bodyType.includes(car.bodytype || '')) return false;
+      if (transmission !== 'all' && car.transmission?.toLowerCase() !== transmission) return false;
+      
+      return true;
+    });
+
+    switch (activeSort) {
+      case 'lowest_kms': carsToProcess.sort((a, b) => (a.kms || Infinity) - (b.kms || Infinity)); break;
+      case 'newest': carsToProcess.sort((a, b) => (b.year || 0) - (a.year || 0)); break;
+      case 'lowest_fee': carsToProcess.sort((a, b) => (a.monthlyFinancingFee || Infinity) - (b.monthlyFinancingFee || Infinity)); break;
     }
+    
+    setFilteredCars(carsToProcess);
+
+  }, [debouncedFilters, activeSort, allCars]);
+
+  const handleFilterChange = (filterName: keyof typeof filters, value: any) => {
+    setFilters(prev => ({ ...prev, [filterName]: value }));
+  };
+  
+  const handleBodyTypeToggle = (type: string) => {
+    const newBodyTypes = filters.bodyType.includes(type)
+      ? filters.bodyType.filter(t => t !== type)
+      : [...filters.bodyType, type];
+    handleFilterChange('bodyType', newBodyTypes);
   };
 
-  if (loading) {
-    return <OffersSkeleton />;
-  }
+  if (loading) return <OffersSkeleton />;
+
+  const carItems = filteredCars.map(car => ({
+    link: `/car/${car.id}`,
+    children: <CarCard car={car} />
+  }));
+
+  const getSortButtonVariant = (sort: SortType) => activeSort === sort ? 'default' : 'secondary';
+  const getCarTypeButtonVariant = (type: CarTypeFilter) => filters.carType === type ? 'default' : 'outline';
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {/* Banner superior - exactamente como Clicars */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-2">
-            <div className="text-sm font-medium">Financiación fácil y flexible en el acto</div>
-            <div className="text-sm">15 días o 1000 km. de prueba</div>
-            <div className="text-sm">
-              ¡Elige entre {cars.length} coches! Al mejor precio. <strong>Entrega en 24h a domicilio ¡VISÍTANOS!</strong>
+    <div className="bg-gray-50 min-h-screen"><div className="container mx-auto px-4 py-8"><div className="flex flex-col lg:flex-row gap-8">
+      <div className="lg:w-1/4">
+        <div className="bg-white rounded-lg shadow-lg p-4">
+          <p className="text-sm text-gray-500 mb-4">Filtros: se aplican al marcarlos</p>
+          
+          <CollapsibleFilterSection title="Tipo de coche" icon={<CarFront className="h-5 w-5" />} defaultOpen>
+              <div className="grid grid-cols-2 gap-2"><Button variant={getCarTypeButtonVariant('all')} onClick={() => handleFilterChange('carType', 'all')}>Todos</Button><Button variant={getCarTypeButtonVariant('occasion')} onClick={() => handleFilterChange('carType', 'occasion')}>Ocasión</Button><Button variant={getCarTypeButtonVariant('km0')} onClick={() => handleFilterChange('carType', 'km0')}>Km 0</Button><Button variant={getCarTypeButtonVariant('new')} onClick={() => handleFilterChange('carType', 'new')}>Nuevo</Button></div>
+          </CollapsibleFilterSection>
+          
+          <CollapsibleFilterSection title="Marca y modelo" icon={<Car className="h-5 w-5" />}>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Marca y modelo</label>
+                <Input placeholder="Ej: Audi A3" value={filters.makeAndModel} onChange={(e) => handleFilterChange('makeAndModel', e.target.value)} />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Versión</label>
+                <div className="relative mt-1"><Input placeholder="Ejemplo: Elegance, TDI" value={filters.version} onChange={(e) => handleFilterChange('version', e.target.value)} /><Info className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" /></div>
+              </div>
             </div>
-            <div className="text-sm">
-              ¡Ven a visitarnos! Haz click <Link href="/contacto" className="underline">aquí</Link> o busca MiguelLeón en Google maps
-            </div>
-          </div>
+          </CollapsibleFilterSection>
+
+          <CollapsibleFilterSection title="Precio" icon={<Tag className="h-5 w-5" />}><div className="space-y-4"><Slider value={[filters.priceRange[1]]} onValueChange={(value) => handleFilterChange('priceRange', [0, value[0]])} max={50000} step={1000} /><div className="flex justify-between text-sm"><p>Hasta</p><p>{filters.priceRange[1].toLocaleString()} €</p></div></div></CollapsibleFilterSection>
+          <CollapsibleFilterSection title="Año" icon={<Calendar className="h-5 w-5" />}><div className="space-y-4"><Slider value={filters.yearRange} onValueChange={(value) => handleFilterChange('yearRange', value)} min={2010} max={2024} step={1} /><div className="flex justify-between text-sm"><p>{filters.yearRange[0]}</p><p>{filters.yearRange[1]}</p></div></div></CollapsibleFilterSection>
+          <CollapsibleFilterSection title="Kilómetros" icon={<Gauge className="h-5 w-5" />}><div className="space-y-4"><Slider value={[filters.kmsRange[1]]} onValueChange={(value) => handleFilterChange('kmsRange', [0, value[0]])} max={200000} step={5000} /><div className="flex justify-between text-sm"><p>Hasta</p><p>{filters.kmsRange[1].toLocaleString()} km</p></div></div></CollapsibleFilterSection>
+          <CollapsibleFilterSection title="Servicios online" icon={<ShoppingCart className="h-5 w-5" />}><Checkbox label="Reserva" checked={filters.onlineServices.reserve} onChange={val => handleFilterChange('onlineServices', {...filters.onlineServices, reserve: val})} /></CollapsibleFilterSection>
+          <CollapsibleFilterSection title="Ubicación" icon={<MapPin className="h-5 w-5" />}><Checkbox label="Solo en Península y Baleares" checked={filters.location.peninsula} onChange={val => handleFilterChange('location', {...filters.location, peninsula: val})} /></CollapsibleFilterSection>
+          <CollapsibleFilterSection title="Vendedores" icon={<Building className="h-5 w-5" />}><div className="space-y-2"><Checkbox label="Certificados por la marca" checked={filters.sellers.certified} onChange={val => handleFilterChange('sellers', {...filters.sellers, certified: val})} /><Checkbox label="En stock" checked={filters.sellers.inStock} onChange={val => handleFilterChange('sellers', {...filters.sellers, inStock: val})} /><Checkbox label="Solo con foto" checked={filters.sellers.withPhoto} onChange={val => handleFilterChange('sellers', {...filters.sellers, withPhoto: val})} /></div></CollapsibleFilterSection>
+          <CollapsibleFilterSection title="Carrocería" icon={<Car className="h-5 w-5" />}><div className="grid grid-cols-3 gap-2 text-center">{['Berlina', 'Familiar', 'Coupe', 'Monovolumen', 'SUV', 'Cabrio', 'Pick Up'].map(type => <Button key={type} variant={filters.bodyType.includes(type) ? 'default' : 'outline'} onClick={() => handleBodyTypeToggle(type)}>{type}</Button>)}</div></CollapsibleFilterSection>
+          <CollapsibleFilterSection title="Motor" icon={<SlidersHorizontal className="h-5 w-5" />}><div className="flex gap-2"><Button variant={filters.transmission === 'all' ? 'default' : 'outline'} onClick={() => handleFilterChange('transmission', 'all')}>Todos</Button><Button variant={filters.transmission === 'automatic' ? 'default' : 'outline'} onClick={() => handleFilterChange('transmission', 'automatic')}>Automático</Button><Button variant={filters.transmission === 'manual' ? 'default' : 'outline'} onClick={() => handleFilterChange('transmission', 'manual')}>Manual</Button></div></CollapsibleFilterSection>
         </div>
       </div>
-
-      {/* Centros de contacto - responsive como Clicars */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          <h3 className="text-lg font-semibold mb-4">Encuentra tu centro MiguelLeón:</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Centro 1 */}
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <MapPin className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold">Las Palmas</span>
-              </div>
-              <div className="space-y-2">
-                <a href="tel:+34 928 123 456" className="block text-blue-600 font-semibold">928 123 456</a>
-                <p className="text-sm text-gray-600">
-                  C/ Example, 123<br />
-                  35001 Las Palmas<br />
-                  <Link href="#" className="text-blue-600 underline">Cómo llegar</Link>
-                </p>
-                <div className="text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    <span>Lunes a Viernes: 09:30 a 20:30h</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    <span>Sábados: 10:00 a 19:00h</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Centro 2 */}
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <MapPin className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold">Santa Cruz</span>
-              </div>
-              <div className="space-y-2">
-                <a href="tel:+34 922 123 456" className="block text-blue-600 font-semibold">922 123 456</a>
-                <p className="text-sm text-gray-600">
-                  Av/ Example, 456<br />
-                  38001 Santa Cruz<br />
-                  <Link href="#" className="text-blue-600 underline">Cómo llegar</Link>
-                </p>
-                <div className="text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    <span>Lunes a Viernes: 09:30 a 20:30h</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    <span>Sábados: 10:00 a 19:00h</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Centro 3 */}
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <MapPin className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold">Fuerteventura</span>
-              </div>
-              <div className="space-y-2">
-                <a href="tel:+34 928 123 789" className="block text-blue-600 font-semibold">928 123 789</a>
-                <p className="text-sm text-gray-600">
-                  C/ Example, 789<br />
-                  35600 Puerto del Rosario<br />
-                  <Link href="#" className="text-blue-600 underline">Cómo llegar</Link>
-                </p>
-                <div className="text-sm text-gray-600">
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    <span>Lunes a Viernes: 09:30 a 20:30h</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    <span>Sábados: 10:00 a 19:00h</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="lg:w-3/4">
+        <div className="flex justify-between items-center mb-6"><h1 className="text-2xl font-bold text-gray-800">{filteredCars.length} Coches de km 0 al mejor precio</h1><div className="flex items-center gap-2 flex-wrap">{['all', 'lowest_fee', 'lowest_kms', 'newest'].map(sort => <Button key={sort} onClick={() => setActiveSort(sort as SortType)} variant={getSortButtonVariant(sort as SortType)} size="sm">{ {all: 'Todos', lowest_fee: 'Menos cuota', lowest_kms: 'Menos kilómetros', newest: 'Más nuevos'}[sort] }</Button>)}</div></div>
+        <HoverEffect items={carItems} />
+        <div className="mt-8 text-center"><button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Ver más coches</button></div>
       </div>
-
-      {/* Contenido principal */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filtros laterales - exactamente como Clicars */}
-          <div className="lg:w-1/4">
-            <div className="bg-white rounded-lg shadow-lg p-6 sticky top-4">
-              <div className="flex items-center gap-2 mb-6">
-                <Filter className="w-5 h-5" />
-                <h2 className="text-lg font-semibold">Filtros</h2>
-              </div>
-
-              {/* Marca */}
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">Marca</h3>
-                <div className="space-y-2">
-                  {['Peugeot', 'Renault', 'Toyota', 'Volkswagen', 'BMW', 'Mercedes'].map((brand) => (
-                    <label key={brand} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="rounded" />
-                      <span className="text-sm">{brand}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Precio */}
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">Precio</h3>
-                <div className="space-y-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="40000"
-                    className="w-full"
-                    value={filters.priceRange[1]}
-                    onChange={(e) => setFilters({...filters, priceRange: [0, parseInt(e.target.value)]})}
-                  />
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>0€</span>
-                    <span>{filters.priceRange[1].toLocaleString()}€</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Combustible */}
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">Combustible</h3>
-                <div className="space-y-2">
-                  {['Gasolina', 'Diésel', 'Híbrido', 'Eléctrico'].map((fuel) => (
-                    <label key={fuel} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="rounded" />
-                      <span className="text-sm">{fuel}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Carrocería */}
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">Carrocería</h3>
-                <div className="space-y-2">
-                  {['SUV y 4X4', 'Berlina', 'Familiar', 'Compacto'].map((body) => (
-                    <label key={body} className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="rounded" />
-                      <span className="text-sm">{body}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Kilómetros */}
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">Kilómetros</h3>
-                <div className="space-y-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="10000"
-                    className="w-full"
-                    value={filters.mileageRange[1]}
-                    onChange={(e) => setFilters({...filters, mileageRange: [0, parseInt(e.target.value)]})}
-                  />
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>0 km</span>
-                    <span>{filters.mileageRange[1].toLocaleString()} km</span>
-                  </div>
-                </div>
-              </div>
-
-              <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-                Ver {cars.length} coches
-              </button>
-            </div>
-          </div>
-
-          {/* Grid de coches - exactamente como Clicars */}
-          <div className="lg:w-3/4">
-            {/* Barra de ordenación */}
-            <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Filter className="w-5 h-5" />
-                  <span className="font-semibold">Filtros</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <ArrowUpDown className="w-5 h-5" />
-                    <span className="text-sm">Ordenar por</span>
-                    <select className="border rounded px-2 py-1 text-sm">
-                      <option>Precio: menor/mayor</option>
-                      <option>Precio: mayor/menor</option>
-                      <option>Cuota: menor/mayor</option>
-                      <option>Km: menos/más</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Título */}
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-800">
-                {cars.length} Coches de km 0 al mejor precio
-              </h1>
-            </div>
-
-            {/* Grid de coches */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {cars.map((car) => (
-                <CarCard key={car.id} car={car} />
-              ))}
-            </div>
-
-            {/* Paginación */}
-            <div className="mt-8 text-center">
-              <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-                Ver más coches
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </div></div></div>
   );
-} 
+}

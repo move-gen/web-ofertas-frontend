@@ -46,7 +46,7 @@ const Footer = () => {
             <div>
               <h5 className="text-purple-400 font-bold text-xs mb-3 tracking-wider">OFERTAS</h5>
               <ul className="space-y-2">
-                <li><Link href="/offers" className="hover:text-white">Ver Todas</Link></li>
+                <li><Link href="/buscador" className="hover:text-white">Ver Todas</Link></li>
                 <li><Link href="#" className="hover:text-white">Coches Nuevos</Link></li>
                 <li><Link href="#" className="hover:text-white">KM 0</Link></li>
                 <li><Link href="#" className="hover:text-white">Segunda Mano</Link></li>
@@ -72,27 +72,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Right Section: Newsletter */}
-          <div className="md:col-span-3">
-             <h5 className="text-purple-400 font-bold text-xs mb-2 tracking-wider">NEWSLETTER</h5>
-             <p className="text-lg font-bold text-white mb-4">¿QUIERES... COLOR EN TU INBOX? ¡APÚNTATE AHORA!</p>
-             <form className="flex items-center border border-gray-600 rounded-full p-1 focus-within:border-white">
-                 <input 
-                    type="email" 
-                    placeholder="Enter your email here"
-                    className="bg-transparent w-full text-white placeholder-gray-400 focus:outline-none px-4"
-                 />
-                 <button type="submit" className="bg-gray-700 hover:bg-gray-600 rounded-full p-2">
-                     <Send size={18} className="text-white"/>
-                 </button>
-             </form>
-             <div className="mt-4">
-                <label className="flex items-center text-xs text-gray-400">
-                    <input type="checkbox" className="mr-2 bg-transparent border-gray-500 rounded-sm"/>
-                    Estoy de acuerdo con la política de privacidad
-                </label>
-             </div>
-          </div>
+
 
         </div>
 

@@ -17,8 +17,8 @@ export default function HeaderLanding() {
         {/* Navigation */}
         <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
           <Link href="#" className="hover:text-gray-300">Empresa</Link>
-          <Link href="/offers" className="hover:text-gray-300">Coches</Link>
-          <Link href="/offers" className="hover:text-gray-300">Ofertas</Link>
+          <Link href="/buscador" className="hover:text-gray-300">Coches</Link>
+          <Link href="/buscador" className="hover:text-gray-300">Ofertas</Link>
           <Link href="#" className="hover:text-gray-300">Contacto</Link>
         </nav>
         

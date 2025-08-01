@@ -120,7 +120,7 @@ export default function ManageOffersPage() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'No se pudo crear la oferta.');
       
-      const offerUrl = `/offers/${result.slug}`;
+      const offerUrl = `/buscador/${result.slug}`;
       setFeedback({ message: `¡Oferta creada con éxito!`, type: 'link', url: offerUrl });
       
       setOfferTitle('');
@@ -293,7 +293,7 @@ export default function ManageOffersPage() {
                                 <TableCell>{new Date(offer.createdAt).toLocaleDateString('es-ES')}</TableCell>
                                 <TableCell className="text-right space-x-2">
                                     <Button asChild variant="outline" size="sm">
-                                        <a href={`/offers/${offer.slug}`} target="_blank" rel="noopener noreferrer">
+                                        <a href={`/buscador/${offer.slug}`} target="_blank" rel="noopener noreferrer">
                                             Ver <LinkIcon className="ml-2 h-4 w-4" />
                                         </a>
                                     </Button>

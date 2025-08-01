@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import CarCard from './CarCard';
 import Link from 'next/link';
+import { HoverEffect } from './ui/card-hover-effect';
 
 interface Car {
   id: number;
@@ -64,6 +65,11 @@ export default function FeaturedOffers() {
     );
   }
 
+  const carItems = cars.map((car) => ({
+    link: `/car/${car.id}`,
+    children: <CarCard car={car} />,
+  }));
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-6">
@@ -76,16 +82,11 @@ export default function FeaturedOffers() {
           </p>
         </div>
 
-        {/* Corregido a 4 columnas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {cars.map((car) => (
-            <CarCard key={car.id} car={car} />
-          ))}
-        </div>
+        <HoverEffect items={carItems} />
 
         <div className="text-center mt-12">
           <Link 
-            href="/offers"
+            href="/buscador"
             className="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-base"
           >
             Ver Todas las Ofertas

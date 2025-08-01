@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const offerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin}/offers/${newOffer.slug}`;
+    const offerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin}/buscador/${newOffer.slug}`;
 
     return NextResponse.json({
       message: 'Campaign created successfully!',
