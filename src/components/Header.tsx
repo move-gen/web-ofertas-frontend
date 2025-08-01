@@ -1,63 +1,46 @@
-"use client"
-
-import { useState, useEffect } from 'react';
+"use client";
 import Link from 'next/link';
+import { Search, Globe, Menu } from 'lucide-react';
 import Image from 'next/image';
-import { Bell, User, ChevronDown } from 'lucide-react';
-import { getToken, logout } from '@/utils/auth';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const token = getToken();
-    setIsAuthenticated(!!token);
-  }, []);
-
-  const handleLogout = () => {
-    logout();
-    setIsAuthenticated(false);
-    // Optionally, redirect to home or login page
-    window.location.href = '/';
-  };
-
+  const pathname = usePathname();
+  const isLandingPage = pathname === '/landing';
+  
   return (
-    <header className="bg-[#0f286a] text-white px-4 py-3">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center space-x-8">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="flex items-center justify-center h-12"> {/* Adjusted container height */}
-              <Image src="/logo-200x50.png" alt="MiguelLeón Logo" width={200} height={50} priority /> {/* Using the correct image and dimensions */}
+    <header className={`${isLandingPage ? 'absolute top-0 left-0 right-0 z-50 text-white' : 'bg-[#0f286a] text-white shadow-lg'} p-6`}>
+      <div className="container mx-auto flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center space-x-2">
+            <div className="flex items-center justify-center h-12">
+                <Image src="/logo-200x50.png" alt="MiguelLeón Logo" width={140} height={35} priority />
             </div>
-          </Link>
-          <nav className="hidden md:flex space-x-6">
-            <Link href="/" className="hover:underline text-sm">
-              Inicio
-            </Link>
-            <Link href="/offers" className="hover:underline text-sm">
-              Ofertas
-            </Link>
-            {isAuthenticated && (
-              <>
-                <Link href="/admin/importer" className="hover:underline text-sm text-cyan-300">
-                  Importar CSV
-                </Link>
-                <Link href="/admin/offer-creator" className="hover:underline text-sm text-cyan-300">
-                  Crear Oferta
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
+        </Link>
+        
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
+          <Link href="#" className={`hover:${isLandingPage ? 'text-gray-300' : 'text-blue-200'} transition-colors duration-200`}>Empresa</Link>
+          <Link href="/offers" className={`hover:${isLandingPage ? 'text-gray-300' : 'text-blue-200'} transition-colors duration-200`}>Coches</Link>
+          <Link href="/offers" className={`hover:${isLandingPage ? 'text-gray-300' : 'text-blue-200'} transition-colors duration-200`}>Ofertas</Link>
+          <Link href="#" className={`hover:${isLandingPage ? 'text-gray-300' : 'text-blue-200'} transition-colors duration-200`}>Contacto</Link>
+        </nav>
+        
+        {/* Actions */}
         <div className="flex items-center space-x-4">
-          <Bell className="w-5 h-5" />
-          <div className="flex items-center space-x-1 cursor-pointer">
-            <User className="w-5 h-5" />
-            <ChevronDown className="w-4 h-4" />
-            {isAuthenticated && (
-              <button onClick={handleLogout} className="text-sm ml-2 hover:underline">(Logout)</button>
-            )}
-          </div>
+          <button className={`p-2 rounded-full hover:bg-white/10 transition-colors duration-200`}>
+            <Search className="h-5 w-5" />
+          </button>
+          <button className={`p-2 rounded-full hover:bg-white/10 flex items-center gap-2 border border-white/20 px-3 transition-colors duration-200`}>
+            <Globe className="h-5 w-5" />
+            <span className="text-sm">EN</span>
+          </button>
+          <button className={`p-2 rounded-full hover:bg-white/10 md:hidden transition-colors duration-200`}>
+            <Menu className="h-6 w-6" />
+          </button>
+          <button className={`hidden md:block p-2 rounded-full hover:bg-white/10 transition-colors duration-200`}>
+            <Menu className="h-6 w-6" />
+          </button>
         </div>
       </div>
     </header>

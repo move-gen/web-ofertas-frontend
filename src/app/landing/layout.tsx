@@ -1,4 +1,5 @@
-import HeaderLanding from "@/components/HeaderLanding";
+import HeaderLanding from '@/components/HeaderLanding';
+import TransitionProvider from '@/components/animations/TransitionProvider';
 
 export default function LandingLayout({
   children,
@@ -7,8 +8,10 @@ export default function LandingLayout({
 }) {
   return (
     <div className="bg-black text-white">
-      <HeaderLanding />
-      <main>{children}</main>
+      <TransitionProvider>
+        <HeaderLanding />
+        <main className="flex-grow">{children}</main>
+      </TransitionProvider>
     </div>
   );
 } 

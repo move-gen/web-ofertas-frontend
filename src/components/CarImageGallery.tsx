@@ -1,9 +1,8 @@
 "use client";
-
 import { useState } from 'react';
 import Image from 'next/image';
 import { CarImage } from '@/utils/types';
-import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 
 interface CarImageGalleryProps {
   images: CarImage[];
@@ -12,90 +11,86 @@ interface CarImageGalleryProps {
 
 export default function CarImageGallery({ images, carName }: CarImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-
+  
   if (!images || images.length === 0) {
-    // Fallback if no images are provided
     return (
-        <div className="relative mb-4">
-            <Image
-                src={'/placeholder.svg'}
-                alt="Placeholder Image"
-                width={800}
-                height={600}
-                className="w-full object-cover rounded-lg"
-                priority
-            />
-        </div>
+      <div className="aspect-[750/421] bg-gray-100 rounded-xl shadow-lg flex items-center justify-center relative">
+        <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-cover w-full h-full rounded-xl" priority />
+        <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">0/0</span>
+      </div>
     );
   }
 
-  const goToPrevious = () => {
-    const isFirstSlide = currentIndex === 0;
-    const newIndex = isFirstSlide ? images.length - 1 : currentIndex - 1;
-    setCurrentIndex(newIndex);
-  };
-
-  const goToNext = () => {
-    const isLastSlide = currentIndex === images.length - 1;
-    const newIndex = isLastSlide ? 0 : currentIndex + 1;
-    setCurrentIndex(newIndex);
-  };
-
-  const handleThumbnailClick = (index: number) => {
-    setCurrentIndex(index);
-  }
+  const goTo = (idx: number) => setCurrentIndex((idx + images.length) % images.length);
 
   return (
     <div>
-      {/* Main Image */}
-      <div className="relative mb-4 group">
+      {/* Imagen principal */}
+      <div className="aspect-[750/421] rounded-xl shadow-lg overflow-hidden relative flex items-center justify-center">
+        {/* Flecha izquierda */}
+        <button 
+          onClick={() => goTo(currentIndex - 1)} 
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full w-10 h-10 flex items-center justify-center hover:bg-blue-100 transition"
+        >
+          <ChevronLeft className="w-6 h-6 text-gray-700" />
+        </button>
+        
+        {/* Imagen */}
         <Image
           src={images[currentIndex].url}
           alt={carName}
-          width={800}
-          height={600}
-          className="w-full object-cover rounded-lg transition-opacity duration-300"
+          width={750}
+          height={421}
+          className="object-cover w-full h-full rounded-xl"
           priority
-          key={currentIndex} // Force re-render on change for transitions
         />
-        {/* Actions */}
-        <div className="absolute top-4 right-4 flex gap-2">
-          <button className="bg-white/80 backdrop-blur-sm p-2 rounded-full hover:bg-white">
-            <Heart className="h-6 w-6 text-gray-700" />
+        
+        {/* Flecha derecha */}
+        <button 
+          onClick={() => goTo(currentIndex + 1)} 
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full w-10 h-10 flex items-center justify-center hover:bg-blue-100 transition"
+        >
+          <ChevronRight className="w-6 h-6 text-gray-700" />
+        </button>
+        
+        {/* Contador */}
+        <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">
+          {currentIndex + 1}/{images.length}
+        </span>
+        
+        {/* Botón ver interior y zoom */}
+        <div className="absolute bottom-3 right-3 flex gap-2">
+          <button className="bg-white/90 hover:bg-blue-100 text-blue-700 font-semibold px-4 py-1 rounded-full shadow text-xs">
+            Ver interior
+          </button>
+          <button className="bg-white/90 hover:bg-blue-100 rounded-full p-2 shadow flex items-center justify-center">
+            <ZoomIn className="w-5 h-5 text-blue-700" />
           </button>
         </div>
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-1 rounded-full text-sm">
-          {currentIndex + 1} / {images.length}
-        </div>
-        {/* Arrows */}
-        <button onClick={goToPrevious} className="absolute top-1/2 left-3 -translate-y-1/2 bg-white/60 p-2 rounded-full hover:bg-white transition-opacity opacity-0 group-hover:opacity-100">
-            <ChevronLeft className="h-6 w-6" />
-        </button>
-         <button onClick={goToNext} className="absolute top-1/2 right-3 -translate-y-1/2 bg-white/60 p-2 rounded-full hover:bg-white transition-opacity opacity-0 group-hover:opacity-100">
-            <ChevronRight className="h-6 w-6" />
-        </button>
       </div>
-
-      {/* Thumbnails Carousel */}
-      <div className="relative">
-         <div className="flex items-center space-x-2 pb-2 overflow-x-auto">
-            {images.map((image, index) => (
-              <div 
-                key={image.id} 
-                className={`flex-shrink-0 rounded-lg overflow-hidden border-2 cursor-pointer ${currentIndex === index ? 'border-blue-500' : 'border-transparent'}`}
-                onClick={() => handleThumbnailClick(index)}
-                style={{ width: '100px' }}
-              >
-                <Image
-                  src={image.url}
-                  alt={`${carName} thumbnail ${index + 1}`}
-                  width={100}
-                  height={75}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ))}
-        </div>
+      
+      {/* Miniaturas - exactamente como Clicars */}
+      <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-hide">
+        {images.map((img, idx) => (
+          <button
+            key={img.id || idx}
+            onClick={() => setCurrentIndex(idx)}
+            className={`w-20 h-14 rounded-lg border-2 flex-shrink-0 transition-all duration-200 ${
+              idx === currentIndex 
+                ? 'border-blue-600 shadow-md scale-105' 
+                : 'border-gray-200 hover:border-gray-300'
+            } overflow-hidden`}
+            aria-label={`Miniatura ${idx + 1}`}
+          >
+            <Image
+              src={img.url}
+              alt={carName}
+              width={80}
+              height={56}
+              className="object-cover w-full h-full"
+            />
+          </button>
+        ))}
       </div>
     </div>
   );

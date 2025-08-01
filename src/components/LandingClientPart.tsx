@@ -3,6 +3,7 @@ import { useState, useRef } from 'react';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { AboutUsMask } from '@/components/ui/AboutUsMask';
+import FeaturedOffers from './FeaturedOffers';
 
 const slides = [
   {
@@ -186,6 +187,9 @@ export default function LandingClientPart() {
             </div>
           </div>
         </section>
+
+        {/* Sección de últimas ofertas */}
+        <FeaturedOffers />
 
         {/* About Us Section */}
         <AboutUsMask />
