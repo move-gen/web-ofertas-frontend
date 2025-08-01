@@ -65,10 +65,10 @@ export default function FeaturedOffers() {
     );
   }
 
-  const carItems = cars.map((car) => ({
-    link: `/car/${car.id}`,
-    children: <CarCard car={car} />,
-  }));
+      const carItems = cars.map((car) => ({
+      link: `/car/${car.id}`,
+      children: <CarCard car={car} />,
+    }));
 
   return (
     <section className="py-16 bg-white">
