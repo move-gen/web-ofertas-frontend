@@ -3,7 +3,7 @@
 This document outlines the API endpoints required in the Strapi backend to support the admin functionalities built in the Next.js frontend.
 
 ## 1. Authentication
-
+frfrfr
 The standard Strapi authentication process will be used. The frontend will make a `POST` request to `/api/auth/local` with a user's `identifier` (email) and `password`.
 
 - **Endpoint:** `POST /api/auth/local`
