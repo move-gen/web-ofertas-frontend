@@ -8,6 +8,7 @@ import { getToken } from '@/utils/auth';
 import { Car, Offer } from '@/utils/types';
 import Image from 'next/image';
 import { useDebounce } from '@/hooks/useDebounce';
+import Link from 'next/link';
 import {
   Table,
   TableHeader,
@@ -293,7 +294,12 @@ export default function ManageOffersPage() {
                                 <TableCell>{new Date(offer.createdAt).toLocaleDateString('es-ES')}</TableCell>
                                 <TableCell className="text-right space-x-2">
                                     <Button asChild variant="outline" size="sm">
-                                        <a href={`/buscador/${offer.slug}`} target="_blank" rel="noopener noreferrer">
+                                        <Link href={`/admin/manage-offers/${offer.id}`}>
+                                            Gestionar
+                                        </Link>
+                                    </Button>
+                                    <Button asChild variant="outline" size="sm">
+                                        <a href={`/ofertas/${offer.slug}`} target="_blank" rel="noopener noreferrer">
                                             Ver <LinkIcon className="ml-2 h-4 w-4" />
                                         </a>
                                     </Button>

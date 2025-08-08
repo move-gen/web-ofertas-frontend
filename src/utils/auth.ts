@@ -1,4 +1,5 @@
 import { StrapiAuthResponse, StrapiCredentials } from './types';
+import Cookies from 'js-cookie';
 
 export async function login(
   credentials: StrapiCredentials
@@ -21,7 +22,7 @@ export async function login(
 
     const data: StrapiAuthResponse = await response.json();
     if (data.jwt) {
-      localStorage.setItem('authToken', data.jwt);
+      Cookies.set('authToken', data.jwt, { expires: 7, secure: true, sameSite: 'strict' });
     }
     return data;
   } catch (error) {
@@ -34,9 +35,9 @@ export async function login(
 }
 
 export function logout(): void {
-  localStorage.removeItem('authToken');
+  Cookies.remove('authToken');
 }
 
-export function getToken(): string | null {
-  return localStorage.getItem('authToken');
-} 
+export function getToken(): string | undefined {
+  return Cookies.get('authToken');
+}

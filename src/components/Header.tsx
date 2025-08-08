@@ -9,22 +9,46 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Globe, Search } from 'lucide-react';
+import { Globe, Search, User } from 'lucide-react';
+import { Offer } from '@prisma/client';
+import Cookies from 'js-cookie';
 
 export default function Header() {
   const pathname = usePathname();
-  // La barra azul se aplicará a todas las páginas que usen este Header.
-  // La landing page usa un componente diferente (`HeaderLanding`), por lo que no se verá afectada.
   const isBlue = true;
+
+  const [latestOffer, setLatestOffer] = useState<Offer | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const token = Cookies.get('authToken');
+    // A simple check for token existence. 
+    // For a real app, you would decode the JWT to check the role.
+    setIsAdmin(!!token);
+
+    const fetchLatestOffer = async () => {
+      try {
+        const response = await fetch('/api/offers/latest-offer');
+        if (!response.ok) {
+          throw new Error('Failed to fetch latest offer');
+        }
+        const offer = await response.json();
+        setLatestOffer(offer);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchLatestOffer();
+  }, []);
 
   const navItems = [
     { name: "Inicio", link: "/" },
     { name: "Coches", link: "/buscador" },
-    { name: "Ofertas", link: "/buscador" },
-    { name: "Contacto", link: "#" },
+    { name: "Ofertas", link: latestOffer ? `/ofertas/${latestOffer.slug}` : "/buscador" },
+    { name: "Contacto", link: "/contact" },
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

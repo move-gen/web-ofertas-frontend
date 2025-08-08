@@ -113,6 +113,7 @@ export default function OffersClientPart() {
   if (loading) return <OffersSkeleton />;
 
   const carItems = filteredCars.map(car => ({
+    id: car.id,
     link: `/car/${car.id}`,
     children: <CarCard car={car} />
   }));

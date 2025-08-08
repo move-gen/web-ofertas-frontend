@@ -48,7 +48,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-
 export async function GET(req: NextRequest) {
     const token = req.headers.get('authorization');
     if (!token) {

@@ -4,7 +4,7 @@ import OffersClientPart from '@/components/OffersClientPart';
 import OffersSkeleton from '@/components/OffersSkeleton';
 import { TypewriterEffectSmooth } from '@/components/ui/typewriter-effect';
 
-export default async function OffersPage() {
+export default async function BuscadorPage() {
 
   const words = [
     {
@@ -50,3 +50,4 @@ export default async function OffersPage() {
     </div>
   );
 }
+

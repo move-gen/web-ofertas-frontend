@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { serialize } from 'cookie';
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,15 +23,25 @@ export async function POST(req: NextRequest) {
     }
 
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'your-default-secret',
+      { userId: user.id, email: user.email, role: user.role },
+      process.env.NEXTAUTH_SECRET || 'your-default-secret',
       { expiresIn: '1h' }
     );
 
-    // Return user info without the password
-    const { password: _, ...userWithoutPassword } = user;
+    const cookie = serialize('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development',
+      sameSite: 'strict',
+      maxAge: 3600,
+      path: '/',
+    });
 
-    return NextResponse.json({ jwt: token, user: userWithoutPassword });
+    const { password: _, ...userWithoutPassword } = user;
+    
+    const response = NextResponse.json({ user: userWithoutPassword });
+    response.headers.set('Set-Cookie', cookie);
+    
+    return response;
 
   } catch (error) {
     console.error('Login error:', error);

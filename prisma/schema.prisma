@@ -13,10 +13,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
+  role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -60,6 +66,7 @@ model Car {
   guarantee               String?   // From <guarantee>
   environmentalBadge      String?   // From <environmental_badge>
   crashed                 Boolean   @default(false) // From <crashed>
+  isSold                  Boolean   @default(false)
 
   // Descriptions
   description             String?   @db.Text // From <content>
@@ -73,13 +80,14 @@ model Car {
 }
 
 model Offer {
-  id        Int      @id @default(autoincrement())
-  title     String
-  slug      String   @unique
-  cars      Car[]    @relation("CarToOffer")
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  slug        String   @unique
+  cars        Car[]    @relation("CarToOffer")
   
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Image {
