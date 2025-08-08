@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from 'react';
 import CarCard from './CarCard';
-import Link from 'next/link';
 import { HoverEffect } from './ui/card-hover-effect';
+import { Button } from './ui/button';
 
 interface Car {
   id: number;
+  slug: string;
   name: string;
   year: number | null;
   kms: number | null;
@@ -16,9 +17,12 @@ interface Car {
   images: { url:string; isPrimary: boolean }[];
 }
 
+const INITIAL_VISIBLE_CARS = 6;
+
 export default function FeaturedOffers() {
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
+  const [visibleCars, setVisibleCars] = useState(INITIAL_VISIBLE_CARS);
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -38,6 +42,10 @@ export default function FeaturedOffers() {
     fetchCars();
   }, []);
 
+  const handleShowMore = () => {
+    setVisibleCars(cars.length);
+  };
+
   if (loading) {
     return (
       <section className="py-16 bg-white">
@@ -46,9 +54,8 @@ export default function FeaturedOffers() {
             <div className="h-10 bg-gray-200 rounded animate-pulse mb-4 mx-auto w-1/3"></div>
             <div className="h-6 bg-gray-200 rounded animate-pulse mx-auto w-1/2"></div>
           </div>
-          {/* Skeleton para 4 columnas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="aspect-[4/3] bg-gray-200 animate-pulse"></div>
                 <div className="p-4 space-y-3">
@@ -65,10 +72,10 @@ export default function FeaturedOffers() {
     );
   }
 
-      const carItems = cars.map((car) => ({
-      link: `/car/${car.id}`,
-      children: <CarCard car={car} />,
-    }));
+  const carItems = cars.slice(0, visibleCars).map((car) => ({
+    link: `/car/${car.id}`,
+    children: <CarCard car={car} />,
+  }));
 
   return (
     <section className="py-16 bg-white">
@@ -84,14 +91,16 @@ export default function FeaturedOffers() {
 
         <HoverEffect items={carItems} />
 
-        <div className="text-center mt-12">
-          <Link 
-            href="/buscador"
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-base"
-          >
-            Ver Todas las Ofertas
-          </Link>
-        </div>
+        {visibleCars < cars.length && (
+          <div className="text-center mt-12">
+            <Button
+              onClick={handleShowMore}
+              className="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-base"
+            >
+              Ver más
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );
