@@ -6,16 +6,17 @@ import { TypewriterEffectSmooth } from '@/components/ui/typewriter-effect';
 import { Car, Image as CarImage } from '@prisma/client';
 
 interface OfferPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 type CarWithImages = Car & { images: CarImage[] };
 
 export default async function OfferPage({ params }: OfferPageProps) {
+  const { slug } = await params;
   const offer = await prisma.offer.findUnique({
-    where: { slug: params.slug },
+    where: { slug: slug },
     include: {
       cars: {
         include: {
@@ -60,7 +61,8 @@ export default async function OfferPage({ params }: OfferPageProps) {
 }
 
 export async function generateMetadata({ params }: OfferPageProps) {
-  const offer = await prisma.offer.findUnique({ where: { slug: params.slug } });
+  const { slug } = await params;
+  const offer = await prisma.offer.findUnique({ where: { slug: slug } });
   if (!offer) return { title: 'Oferta no encontrada' };
   return {
     title: `Oferta: ${offer.title}`,

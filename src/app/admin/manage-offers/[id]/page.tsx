@@ -2,7 +2,10 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { Car, Offer } from '@prisma/client';
 import OfferCarsManager from '@/components/OfferCarsManager';
-import type { PageProps } from '.next/types/app/admin/manage-offers/[id]/page';
+
+interface ManageOfferPageProps {
+  params: Promise<{ id: string }>;
+}
 
 async function getOfferWithCars(id: number): Promise<(Offer & { cars: Car[] }) | null> {
   return prisma.offer.findUnique({
@@ -20,8 +23,8 @@ async function getOfferWithCars(id: number): Promise<(Offer & { cars: Car[] }) |
   });
 }
 
-export default async function ManageOfferPage({ params }: PageProps) {
-  const { id } = params;
+export default async function ManageOfferPage({ params }: ManageOfferPageProps) {
+  const { id } = await params;
   const offerId = parseInt(id, 10);
   if (isNaN(offerId)) {
     return notFound();
