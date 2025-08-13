@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 const TransitionProvider = ({ children }: { children: React.ReactNode }) => {

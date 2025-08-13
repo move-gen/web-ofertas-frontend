@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     });
 
     return NextResponse.json(updatedCar);
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -71,7 +71,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       });
   
       return NextResponse.json({ message: 'Car removed from offer successfully' });
-    } catch (_error) {
+    } catch {
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
   }

@@ -20,7 +20,7 @@ async function getOfferWithCars(id: number): Promise<(Offer & { cars: Car[] }) |
 }
 
 export default async function ManageOfferPage(props: { params: { id: string } }) {
-  const { id } = await props.params;
+  const { id } = props.params;
   const offerId = parseInt(id, 10);
   if (isNaN(offerId)) {
     return notFound();

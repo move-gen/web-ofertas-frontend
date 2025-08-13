@@ -1,6 +1,5 @@
 "use client";
 import { useState, useRef } from "react";
-import { motion } from "framer-motion";
 
 export const HoverMaskEffect = ({
   children,
@@ -25,7 +24,7 @@ export const HoverMaskEffect = ({
     }
   };
 
-  const handleTextHover = (e: React.MouseEvent<HTMLParagraphElement>) => {
+  const handleTextHover = () => {
     setIsHovered(true);
   };
 

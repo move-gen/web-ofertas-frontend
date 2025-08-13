@@ -33,7 +33,7 @@ const extractInt = (item: XmlItem, key: string): number | null => {
 };
 
 
-export async function POST(req: NextRequest) {
+export async function POST() {
     try {
         const response = await fetch(FEED_URL);
         if (!response.ok) throw new Error(`Failed to fetch feed: ${response.statusText}`);

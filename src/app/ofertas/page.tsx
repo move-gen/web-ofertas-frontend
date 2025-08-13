@@ -1,4 +1,3 @@
-import { prisma } from '@/lib/prisma';
 import OfferSection from '@/components/OfferSection';
 import { Car, Offer, Image as CarImage } from '@prisma/client';
 

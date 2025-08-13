@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect } from 'react';
 import CarCard from './CarCard';
-import { Car, CarFront, Tag, ShoppingCart, MapPin, SlidersHorizontal, ChevronRight, Info, Building, Star, Image as ImageIcon, Calendar, Gauge, DoorOpen, Armchair, Briefcase, Droplet, GitCommitVertical, Atom, Leaf, Snowflake, Palette, Check } from 'lucide-react';
+import { Car, CarFront, Tag, ShoppingCart, MapPin, SlidersHorizontal, Info, Building, Calendar, Gauge } from 'lucide-react';
 import { HoverEffect } from './ui/card-hover-effect';
-import Link from 'next/link';
 import OffersSkeleton from './OffersSkeleton';
 import { Button } from './ui/button';
 import { CollapsibleFilterSection } from './ui/CollapsibleFilterSection';

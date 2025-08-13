@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
+import { RefreshCw, CheckCircle, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import DatabaseViewer from "@/components/DatabaseViewer";
 
