@@ -2,15 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
 
-interface ApiRouteProps {
-  params: {
-    id: string;
-  };
-}
-
 export async function POST(
   req: NextRequest,
-  { params }: ApiRouteProps
+  { params }: { params: { id: string } }
 ) {
   const token = req.headers.get('authorization');
   if (!token) {
