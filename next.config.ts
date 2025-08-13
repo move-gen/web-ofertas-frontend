@@ -1,15 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    images: {
-        remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: 'fotos.inventario.pro',
-                port: '',
-                pathname: '**',
-            },
-        ],
+  experimental: {
+    css: {
+      lightningcss: false,
     },
+  },
 };
 
 export default nextConfig;
