@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma';
 import { put } from '@vercel/blob';
 
 export async function POST(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const token = req.headers.get('authorization');
+  const token = request.headers.get('authorization');
   if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -16,9 +16,9 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid car ID' }, { status: 400 });
   }
 
-  const file = req.body;
-  const contentType = req.headers.get('content-type');
-  const filename = req.headers.get('x-vercel-filename') || `car-${carId}-image.jpg`;
+  const file = request.body;
+  const contentType = request.headers.get('content-type');
+  const filename = request.headers.get('x-vercel-filename') || `car-${carId}-image.jpg`;
 
   if (!file || !contentType) {
     return NextResponse.json({ error: 'No file to upload or content type missing' }, { status: 400 });
