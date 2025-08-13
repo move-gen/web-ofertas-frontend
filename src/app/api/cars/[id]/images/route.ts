@@ -4,14 +4,15 @@ import { put } from '@vercel/blob';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const token = request.headers.get('authorization');
   if (!token) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const carId = parseInt(params.id, 10);
+  const carId = parseInt(id, 10);
   if (isNaN(carId)) {
     return NextResponse.json({ error: 'Invalid car ID' }, { status: 400 });
   }
