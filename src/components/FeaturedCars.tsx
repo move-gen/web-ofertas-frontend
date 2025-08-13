@@ -1,7 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import CarStack from "./CarStack";
+import { Car } from '@/utils/types';
+import { Image as PrismaImage } from '@prisma/client';
 
-async function getFeaturedCars() {
+type CarWithImages = Car & { images: PrismaImage[] };
+
+async function getFeaturedCars(): Promise<CarWithImages[]> {
     // We get the 4 most recently updated cars that have at least one image
     const cars = await prisma.car.findMany({
         where: {
@@ -25,9 +29,16 @@ async function getFeaturedCars() {
         },
         take: 10
     });
-    return cars;
+    
+    // Transform to match the expected type
+    return cars.map(car => ({
+        ...car,
+        kms: car.kms || 0,
+        year: car.year || 0,
+        fuel: car.fuel || '',
+        bodytype: car.bodytype || '',
+    })) as CarWithImages[];
 }
-
 
 export default async function FeaturedCars() {
   const cars = await getFeaturedCars();

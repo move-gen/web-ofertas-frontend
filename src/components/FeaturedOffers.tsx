@@ -73,6 +73,7 @@ export default function FeaturedOffers() {
   }
 
   const carItems = cars.slice(0, visibleCars).map((car) => ({
+    id: car.id,
     link: `/car/${car.id}`,
     children: <CarCard car={car} />,
   }));

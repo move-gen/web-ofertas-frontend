@@ -52,10 +52,7 @@ export const TextMaskEffect = ({
           maskRepeat: "no-repeat",
         }}
         animate={{
-            WebkitMaskPosition: `${mousePosition.x - size / 2}px ${
-            mousePosition.y - size / 2
-            }px`,
-            WebkitMaskSize: `${size}px`,
+            maskSize: `${size}px`,
         }}
         transition={{ type: "tween", ease: "backOut", duration: 0.2 }}
       >

@@ -5,6 +5,8 @@ import { decode } from 'next-auth/jwt';
 const secret = process.env.NEXTAUTH_SECRET;
 
 async function verifyAdmin(req: NextRequest) {
+    if (!secret) return false;
+    
     const token = req.cookies.get('authToken')?.value;
     if (!token) return false;
 

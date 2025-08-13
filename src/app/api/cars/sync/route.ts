@@ -129,8 +129,8 @@ export async function POST() {
                     // 3. Upsert the car data and create the new "feed" images
                     const car = await tx.car.upsert({
                         where: { sku: sku },
-                        update: { ...carData, images: { create: imageUrls.map((img) => ({ ...img, source: 'feed' })) } },
-                        create: { sku: sku, ...carData, images: { create: imageUrls.map((img) => ({ ...img, source: 'feed' })) } },
+                        update: { ...carData, images: { create: imageUrls.map((img: { url: string }) => ({ ...img, source: 'feed' })) } },
+                        create: { sku: sku, ...carData, images: { create: imageUrls.map((img: { url: string }) => ({ ...img, source: 'feed' })) } },
                     });
 
                     if (car.createdAt.getTime() === car.updatedAt.getTime()) {

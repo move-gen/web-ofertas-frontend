@@ -5,12 +5,12 @@ import { decode } from 'next-auth/jwt';
 const secret = process.env.NEXTAUTH_SECRET;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get('authToken')?.value;
 
   let isAdmin = false;
 
-  if (token) {
+  if (token && secret) {
     try {
       const decoded = await decode({ token, secret });
       if (decoded && decoded.role === 'ADMIN') {

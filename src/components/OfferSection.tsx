@@ -1,19 +1,11 @@
 "use client"
 import { useState } from 'react';
-import { Car } from '@prisma/client';
+import { Car, Offer, Image as CarImage } from '@prisma/client';
 import CarCard from './CarCard';
 import { Button } from './ui/button';
 
-interface OfferWithCars {
-  id: number;
-  title: string;
-  description: string;
-  cars: CarWithImages[];
-}
-
-interface CarWithImages extends Car {
-  images: { url: string; isPrimary?: boolean }[];
-}
+type CarWithImages = Car & { images: CarImage[] };
+type OfferWithCars = Offer & { cars: CarWithImages[] };
 
 interface OfferSectionProps {
   offer: OfferWithCars;
@@ -30,7 +22,7 @@ export default function OfferSection({ offer }: OfferSectionProps) {
     <section className="py-12 bg-white">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-2">{offer.title}</h2>
-        <p className="text-lg text-gray-600 text-center mb-8">{offer.description}</p>
+        <p className="text-lg text-gray-600 text-center mb-8">{offer.description || ''}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {offer.cars.slice(0, visibleCars).map(car => (
             <CarCard key={car.id} car={car} />

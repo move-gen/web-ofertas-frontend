@@ -8,9 +8,10 @@ import {
 import { Button } from '@/components/ui/button';
 import InterestFormModal from '@/components/InterestFormModal';
 import { Car as CarType } from '@prisma/client';
+import { CarImage } from '@/utils/types';
 
 interface CarWithImages extends CarType {
-    images: { url: string; isPrimary: boolean }[];
+    images: CarImage[];
 }
 
 interface CarPageClientProps {

@@ -71,9 +71,7 @@ export const AboutUsMask = () => {
                 }}
                 animate={{
                     maskSize: `${maskSize}px`,
-                    WebkitMaskSize: `${maskSize}px`,
                     maskPosition: `${mousePosition.x - maskSize / 2}px ${mousePosition.y - maskSize / 2}px`,
-                    WebkitMaskPosition: `${mousePosition.x - maskSize / 2}px ${mousePosition.y - maskSize / 2}px`,
                 }}
                 transition={{ type: 'tween', ease: 'backOut', duration: 0.2 }}
             >

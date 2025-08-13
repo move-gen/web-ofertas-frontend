@@ -61,10 +61,7 @@ export const MaskContainer = ({
           maskSize: `${size}px`, // Initial size
         }}
         animate={{
-          WebkitMaskPosition: `${mousePosition.x - maskSize / 2}px ${
-            mousePosition.y - maskSize / 2
-          }px`,
-          WebkitMaskSize: `${maskSize}px`,
+          maskSize: `${maskSize}px`,
         }}
         transition={{ type: "tween", ease: "backOut", duration: 0.2 }}
       >

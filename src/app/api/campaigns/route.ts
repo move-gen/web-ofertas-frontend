@@ -8,15 +8,24 @@ interface CsvRow {
   'Published': string;
   'Is featured?': string;
   'Visibility in catalog': string;
-  'Short description'?: string;
-  'Description'?: string;
+  'Short description': string;
+  'Description': string;
   'Regular price': string;
-  'Sale price'?: string;
-  'Currency'?: string;
+  'Sale price': string;
+  'Currency': string;
   'In stock?': string;
-  'Stock'?: string;
-  'Images'?: string;
-  [key: string]: string | undefined; // For attribute columns
+  'Stock': string;
+  'Images': string;
+  'Attribute 1 name': string;
+  'Attribute 1 value(s)': string;
+  'Attribute 2 name': string;
+  'Attribute 2 value(s)': string;
+  'Attribute 3 name': string;
+  'Attribute 3 value(s)': string;
+  'Attribute 4 name': string;
+  'Attribute 4 value(s)': string;
+  'Attribute 5 name': string;
+  'Attribute 5 value(s)': string;
 }
 
 const generateSlug = (title: string) => {
@@ -62,14 +71,6 @@ export async function POST(req: NextRequest) {
         };
 
         const imageUrls = (row['Images'] || '').split(',').map((url: string) => ({ url })).filter(img => img.url);
-        const attributes = [];
-        for (let i = 1; i <= 5; i++) {
-          const name = row[`Attribute ${i} name`];
-          const value = row[`Attribute ${i} value(s)`];
-          if (name && value) {
-            attributes.push({ name, value });
-          }
-        }
 
         const car = await tx.car.upsert({
           where: { sku: row['SKU'] },
@@ -79,16 +80,11 @@ export async function POST(req: NextRequest) {
               deleteMany: {},
               create: imageUrls,
             },
-            attributes: {
-              deleteMany: {},
-              create: attributes,
-            },
           },
           create: {
             sku: row['SKU'],
             ...carData,
             images: { create: imageUrls },
-            attributes: { create: attributes },
           },
         });
         ids.push(car.id);

@@ -5,13 +5,14 @@ import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell, TableCap
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Link as LinkIcon, Search } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Car as CarType } from '@/utils/types';
+import { Car as CarType } from '@prisma/client';
+import { CarImage } from '@/utils/types';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
 interface CarWithImages extends CarType {
-  images: { id: number; url: string; carId: number }[];
+  images: CarImage[];
 }
 
 
