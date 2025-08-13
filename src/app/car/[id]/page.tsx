@@ -2,8 +2,9 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import CarPageClient from '@/components/CarPageClient';
 
-export default async function CarPage({ params }: { params: { id: string } }) {
-    const carId = parseInt(params.id, 10);
+export default async function CarPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const carId = parseInt(id, 10);
     if (isNaN(carId)) notFound();
 
     const car = await prisma.car.findUnique({
@@ -16,8 +17,9 @@ export default async function CarPage({ params }: { params: { id: string } }) {
     return <CarPageClient car={car} />;
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
-    const carId = parseInt(params.id, 10);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const carId = parseInt(id, 10);
     const car = await prisma.car.findUnique({ where: { id: carId } });
 
     if (!car) {

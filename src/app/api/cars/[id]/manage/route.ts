@@ -17,13 +17,14 @@ async function verifyAdmin(req: NextRequest) {
     }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const isAdmin = await verifyAdmin(req);
   if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const carId = parseInt(params.id, 10);
+  const { id } = await params;
+  const carId = parseInt(id, 10);
   if (isNaN(carId)) {
     return NextResponse.json({ error: 'Invalid car ID' }, { status: 400 });
   }
@@ -46,13 +47,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const isAdmin = await verifyAdmin(req);
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
   
-    const carId = parseInt(params.id, 10);
+    const { id } = await params;
+    const carId = parseInt(id, 10);
     const { searchParams } = new URL(req.url);
     const offerId = searchParams.get('offerId');
 

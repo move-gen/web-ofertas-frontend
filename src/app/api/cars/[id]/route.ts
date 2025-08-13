@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = req.headers.get('authorization');
   if (!token) {
@@ -11,18 +11,19 @@ export async function GET(
   }
 
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
+    const { id } = await params;
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
       return NextResponse.json({ error: 'Invalid car ID' }, { status: 400 });
     }
 
     const car = await prisma.car.findUnique({
-      where: { id },
+      where: { id: parsedId },
       include: {
         images: {
           orderBy: [
-            { isPrimary: 'desc' }, // Primary image first
-            { source: 'asc' }, // Manual images before feed images
+            { isPrimary: 'desc' },
+            { source: 'asc' },
           ]
         },
       },

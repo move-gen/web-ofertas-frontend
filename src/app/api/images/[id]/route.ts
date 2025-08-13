@@ -4,7 +4,7 @@ import { del } from '@vercel/blob';
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = req.headers.get('authorization');
   if (!token) {
@@ -12,28 +12,26 @@ export async function DELETE(
   }
 
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
+    const { id } = await params;
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
       return NextResponse.json({ error: 'Invalid image ID' }, { status: 400 });
     }
 
-    // First, find the image in our DB to get its URL
     const image = await prisma.image.findUnique({
-      where: { id },
+      where: { id: parsedId },
     });
 
     if (!image) {
       return NextResponse.json({ error: 'Image not found in database' }, { status: 404 });
     }
 
-    // If it's a manually uploaded image (in Vercel Blob), delete it from there
     if (image.source === 'manual') {
       await del(image.url);
     }
     
-    // Finally, delete the image record from our database
     await prisma.image.delete({
-      where: { id },
+      where: { id: parsedId },
     });
 
     return NextResponse.json({ message: 'Image deleted successfully' });
