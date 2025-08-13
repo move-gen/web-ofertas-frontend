@@ -2,6 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import Papa from 'papaparse';
 
+interface CsvRow {
+  'SKU': string;
+  'Name': string;
+  'Published': string;
+  'Is featured?': string;
+  'Visibility in catalog': string;
+  'Short description'?: string;
+  'Description'?: string;
+  'Regular price': string;
+  'Sale price'?: string;
+  'Currency'?: string;
+  'In stock?': string;
+  'Stock'?: string;
+  'Images'?: string;
+  [key: string]: string | undefined; // For attribute columns
+}
+
 export async function POST(req: NextRequest) {
   const token = req.headers.get('authorization');
   if (!token) {
@@ -29,7 +46,7 @@ export async function POST(req: NextRequest) {
     const errors: string[] = [];
 
     await prisma.$transaction(async (tx) => {
-      for (const row of parsed.data as any[]) {
+      for (const row of parsed.data as CsvRow[]) {
         const regularPrice = parseFloat(row['Regular price']);
         if (!row['SKU'] || !row['Name'] || isNaN(regularPrice)) {
           errors.push(`Skipping row due to missing SKU, name, or invalid price: ${JSON.stringify(row)}`);
@@ -83,8 +100,9 @@ export async function POST(req: NextRequest) {
           } else {
             updatedCount++;
           }
-        } catch (e: any) {
-          errors.push(`Failed to process row for car "${row['Name']}": ${e.message}`);
+        } catch (e: unknown) {
+          const error = e as Error;
+          errors.push(`Failed to process row for car "${row['Name']}": ${error.message}`);
         }
       }
     });

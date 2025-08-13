@@ -1,7 +1,4 @@
-import { prisma } from '@/lib/prisma';
-import { Suspense } from 'react';
 import OffersClientPart from '@/components/OffersClientPart';
-import OffersSkeleton from '@/components/OffersSkeleton';
 import { TypewriterEffectSmooth } from '@/components/ui/typewriter-effect';
 
 export default async function BuscadorPage() {

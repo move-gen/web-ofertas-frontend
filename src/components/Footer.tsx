@@ -1,6 +1,6 @@
 "use client"; // This directive marks the component as a Client Component
 
-import { ChevronUp, Mail, MapPin, Phone, Send } from "lucide-react";
+import { ChevronUp, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 import Image from 'next/image';
 

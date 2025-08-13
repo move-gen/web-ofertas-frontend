@@ -57,7 +57,19 @@ export interface OfferData {
   cars: number[];
 }
 
-export async function createOffer(offerData: OfferData): Promise<any> {
+export interface OfferCreationResponse {
+  message: string;
+  offerUrl: string;
+  offer: {
+    id: number;
+    title: string;
+    slug: string;
+    createdAt: string;
+    updatedAt: string;
+  }
+}
+
+export async function createOffer(offerData: OfferData): Promise<OfferCreationResponse> {
   const token = getToken();
   if (!token) throw new Error('No authentication token found.');
 

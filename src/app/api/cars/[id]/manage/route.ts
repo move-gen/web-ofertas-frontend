@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getToken } from 'next-auth/jwt';
 import { decode } from 'next-auth/jwt';
 
 const secret = process.env.NEXTAUTH_SECRET;
@@ -42,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     });
 
     return NextResponse.json(updatedCar);
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -72,7 +71,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       });
   
       return NextResponse.json({ message: 'Car removed from offer successfully' });
-    } catch (error) {
+    } catch (_error) {
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
   }

@@ -23,10 +23,10 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: 'Offer deleted successfully' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to delete offer:', error);
     // Handle cases where the offer might not exist (e.g., already deleted)
-    if (error.code === 'P2025') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
         return NextResponse.json({ error: 'Offer not found' }, { status: 404 });
     }
     return NextResponse.json({ error: 'An internal server error occurred' }, { status: 500 });

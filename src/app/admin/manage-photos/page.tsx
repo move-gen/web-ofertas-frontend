@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect, useCallback, useReducer, useRef } from 'react';
+import { useState, useEffect, useReducer, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, X, CheckCircle, AlertTriangle, Link as LinkIcon, Trash2, Upload, Star, BadgeCheck } from 'lucide-react';
+import { Loader2, Search, Trash2, Upload, Star, BadgeCheck } from 'lucide-react';
 import { getToken } from '@/utils/auth';
 import { Car, CarImage } from '@/utils/types';
 import Image from 'next/image';
@@ -54,9 +54,13 @@ export default function ManagePhotosPage() {
     
     // Effect to refetch car details when reducer is forced
     useEffect(() => {
-        if (selectedCar) {
-            handleSelectCar(selectedCar);
-        }
+        const refetchCar = async () => {
+            if (selectedCar) {
+                await handleSelectCar(selectedCar);
+            }
+        };
+        refetchCar();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [reducer]);
 
     const handleSelectCar = async (car: Car) => {
@@ -187,7 +191,7 @@ export default function ManagePhotosPage() {
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
-                                <CardTitle>Paso 2: Gestionar Fotos de "{selectedCar.name}"</CardTitle>
+                                <CardTitle>Paso 2: Gestionar Fotos de &quot;{selectedCar.name}&quot;</CardTitle>
                                 <CardDescription>{selectedCar.numberplate}</CardDescription>
                             </div>
                             <Button variant="outline" onClick={() => setSelectedCar(null)}>Buscar otro coche</Button>

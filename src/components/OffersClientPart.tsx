@@ -99,8 +99,11 @@ export default function OffersClientPart() {
 
   }, [debouncedFilters, activeSort, allCars]);
 
-  const handleFilterChange = (filterName: keyof typeof filters, value: any) => {
-    setFilters(prev => ({ ...prev, [filterName]: value }));
+  const handleFilterChange = <K extends keyof typeof filters>(
+    filterName: K,
+    value: typeof filters[K]
+  ) => {
+    setFilters((prev) => ({ ...prev, [filterName]: value }));
   };
   
   const handleBodyTypeToggle = (type: string) => {

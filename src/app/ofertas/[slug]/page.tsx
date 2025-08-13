@@ -3,12 +3,15 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { HoverEffect } from '@/components/ui/card-hover-effect';
 import { TypewriterEffectSmooth } from '@/components/ui/typewriter-effect';
+import { Car, Image as CarImage } from '@prisma/client';
 
 interface OfferPageProps {
   params: {
     slug: string;
   };
 }
+
+type CarWithImages = Car & { images: CarImage[] };
 
 export default async function OfferPage({ params }: OfferPageProps) {
   const offer = await prisma.offer.findUnique({
@@ -31,8 +34,9 @@ export default async function OfferPage({ params }: OfferPageProps) {
   }
 
   const carItems = offer.cars.map((car) => ({
+    id: car.id, // Add id for unique key in HoverEffect
     link: `/car/${car.id}`,
-    children: <CarCard car={car as any} />,
+    children: <CarCard car={car as CarWithImages} />,
   }));
 
   const words = offer.title.split(" ").map((word, index) => ({

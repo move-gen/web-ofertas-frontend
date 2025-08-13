@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // 1. Encontrar la oferta más reciente
     const latestOffer = await prisma.offer.findFirst({

@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import CarImageGallery from '@/components/CarImageGallery';
 import { 
-    Info, Wifi, Bluetooth, Navigation, Siren, Wrench, Sparkles, Usb, Check, Calendar, Gauge, Power, Fuel, GitCommitHorizontal,
-    Car, Users, DoorOpen, Palette, Milestone, Cog, BadgeHelp, ShieldCheck, Star, CircleHelp, HandCoins
+    Info, Wifi, Bluetooth, Navigation, Siren, Wrench, Sparkles, Usb, Calendar, Power, Fuel, GitCommitHorizontal,
+    Car, Users, DoorOpen, Palette, Milestone, Cog, BadgeHelp, ShieldCheck, Star, HandCoins
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import InterestFormModal from '@/components/InterestFormModal';

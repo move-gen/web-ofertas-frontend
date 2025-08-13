@@ -4,11 +4,18 @@ import { parseStringPromise } from 'xml2js';
 
 const FEED_URL = 'https://feeds.inventario.pro/feed/Individual/515/hfvq97q43q0';
 
-const extract = (item: any, key: string): string | null => {
+interface XmlValue {
+    _: string;
+}
+
+interface XmlItem {
+    [key: string]: (string | XmlValue)[] | undefined;
+}
+
+const extract = (item: XmlItem, key: string): string | null => {
     const value = item?.[key]?.[0];
-    // The parser sometimes includes objects with a '_' key for CDATA content
-    if (typeof value === 'object' && value._) {
-        return value._.trim() || null;
+    if (typeof value === 'object' && '_v' in value) {
+        return (value as XmlValue)._.trim() || null;
     }
     if (typeof value === 'string') {
         return value.trim() || null;
@@ -16,11 +23,11 @@ const extract = (item: any, key: string): string | null => {
     return null;
 }
 
-const extractFloat = (item: any, key: string): number | null => {
+const extractFloat = (item: XmlItem, key: string): number | null => {
     const val = extract(item, key);
     return val ? parseFloat(val.replace(',', '.')) : null; // Handle comma decimal separators
 };
-const extractInt = (item: any, key: string): number | null => {
+const extractInt = (item: XmlItem, key: string): number | null => {
     const val = extract(item, key);
     return val ? parseInt(val, 10) : null;
 };
@@ -96,9 +103,9 @@ export async function POST(req: NextRequest) {
             };
 
             const imageUrls = item.pictures?.[0]?.picture
-                ?.map((p: any) => {
-                    const url = extract(p, 'picture_url');
-                    return url ? { url } : null;
+                ?.map((p: XmlItem) => {
+                    const url = p?.picture_url?.[0];
+                    return url && typeof url === 'string' ? { url } : null;
                 })
                 .filter((img: { url: string; } | null): img is { url: string } => img !== null) ?? [];
 
@@ -122,8 +129,8 @@ export async function POST(req: NextRequest) {
                     // 3. Upsert the car data and create the new "feed" images
                     const car = await tx.car.upsert({
                         where: { sku: sku },
-                        update: { ...carData, images: { create: imageUrls.map((img: { url: string }) => ({ ...img, source: 'feed' })) } },
-                        create: { sku: sku, ...carData, images: { create: imageUrls.map((img: { url: string }) => ({ ...img, source: 'feed' })) } },
+                        update: { ...carData, images: { create: imageUrls.map((img) => ({ ...img, source: 'feed' })) } },
+                        create: { sku: sku, ...carData, images: { create: imageUrls.map((img) => ({ ...img, source: 'feed' })) } },
                     });
 
                     if (car.createdAt.getTime() === car.updatedAt.getTime()) {
@@ -132,9 +139,10 @@ export async function POST(req: NextRequest) {
                         updatedCount++;
                     }
                 });
-            } catch (e: any) {
-                console.error(`Failed to process SKU ${sku}: ${e.message}`);
-                errorDetails.push(`SKU ${sku} (${name}): ${e.message}`);
+            } catch (e: unknown) {
+                const error = e as Error;
+                console.error(`Failed to process SKU ${sku}: ${error.message}`);
+                errorDetails.push(`SKU ${sku} (${name}): ${error.message}`);
             }
         }
         

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { getToken } from '@/utils/auth';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell, TableCaption } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, AlertTriangle, Link as LinkIcon, Search } from 'lucide-react';
+import { Loader2, Link as LinkIcon, Search } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Car as CarType } from '@/utils/types';
 import Link from 'next/link';

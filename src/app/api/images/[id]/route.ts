@@ -37,9 +37,9 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: 'Image deleted successfully' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to delete image:', error);
-    if (error.code === 'P2025') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
         return NextResponse.json({ error: 'Image not found' }, { status: 404 });
     }
     return NextResponse.json({ error: 'An internal server error occurred' }, { status: 500 });

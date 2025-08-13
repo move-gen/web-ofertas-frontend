@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/prisma';
 import OfferSection from '@/components/OfferSection';
+import { Car, Offer, Image as CarImage } from '@prisma/client';
 
-async function getOffersFeed() {
+type CarWithImages = Car & { images: CarImage[] };
+type OfferWithCars = Offer & { cars: CarWithImages[] };
+
+async function getOffersFeed(): Promise<OfferWithCars[]> {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/offers/feed`, {
     cache: 'no-store', // Fetch fresh data on each request
   });
@@ -12,11 +16,11 @@ async function getOffersFeed() {
 }
 
 export default async function OffersFeedPage() {
-  const offers = await getOffersFeed();
+  const offers: OfferWithCars[] = await getOffersFeed();
 
   return (
     <div className="pt-24 bg-gray-50">
-      {offers.map((offer: any) => (
+      {offers.map((offer: OfferWithCars) => (
         <OfferSection key={offer.id} offer={offer} />
       ))}
     </div>

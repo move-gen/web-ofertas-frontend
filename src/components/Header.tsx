@@ -1,5 +1,4 @@
 "use client";
-import { usePathname } from 'next/navigation';
 import {
   Navbar,
   NavBody,
@@ -12,23 +11,15 @@ import {
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Globe, Search, User } from 'lucide-react';
+import { Globe, Search } from 'lucide-react';
 import { Offer } from '@prisma/client';
-import Cookies from 'js-cookie';
 
 export default function Header() {
-  const pathname = usePathname();
   const isBlue = true;
 
   const [latestOffer, setLatestOffer] = useState<Offer | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const token = Cookies.get('authToken');
-    // A simple check for token existence. 
-    // For a real app, you would decode the JWT to check the role.
-    setIsAdmin(!!token);
-
     const fetchLatestOffer = async () => {
       try {
         const response = await fetch('/api/offers/latest-offer');

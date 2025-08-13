@@ -2,6 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import Papa from 'papaparse';
 
+interface CsvRow {
+  'SKU': string;
+  'Name': string;
+  'Published': string;
+  'Is featured?': string;
+  'Visibility in catalog': string;
+  'Short description'?: string;
+  'Description'?: string;
+  'Regular price': string;
+  'Sale price'?: string;
+  'Currency'?: string;
+  'In stock?': string;
+  'Stock'?: string;
+  'Images'?: string;
+  [key: string]: string | undefined; // For attribute columns
+}
+
 const generateSlug = (title: string) => {
   const slug = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
   return `${slug}-${Date.now()}`;
@@ -23,7 +40,7 @@ export async function POST(req: NextRequest) {
 
     const carIds = await prisma.$transaction(async (tx) => {
       const ids = [];
-      for (const row of parsed.data as any[]) {
+      for (const row of parsed.data as CsvRow[]) {
         const regularPrice = parseFloat(row['Regular price']);
         if (!row['SKU'] || !row['Name'] || isNaN(regularPrice)) {
           console.warn('Skipping row due to missing SKU, name, or invalid price:', row);
@@ -44,7 +61,6 @@ export async function POST(req: NextRequest) {
           stock: row['Stock'] ? parseInt(row['Stock'], 10) : 1,
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const imageUrls = (row['Images'] || '').split(',').map((url: string) => ({ url })).filter(img => img.url);
         const attributes = [];
         for (let i = 1; i <= 5; i++) {

@@ -8,11 +8,16 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import React, { useRef, useState } from "react";
+import Image from "next/image";
 
 // --- Interfaces ---
 interface NavbarProps {
   children: React.ReactNode;
   className?: string;
+  isBlue?: boolean;
+}
+interface NavElementProps {
+  visible?: boolean;
   isBlue?: boolean;
 }
 interface NavBodyProps {
@@ -66,7 +71,7 @@ export const Navbar = ({ children, className, isBlue }: NavbarProps) => {
     <motion.div ref={ref} className={cn("fixed inset-x-0 top-0 z-40 w-full", className)}>
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
-          ? React.cloneElement(child as React.ReactElement<any>, { visible, isBlue })
+          ? React.cloneElement(child as React.ReactElement<NavElementProps>, { visible, isBlue })
           : child
       )}
     </motion.div>
@@ -202,7 +207,7 @@ export const MobileNavToggle = ({ isOpen, onClick, isBlue }: MobileNavToggleProp
 
 export const NavbarLogo = () => (
   <a href="#" className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal">
-    <img src="https://assets.aceternity.com/logo-dark.png" alt="logo" width={30} height={30} />
+    <Image src="https://assets.aceternity.com/logo-dark.png" alt="logo" width={30} height={30} />
     <span className="font-medium text-black dark:text-white">Startup</span>
   </a>
 );
