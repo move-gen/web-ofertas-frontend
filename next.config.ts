@@ -19,6 +19,7 @@ const nextConfig = {
       'blob.vercel-storage.com',
       'images.unsplash.com',
       'via.placeholder.com',
+      'fotos.inventario.pro',
     ],
   },
 };
