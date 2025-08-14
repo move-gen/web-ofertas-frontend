@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { serialize } from 'cookie';
 import { JWT_SECRET, COOKIE_CONFIG } from '@/lib/config';
 
 export async function POST(req: NextRequest) {
@@ -29,23 +28,7 @@ export async function POST(req: NextRequest) {
       { expiresIn: '1h' }
     );
 
-    // Cookie httpOnly para el servidor (middleware y layout)
-    const serverCookie = serialize(COOKIE_CONFIG.name, token, {
-      httpOnly: true,
-      secure: COOKIE_CONFIG.secure,
-      sameSite: COOKIE_CONFIG.sameSite,
-      maxAge: COOKIE_CONFIG.maxAge,
-      path: COOKIE_CONFIG.path,
-    });
-
-    // Cookie accesible desde JavaScript para el frontend
-    const clientCookie = serialize(COOKIE_CONFIG.name, token, {
-      httpOnly: false,
-      secure: COOKIE_CONFIG.secure,
-      sameSite: COOKIE_CONFIG.sameSite,
-      maxAge: COOKIE_CONFIG.maxAge,
-      path: COOKIE_CONFIG.path,
-    });
+    // Preparar respuesta JSON
 
     const userWithoutPassword = {
       id: user.id,
@@ -59,9 +42,28 @@ export async function POST(req: NextRequest) {
       jwt: token,
       user: userWithoutPassword 
     });
-    
-    // Establecer ambas cookies
-    response.headers.set('Set-Cookie', [serverCookie, clientCookie].join(', '));
+
+    // Establecer cookies por separado usando la API de NextResponse (evita combinar Set-Cookie)
+    // Cookie httpOnly para middleware/servidor
+    response.cookies.set({
+      name: COOKIE_CONFIG.name,
+      value: token,
+      httpOnly: true,
+      secure: COOKIE_CONFIG.secure,
+      sameSite: COOKIE_CONFIG.sameSite,
+      maxAge: COOKIE_CONFIG.maxAge,
+      path: COOKIE_CONFIG.path,
+    });
+    // Cookie accesible para el cliente (nombre distinto)
+    response.cookies.set({
+      name: `${COOKIE_CONFIG.name}Client`,
+      value: token,
+      httpOnly: false,
+      secure: COOKIE_CONFIG.secure,
+      sameSite: COOKIE_CONFIG.sameSite,
+      maxAge: COOKIE_CONFIG.maxAge,
+      path: COOKIE_CONFIG.path,
+    });
     
     return response;
 

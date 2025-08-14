@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 import { JWT_SECRET } from '@/lib/config';
 
 interface DecodedToken {
@@ -11,7 +11,7 @@ interface DecodedToken {
   exp: number;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   console.log('🔍 Middleware ejecutándose para:', request.nextUrl.pathname);
   
   // Solo proteger rutas admin
@@ -27,7 +27,9 @@ export function middleware(request: NextRequest) {
     }
     
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
+      const secret = new TextEncoder().encode(JWT_SECRET);
+      const { payload } = await jwtVerify(token, secret);
+      const decoded = payload as unknown as DecodedToken;
       console.log('✅ Token válido para:', decoded.email, 'Role:', decoded.role);
       
       if (!decoded || decoded.role !== 'ADMIN') {
