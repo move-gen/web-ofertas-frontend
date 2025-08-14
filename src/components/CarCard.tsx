@@ -42,12 +42,16 @@ export default function CarCard({ car }: CarCardProps) {
   const primaryImage = car.images.find(img => img.isPrimary) || car.images[0];
 
   useEffect(() => {
+    console.log(`🔍 CarCard ${car.id} - Imagen primaria:`, primaryImage?.url);
+    console.log(`🔍 CarCard ${car.id} - Total imágenes:`, car.images.length);
+    
     let isMounted = true;
     if (primaryImage?.url && !imageError) {
       const img = new window.Image();
       img.src = primaryImage.url;
       img.onload = () => {
         if (isMounted) {
+          console.log(`✅ CarCard ${car.id} - Imagen cargada exitosamente:`, primaryImage.url);
           const ar = img.naturalWidth / img.naturalHeight;
           if (ar > 0.95 && ar < 1.05) {
             setAspectClass('aspect-square');
@@ -57,15 +61,17 @@ export default function CarCard({ car }: CarCardProps) {
       };
       img.onerror = () => {
         if(isMounted){
+            console.log(`❌ CarCard ${car.id} - Imagen falló al cargar:`, primaryImage.url);
             setIsLoading(false);
             setImageError(true);
         }
       };
     } else {
+        console.log(`⚠️ CarCard ${car.id} - No hay imagen primaria o ya hay error`);
         setIsLoading(false);
     }
     return () => { isMounted = false };
-  }, [primaryImage?.url, imageError]);
+  }, [primaryImage?.url, imageError, car.id]);
 
   const monthlyPayment = car.financedPrice ? (car.financedPrice / 72).toFixed(0) : (car.regularPrice / 72).toFixed(0);
 
@@ -85,7 +91,13 @@ export default function CarCard({ car }: CarCardProps) {
                 fill
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                onError={() => setImageError(true)}
+                onError={() => {
+                  console.log(`❌ Next.js Image falló para:`, primaryImage?.url);
+                  setImageError(true);
+                }}
+                onLoad={() => {
+                  console.log(`✅ Next.js Image cargó exitosamente:`, primaryImage?.url);
+                }}
             />
           )}
           {(imageError || !primaryImage?.url) && (
