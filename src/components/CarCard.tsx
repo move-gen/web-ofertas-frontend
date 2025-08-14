@@ -37,12 +37,13 @@ export default function CarCard({ car }: CarCardProps) {
 
   const [aspectClass, setAspectClass] = useState('aspect-[4/3]');
   const [isLoading, setIsLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
 
   const primaryImage = car.images.find(img => img.isPrimary) || car.images[0];
 
   useEffect(() => {
     let isMounted = true;
-    if (primaryImage?.url) {
+    if (primaryImage?.url && !imageError) {
       const img = new window.Image();
       img.src = primaryImage.url;
       img.onload = () => {
@@ -57,13 +58,14 @@ export default function CarCard({ car }: CarCardProps) {
       img.onerror = () => {
         if(isMounted){
             setIsLoading(false);
+            setImageError(true);
         }
       };
     } else {
         setIsLoading(false);
     }
     return () => { isMounted = false };
-  }, [primaryImage?.url]);
+  }, [primaryImage?.url, imageError]);
 
   const monthlyPayment = car.financedPrice ? (car.financedPrice / 72).toFixed(0) : (car.regularPrice / 72).toFixed(0);
 
@@ -76,14 +78,26 @@ export default function CarCard({ car }: CarCardProps) {
       className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transition-shadow hover:shadow-xl h-full"
     >
         <div className={`relative w-full bg-gray-100 overflow-hidden ${isLoading ? 'animate-pulse bg-gray-200' : ''} ${aspectClass}`}>
-          {!isLoading && (
+          {!isLoading && !imageError && (
             <Image
                 src={primaryImage?.url || '/placeholder.svg'}
                 alt={car.name}
                 fill
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                onError={() => setImageError(true)}
             />
+          )}
+          {(imageError || !primaryImage?.url) && (
+            <div className="w-full h-full flex items-center justify-center bg-gray-200">
+              <Image
+                src="/placeholder.svg"
+                alt="Placeholder"
+                width={200}
+                height={150}
+                className="object-contain opacity-50"
+              />
+            </div>
           )}
           {car.isSold && (
             <motion.div 

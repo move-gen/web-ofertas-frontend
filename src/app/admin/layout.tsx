@@ -1,8 +1,16 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { decode } from 'next-auth/jwt';
+import jwt from 'jsonwebtoken';
 
-const secret = process.env.NEXTAUTH_SECRET;
+const secret = process.env.NEXTAUTH_SECRET || 'your-default-secret';
+
+interface DecodedToken {
+  userId: number;
+  email: string;
+  role: string;
+  iat: number;
+  exp: number;
+}
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -10,9 +18,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   let isAdmin = false;
 
-  if (token && secret) {
+  if (token) {
     try {
-      const decoded = await decode({ token, secret });
+      const decoded = jwt.verify(token, secret) as DecodedToken;
       if (decoded && decoded.role === 'ADMIN') {
         isAdmin = true;
       }

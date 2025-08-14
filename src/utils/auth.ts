@@ -1,4 +1,4 @@
-import { StrapiAuthResponse, StrapiCredentials } from './types';
+import { StrapiAuthResponse, StrapiCredentials } from '@/utils/types';
 import Cookies from 'js-cookie';
 
 export async function login(
@@ -21,10 +21,26 @@ export async function login(
     }
 
     const data: StrapiAuthResponse = await response.json();
-    if (data.jwt) {
-      Cookies.set('authToken', data.jwt, { expires: 7, secure: true, sameSite: 'strict' });
+    
+    // Verificar que tenemos tanto el token como el usuario
+    if (data.jwt && data.user) {
+      // Establecer la cookie del cliente
+      Cookies.set('authTokenClient', data.jwt, { 
+        expires: 1/24, // 1 hora
+        secure: process.env.NODE_ENV !== 'development', 
+        sameSite: 'strict' 
+      });
+      
+      // También establecer en localStorage como backup
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('authToken', data.jwt);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+      
+      return data;
+    } else {
+      throw new Error('Invalid response format from server');
     }
-    return data;
   } catch (error) {
     console.error('Login failed:', error);
     if (error instanceof Error) {
@@ -35,9 +51,30 @@ export async function login(
 }
 
 export function logout(): void {
-  Cookies.remove('authToken');
+  // Limpiar cookies
+  Cookies.remove('authTokenClient');
+  
+  // Limpiar localStorage
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+  }
 }
 
 export function getToken(): string | undefined {
-  return Cookies.get('authToken');
+  // Intentar obtener de cookie primero, luego de localStorage
+  return Cookies.get('authTokenClient') || 
+         (typeof window !== 'undefined' ? localStorage.getItem('authToken') || undefined : undefined);
+}
+
+export function getUser(): StrapiAuthResponse['user'] | null {
+  if (typeof window !== 'undefined') {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  }
+  return null;
+}
+
+export function isAuthenticated(): boolean {
+  return !!getToken();
 }

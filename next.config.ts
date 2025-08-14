@@ -1,6 +1,26 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Configuration cleaned for Tailwind CSS v3 compatibility
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+    domains: [
+      'blob.vercel-storage.com',
+      'images.unsplash.com',
+      'via.placeholder.com',
+    ],
+  },
 };
 
 export default nextConfig;

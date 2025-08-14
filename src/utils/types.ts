@@ -24,19 +24,23 @@ export interface ApiResponse<T> {
     message?: string;
 }
 
-
-// Other interfaces for services like Strapi can go here
-export interface StrapiAuthResponse {
+// Interfaces para el sistema de autenticación
+export interface AuthResponse {
     jwt: string;
     user: {
         id: number;
-        username: string;
         email: string;
+        role: string;
+        createdAt: string;
+        updatedAt: string;
     }
 }
 
-export interface StrapiCredentials {
-    identifier?: string;
-    email?: string;
-    password?: string;
-} 
+export interface AuthCredentials {
+    identifier: string;
+    password: string;
+}
+
+// Mantener compatibilidad con nombres anteriores
+export type StrapiAuthResponse = AuthResponse;
+export type StrapiCredentials = AuthCredentials;

@@ -28,8 +28,18 @@ export async function POST(req: NextRequest) {
       { expiresIn: '1h' }
     );
 
-    const cookie = serialize('authToken', token, {
+    // Crear cookie httpOnly para el servidor
+    const serverCookie = serialize('authToken', token, {
       httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development',
+      sameSite: 'strict',
+      maxAge: 3600,
+      path: '/',
+    });
+
+    // Crear cookie accesible desde JavaScript para el frontend
+    const clientCookie = serialize('authTokenClient', token, {
+      httpOnly: false,
       secure: process.env.NODE_ENV !== 'development',
       sameSite: 'strict',
       maxAge: 3600,
@@ -44,8 +54,13 @@ export async function POST(req: NextRequest) {
       updatedAt: user.updatedAt,
     };
     
-    const response = NextResponse.json({ user: userWithoutPassword });
-    response.headers.set('Set-Cookie', cookie);
+    const response = NextResponse.json({ 
+      jwt: token, // Incluir el token en la respuesta
+      user: userWithoutPassword 
+    });
+    
+    // Establecer ambas cookies
+    response.headers.set('Set-Cookie', [serverCookie, clientCookie].join(', '));
     
     return response;
 
