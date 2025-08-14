@@ -4,6 +4,11 @@ import { parseStringPromise } from 'xml2js';
 
 const FEED_URL = 'https://feeds.inventario.pro/feed/Individual/515/hfvq97q43q0';
 
+// Ensure this route runs on Node.js (not Edge), allows long processing, and is always dynamic
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 300; // up to 5 minutes if plan allows
+
 interface XmlValue {
     _: string;
 }
@@ -33,9 +38,16 @@ const extractInt = (item: XmlItem, key: string): number | null => {
 };
 
 
-export async function POST() {
+export async function POST(req: Request) {
     try {
-        const response = await fetch(FEED_URL);
+        const { offset = 0, limit = 50 } = await (async () => {
+            try { return await req.json(); } catch { return { offset: 0, limit: 50 }; }
+        })();
+
+        const safeOffset = Math.max(0, Number(offset) || 0);
+        const safeLimit = Math.max(1, Math.min(100, Number(limit) || 50));
+
+        const response = await fetch(FEED_URL, { cache: 'no-store' });
         if (!response.ok) throw new Error(`Failed to fetch feed: ${response.statusText}`);
         
         const xmlText = await response.text();
@@ -54,11 +66,14 @@ export async function POST() {
             throw new Error(`Could not find 'ad' array in 'standard' element. Top keys: [${topLevelKeys}], Standard keys: [${secondLevelKeys}]`);
         }
 
+        const total = items.length;
+        const batch = items.slice(safeOffset, safeOffset + safeLimit);
+
         let createdCount = 0;
         let updatedCount = 0;
         const errorDetails: string[] = [];
 
-        for (const item of items) { // item here is an <ad>
+        for (const item of batch) { // item here is an <ad>
             const sku = extract(item, 'id');
             const name = extract(item, 'title');
             const regularPrice = extractFloat(item, 'price');
@@ -146,13 +161,18 @@ export async function POST() {
             }
         }
         
-        let message = `Sincronización completada. Coches creados: ${createdCount}, actualizados: ${updatedCount}.`;
+        const nextOffset = safeOffset + batch.length;
+        const done = nextOffset >= total;
+
+        let message = `Lote procesado (${safeOffset + 1}-${nextOffset} de ${total}). ` +
+                      `Creados: ${createdCount}, Actualizados: ${updatedCount}.` +
+                      (done ? ' Sincronización completada.' : ' Continúe con el siguiente lote.');
         if (errorDetails.length > 0) {
             message += ` Errores: ${errorDetails.length}. Consulte los logs del servidor para más detalles.`;
             console.error('Errores durante la sincronización:', errorDetails);
         }
 
-        return NextResponse.json({ message });
+        return NextResponse.json({ message, nextOffset, total, done, processed: batch.length });
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';

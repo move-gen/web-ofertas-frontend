@@ -72,7 +72,7 @@ export default function OfferCarsManager({ initialCars, offerId }: OfferCarsMana
                   <div className="flex-shrink-0 h-10 w-10 relative">
                     <img 
                       className="rounded-full object-cover w-full h-full" 
-                      src={car.images[0]?.url || '/placeholder.png'} 
+                      src={car.images[0]?.url || '/placeholder.svg'} 
                       alt={car.name} 
                     />
                   </div>
@@ -90,7 +90,7 @@ export default function OfferCarsManager({ initialCars, offerId }: OfferCarsMana
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <Link href={`/admin/edit-car-photos/${car.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">Editar Fotos</Link>
+                <Link href={`/admin/manage-photos?id=${car.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">Editar Fotos</Link>
                 <Button variant="ghost" size="sm" onClick={() => handleRemoveFromOffer(car.id)} className="text-red-600 hover:text-red-900 mr-4">Eliminar</Button>
                 <Button variant="ghost" size="sm" onClick={() => handleToggleSold(car.id, car.isSold)} className="text-green-600 hover:text-green-900">
                   {car.isSold ? 'Marcar como Disponible' : 'Marcar como Vendido'}

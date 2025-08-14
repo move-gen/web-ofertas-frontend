@@ -93,14 +93,20 @@ export default function CarCard({ car }: CarCardProps) {
             </div>
           )}
           {car.isSold && (
-            <motion.div 
-              initial={{ scale: 2, opacity: 0, rotate: -30 }}
+            <motion.div
+              initial={{ scale: 1.3, opacity: 0, rotate: -25 }}
               animate={{ scale: 1, opacity: 1, rotate: -15 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.5 }}
-              className="absolute inset-0 flex items-center justify-center bg-black/50"
+              transition={{ type: 'spring', stiffness: 320, damping: 16, delay: 0.1 }}
+              className="pointer-events-none absolute inset-0 flex items-center justify-center"
             >
-              <div className="border-4 border-red-500 rounded-lg p-4">
-                <span className="text-5xl font-black text-red-500 uppercase" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>
+              <div
+                className="rounded-md border-4 px-6 py-2 shadow-lg"
+                style={{ borderColor: '#0f286a', transform: 'rotate(-12deg)', background: 'rgba(255,255,255,0.7)' }}
+              >
+                <span
+                  className="text-4xl md:text-5xl font-extrabold uppercase tracking-widest"
+                  style={{ color: '#0f286a', textShadow: '0 3px 8px rgba(0,0,0,0.25)' }}
+                >
                   Vendido
                 </span>
               </div>

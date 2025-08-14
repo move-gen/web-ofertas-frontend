@@ -1,22 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { decode } from 'next-auth/jwt';
-
-const secret = process.env.NEXTAUTH_SECRET;
+import { jwtVerify } from 'jose';
+import { JWT_SECRET } from '@/lib/config';
 
 async function verifyAdmin(req: NextRequest) {
-    if (!secret) return false;
-    
-    const token = req.cookies.get('authToken')?.value;
-    if (!token) return false;
-
-    try {
-        const decoded = await decode({ token, secret });
-        return decoded?.role === 'ADMIN';
-    } catch (error) {
-        console.error('JWT decoding error:', error);
-        return false;
-    }
+  // Prefer cookie token
+  let token = req.cookies.get('authToken')?.value;
+  // Fallback to Authorization header (Bearer <token>) if cookie missing
+  if (!token) {
+    const auth = req.headers.get('authorization') || '';
+    const m = auth.match(/^Bearer\s+(.*)$/i);
+    if (m) token = m[1];
+  }
+  if (!token) return false;
+  try {
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    return (payload as any)?.role === 'ADMIN';
+  } catch (error) {
+    console.error('JWT verify error:', error);
+    return false;
+  }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

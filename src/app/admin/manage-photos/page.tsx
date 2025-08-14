@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useReducer, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,31 @@ export default function ManagePhotosPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [reducer, forceUpdate] = useReducer(x => x + 1, 0);
+
+    const searchParams = useSearchParams();
+
+    // Preload car by id if provided via query
+    useEffect(() => {
+        const idParam = searchParams.get('id');
+        if (!idParam) return;
+        const id = parseInt(idParam, 10);
+        if (isNaN(id)) return;
+        (async () => {
+            try {
+                setIsLoadingCar(true);
+                const token = getToken();
+                const response = await fetch(`/api/cars/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) return;
+                const data: CarWithImages = await response.json();
+                setSelectedCar(data);
+            } finally {
+                setIsLoadingCar(false);
+            }
+        })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Effect for searching cars
     useEffect(() => {
