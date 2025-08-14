@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useReducer, useRef } from 'react';
+import { useState, useEffect, useReducer, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 
 type CarWithImages = Car & { images: CarImage[] };
 
-export default function ManagePhotosPage() {
+function ManagePhotosContent() {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState<Car[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -286,5 +286,13 @@ export default function ManagePhotosPage() {
                 </Card>
             )}
         </div>
+    );
+}
+
+export default function ManagePhotosPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ManagePhotosContent />
+        </Suspense>
     );
 } 
