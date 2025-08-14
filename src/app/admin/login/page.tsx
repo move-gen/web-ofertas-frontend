@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { login } from '@/utils/auth'; // Importar la función de login
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('admin@example.com'); // Valor por defecto para pruebas
-  const [password, setPassword] = useState('password'); // Valor por defecto para pruebas
+  const [email, setEmail] = useState(''); // Removed hardcoded value for security
+  const [password, setPassword] = useState(''); // Removed hardcoded value for security
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
