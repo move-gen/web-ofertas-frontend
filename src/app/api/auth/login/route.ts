@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
-import { JWT_SECRET, COOKIE_CONFIG, JWT_CONFIG } from '@/lib/config';
+import { JWT_SECRET, COOKIE_CONFIG } from '@/lib/config';
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       JWT_SECRET,
-      { expiresIn: JWT_CONFIG.expiresIn }
+      { expiresIn: '1h' }
     );
 
     // Crear cookie httpOnly para el servidor (middleware y layout)

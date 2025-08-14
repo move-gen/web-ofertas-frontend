@@ -12,6 +12,6 @@ export const COOKIE_CONFIG = {
 
 // Configuración de JWT
 export const JWT_CONFIG = {
-  expiresIn: '1h' as string,
+  expiresIn: '1h',
   algorithm: 'HS256' as const,
 };
