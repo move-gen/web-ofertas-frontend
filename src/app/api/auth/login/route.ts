@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       { expiresIn: '1h' }
     );
 
-    // Crear cookie httpOnly para el servidor (middleware y layout)
+    // Cookie httpOnly para el servidor (middleware y layout)
     const serverCookie = serialize(COOKIE_CONFIG.name, token, {
       httpOnly: true,
       secure: COOKIE_CONFIG.secure,
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       path: COOKIE_CONFIG.path,
     });
 
-    // Crear cookie accesible desde JavaScript para el frontend
+    // Cookie accesible desde JavaScript para el frontend
     const clientCookie = serialize(COOKIE_CONFIG.name, token, {
       httpOnly: false,
       secure: COOKIE_CONFIG.secure,
@@ -56,11 +56,11 @@ export async function POST(req: NextRequest) {
     };
     
     const response = NextResponse.json({ 
-      jwt: token, // Incluir el token en la respuesta
+      jwt: token,
       user: userWithoutPassword 
     });
     
-    // Establecer ambas cookies con el mismo nombre
+    // Establecer ambas cookies
     response.headers.set('Set-Cookie', [serverCookie, clientCookie].join(', '));
     
     return response;

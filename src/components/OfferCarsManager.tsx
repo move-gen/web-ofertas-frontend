@@ -2,7 +2,6 @@
 import { Car } from '@prisma/client';
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // Import Image from next/image
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getToken } from '@/utils/auth';
@@ -71,7 +70,11 @@ export default function OfferCarsManager({ initialCars, offerId }: OfferCarsMana
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 h-10 w-10 relative">
-                    <Image className="rounded-full object-cover" src={car.images[0]?.url || '/placeholder.png'} alt={car.name} fill sizes="40px" />
+                    <img 
+                      className="rounded-full object-cover w-full h-full" 
+                      src={car.images[0]?.url || '/placeholder.png'} 
+                      alt={car.name} 
+                    />
                   </div>
                   <div className="ml-4">
                     <div className="text-sm font-medium text-gray-900">{car.name}</div>

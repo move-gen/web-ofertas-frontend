@@ -1,5 +1,5 @@
 // Configuración compartida para el sistema de autenticación
-export const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-default-secret';
+export const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'miguel-leon-secret-key-2025-super-seguro';
 
 // Configuración de cookies
 export const COOKIE_CONFIG = {

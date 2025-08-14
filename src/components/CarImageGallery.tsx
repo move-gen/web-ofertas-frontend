@@ -60,13 +60,10 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
         )}
         
         {/* Imagen */}
-        <Image
+        <img
           src={validImages[currentIndex].url}
           alt={carName}
-          width={750}
-          height={421}
           className="object-cover w-full h-full rounded-xl"
-          priority
           onError={() => handleImageError(currentIndex)}
         />
         
@@ -98,25 +95,22 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
       
       {/* Miniaturas - exactamente como Clicars */}
       {validImages.length > 1 && (
-        <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-hide">
-          {validImages.map((img, idx) => (
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+          {validImages.map((image, index) => (
             <button
-              key={img.id || idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`w-20 h-14 rounded-lg border-2 flex-shrink-0 transition-all duration-200 ${
-                idx === currentIndex 
-                  ? 'border-blue-600 shadow-md scale-105' 
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                index === currentIndex 
+                  ? 'border-blue-500 scale-105' 
                   : 'border-gray-200 hover:border-gray-300'
-              } overflow-hidden`}
-              aria-label={`Miniatura ${idx + 1}`}
+              }`}
             >
-              <Image
-                src={img.url}
-                alt={carName}
-                width={80}
-                height={56}
-                className="object-cover w-full h-full"
-                onError={() => handleImageError(idx)}
+              <img
+                src={image.url}
+                alt={`${carName} - Imagen ${index + 1}`}
+                className="w-full h-full object-cover"
+                onError={() => handleImageError(index)}
               />
             </button>
           ))}

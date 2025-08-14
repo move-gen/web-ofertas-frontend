@@ -24,13 +24,6 @@ export async function login(
     
     // Verificar que tenemos tanto el token como el usuario
     if (data.jwt && data.user) {
-      // Establecer la cookie del cliente (mismo nombre que el servidor)
-      Cookies.set('authToken', data.jwt, { 
-        expires: 1/24, // 1 hora
-        secure: process.env.NODE_ENV !== 'development', 
-        sameSite: 'strict' 
-      });
-      
       // También establecer en localStorage como backup
       if (typeof window !== 'undefined') {
         localStorage.setItem('authToken', data.jwt);
@@ -51,9 +44,6 @@ export async function login(
 }
 
 export function logout(): void {
-  // Limpiar cookies
-  Cookies.remove('authToken');
-  
   // Limpiar localStorage
   if (typeof window !== 'undefined') {
     localStorage.removeItem('authToken');
@@ -62,9 +52,11 @@ export function logout(): void {
 }
 
 export function getToken(): string | undefined {
-  // Intentar obtener de cookie primero, luego de localStorage
-  return Cookies.get('authToken') || 
-         (typeof window !== 'undefined' ? localStorage.getItem('authToken') || undefined : undefined);
+  // Obtener de localStorage como backup
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('authToken') || undefined;
+  }
+  return undefined;
 }
 
 export function getUser(): StrapiAuthResponse['user'] | null {

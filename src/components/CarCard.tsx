@@ -36,42 +36,26 @@ export default function CarCard({ car }: CarCardProps) {
   });
 
   const [aspectClass, setAspectClass] = useState('aspect-[4/3]');
-  const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
 
   const primaryImage = car.images.find(img => img.isPrimary) || car.images[0];
 
   useEffect(() => {
-    console.log(`🔍 CarCard ${car.id} - Imagen primaria:`, primaryImage?.url);
-    console.log(`🔍 CarCard ${car.id} - Total imágenes:`, car.images.length);
-    
-    let isMounted = true;
-    if (primaryImage?.url && !imageError) {
+    if (primaryImage?.url) {
+      // Preload image to determine aspect ratio
       const img = new window.Image();
       img.src = primaryImage.url;
       img.onload = () => {
-        if (isMounted) {
-          console.log(`✅ CarCard ${car.id} - Imagen cargada exitosamente:`, primaryImage.url);
-          const ar = img.naturalWidth / img.naturalHeight;
-          if (ar > 0.95 && ar < 1.05) {
-            setAspectClass('aspect-square');
-          }
-          setIsLoading(false);
+        const ar = img.naturalWidth / img.naturalHeight;
+        if (ar > 0.95 && ar < 1.05) {
+          setAspectClass('aspect-square');
         }
       };
       img.onerror = () => {
-        if(isMounted){
-            console.log(`❌ CarCard ${car.id} - Imagen falló al cargar:`, primaryImage.url);
-            setIsLoading(false);
-            setImageError(true);
-        }
+        setImageError(true);
       };
-    } else {
-        console.log(`⚠️ CarCard ${car.id} - No hay imagen primaria o ya hay error`);
-        setIsLoading(false);
     }
-    return () => { isMounted = false };
-  }, [primaryImage?.url, imageError, car.id]);
+  }, [primaryImage?.url]);
 
   const monthlyPayment = car.financedPrice ? (car.financedPrice / 72).toFixed(0) : (car.regularPrice / 72).toFixed(0);
 
@@ -83,24 +67,21 @@ export default function CarCard({ car }: CarCardProps) {
       transition={{ duration: 0.8, ease: "easeOut" }}
       className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transition-shadow hover:shadow-xl h-full"
     >
-        <div className={`relative w-full bg-gray-100 overflow-hidden ${isLoading ? 'animate-pulse bg-gray-200' : ''} ${aspectClass}`}>
-          {!isLoading && !imageError && (
-            <Image
-                src={primaryImage?.url || '/placeholder.svg'}
+        <div className={`relative w-full bg-gray-100 overflow-hidden ${aspectClass}`}>
+          {primaryImage?.url && !imageError ? (
+            <img
+                src={primaryImage.url}
                 alt={car.name}
-                fill
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                 onError={() => {
-                  console.log(`❌ Next.js Image falló para:`, primaryImage?.url);
+                  console.log(`❌ Imagen falló al cargar:`, primaryImage.url);
                   setImageError(true);
                 }}
                 onLoad={() => {
-                  console.log(`✅ Next.js Image cargó exitosamente:`, primaryImage?.url);
+                  console.log(`✅ Imagen cargó exitosamente:`, primaryImage.url);
                 }}
             />
-          )}
-          {(imageError || !primaryImage?.url) && (
+          ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200">
               <Image
                 src="/placeholder.svg"

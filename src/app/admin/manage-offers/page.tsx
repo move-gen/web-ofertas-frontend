@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Search, X, CheckCircle, AlertTriangle, Link as LinkIcon, Trash2 } from 'lucide-react';
 import { getToken } from '@/utils/auth';
 import { Car, Offer } from '@/utils/types';
-import Image from 'next/image';
 import { useDebounce } from '@/hooks/useDebounce';
 import Link from 'next/link';
 import {
@@ -199,7 +198,7 @@ export default function ManageOffersPage() {
                   <ul className="divide-y">
                     {availableCarsToSelect.map(car => (
                       <li key={car.id} onClick={() => handleSelectCar(car)} className="p-3 flex items-center space-x-3 hover:bg-gray-50 cursor-pointer">
-                        <Image src={car.images?.[0]?.url || '/placeholder.svg'} alt={car.name} width={64} height={48} className="rounded object-cover h-12 w-16" />
+                        <img src={car.images?.[0]?.url || '/placeholder.svg'} alt={car.name} className="rounded object-cover h-12 w-16" />
                         <div className="flex-1">
                           <p className="font-medium text-sm">{car.name}</p>
                           <p className="text-xs text-gray-500">{car.numberplate || 'Sin matrícula'}</p>
@@ -244,7 +243,7 @@ export default function ManageOffersPage() {
               <ul className="space-y-3">
                 {selectedCars.map(car => (
                   <li key={car.id} className="p-2 rounded-md border flex items-center space-x-3">
-                    <Image src={car.images?.[0]?.url || '/placeholder.svg'} alt={car.name} width={48} height={36} className="rounded object-cover h-9 w-12" />
+                    <img src={car.images?.[0]?.url || '/placeholder.svg'} alt={car.name} className="rounded object-cover h-9 w-12" />
                     <div className="flex-1">
                       <p className="font-medium text-sm">{car.name}</p>
                       <p className="text-xs text-gray-500">{car.numberplate || 'Sin matrícula'}</p>
