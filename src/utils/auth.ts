@@ -24,8 +24,8 @@ export async function login(
     
     // Verificar que tenemos tanto el token como el usuario
     if (data.jwt && data.user) {
-      // Establecer la cookie del cliente
-      Cookies.set('authTokenClient', data.jwt, { 
+      // Establecer la cookie del cliente (mismo nombre que el servidor)
+      Cookies.set('authToken', data.jwt, { 
         expires: 1/24, // 1 hora
         secure: process.env.NODE_ENV !== 'development', 
         sameSite: 'strict' 
@@ -52,7 +52,7 @@ export async function login(
 
 export function logout(): void {
   // Limpiar cookies
-  Cookies.remove('authTokenClient');
+  Cookies.remove('authToken');
   
   // Limpiar localStorage
   if (typeof window !== 'undefined') {
@@ -63,7 +63,7 @@ export function logout(): void {
 
 export function getToken(): string | undefined {
   // Intentar obtener de cookie primero, luego de localStorage
-  return Cookies.get('authTokenClient') || 
+  return Cookies.get('authToken') || 
          (typeof window !== 'undefined' ? localStorage.getItem('authToken') || undefined : undefined);
 }
 

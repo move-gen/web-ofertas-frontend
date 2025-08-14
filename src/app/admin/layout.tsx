@@ -1,8 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import jwt from 'jsonwebtoken';
-
-const secret = process.env.NEXTAUTH_SECRET || 'your-default-secret';
+import { JWT_SECRET } from '@/lib/config';
 
 interface DecodedToken {
   userId: number;
@@ -20,7 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, secret) as DecodedToken;
+      const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
       if (decoded && decoded.role === 'ADMIN') {
         isAdmin = true;
       }

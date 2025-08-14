@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
+import { JWT_SECRET, COOKIE_CONFIG, JWT_CONFIG } from '@/lib/config';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,26 +25,26 @@ export async function POST(req: NextRequest) {
 
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      process.env.NEXTAUTH_SECRET || 'your-default-secret',
-      { expiresIn: '1h' }
+      JWT_SECRET,
+      { expiresIn: JWT_CONFIG.expiresIn }
     );
 
-    // Crear cookie httpOnly para el servidor
-    const serverCookie = serialize('authToken', token, {
+    // Crear cookie httpOnly para el servidor (middleware y layout)
+    const serverCookie = serialize(COOKIE_CONFIG.name, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
-      maxAge: 3600,
-      path: '/',
+      secure: COOKIE_CONFIG.secure,
+      sameSite: COOKIE_CONFIG.sameSite,
+      maxAge: COOKIE_CONFIG.maxAge,
+      path: COOKIE_CONFIG.path,
     });
 
     // Crear cookie accesible desde JavaScript para el frontend
-    const clientCookie = serialize('authTokenClient', token, {
+    const clientCookie = serialize(COOKIE_CONFIG.name, token, {
       httpOnly: false,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
-      maxAge: 3600,
-      path: '/',
+      secure: COOKIE_CONFIG.secure,
+      sameSite: COOKIE_CONFIG.sameSite,
+      maxAge: COOKIE_CONFIG.maxAge,
+      path: COOKIE_CONFIG.path,
     });
 
     const userWithoutPassword = {
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
       user: userWithoutPassword 
     });
     
-    // Establecer ambas cookies
+    // Establecer ambas cookies con el mismo nombre
     response.headers.set('Set-Cookie', [serverCookie, clientCookie].join(', '));
     
     return response;

@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
-
-const secret = process.env.NEXTAUTH_SECRET || 'your-default-secret';
+import { JWT_SECRET } from '@/lib/config';
 
 interface DecodedToken {
   userId: number;
@@ -22,7 +21,7 @@ export function middleware(request: NextRequest) {
     }
     
     try {
-      const decoded = jwt.verify(token, secret) as DecodedToken;
+      const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
       
       if (!decoded || decoded.role !== 'ADMIN') {
         return NextResponse.redirect(new URL('/login', request.url));
