@@ -14,7 +14,7 @@ async function verifyAdmin(req: NextRequest) {
   try {
     const secret = new TextEncoder().encode(JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
-    return (payload as any)?.role === 'ADMIN';
+    return (payload as { role?: string })?.role === 'ADMIN';
   } catch {
     return false;
   }

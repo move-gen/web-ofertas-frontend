@@ -1,15 +1,4 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '@/lib/config';
-
-interface DecodedToken {
-  userId: number;
-  email: string;
-  role: string;
-  iat: number;
-  exp: number;
-}
+// (no auth logic here; middleware handles it)
 
 import Sidebar from '@/components/admin/Sidebar';
 
