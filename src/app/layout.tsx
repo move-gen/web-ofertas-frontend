@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Footer from "@/components/Footer"; // Import the Footer component
-import { headers } from 'next/headers';
+import ConditionalFooter from "@/components/ConditionalFooter";
 import TransitionProvider from "@/components/animations/TransitionProvider";
 import ConditionalHeader from "@/components/ConditionalHeader";
 
@@ -26,8 +25,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const hdrs = headers();
-  const path = hdrs.get('x-invoke-path') || '';
   return (
     <html lang="en">
       <body
@@ -36,7 +33,7 @@ export default function RootLayout({
         <TransitionProvider>
           <ConditionalHeader />
           <main className="flex-grow">{children}</main>
-          {!path.startsWith('/admin') && <Footer />}
+          <ConditionalFooter />
         </TransitionProvider>
       </body>
     </html>

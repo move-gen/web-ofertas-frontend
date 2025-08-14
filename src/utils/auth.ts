@@ -1,5 +1,4 @@
 import { StrapiAuthResponse, StrapiCredentials } from '@/utils/types';
-import Cookies from 'js-cookie';
 
 export async function login(
   credentials: StrapiCredentials
