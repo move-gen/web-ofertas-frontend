@@ -16,22 +16,31 @@ export function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/admin')) {
     const token = request.cookies.get('authToken')?.value;
     
+    // Debug: log de cookies
+    console.log('🔍 Middleware - Cookies encontradas:', request.cookies.getAll().map(c => c.name));
+    console.log('🔍 Middleware - Token encontrado:', token ? 'SÍ' : 'NO');
+    
     if (!token) {
+      console.log('❌ Middleware - No hay token, redirigiendo a login');
       return NextResponse.redirect(new URL('/login', request.url));
     }
     
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
+      console.log('✅ Middleware - Token válido:', { email: decoded.email, role: decoded.role });
       
       if (!decoded || decoded.role !== 'ADMIN') {
+        console.log('❌ Middleware - Usuario no es admin, redirigiendo a login');
         return NextResponse.redirect(new URL('/login', request.url));
       }
       
       // Token válido, continuar
+      console.log('✅ Middleware - Acceso permitido a admin');
       return NextResponse.next();
       
-    } catch {
+    } catch (error) {
       // Token inválido o expirado
+      console.log('❌ Middleware - Error verificando token:', error);
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
