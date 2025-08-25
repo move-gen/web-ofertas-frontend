@@ -14,12 +14,26 @@ export default function SyncPage() {
   const [viewerKey, setViewerKey] = useState(0);
   const [cleanupMode, setCleanupMode] = useState(true);
   const [soldCount, setSoldCount] = useState<number | null>(null);
+  const [syncProgress, setSyncProgress] = useState<{
+    current: number;
+    total: number;
+    isRunning: boolean;
+  } | null>(null);
 
   const handleSync = async () => {
     setIsLoading(true);
     setFeedback(null);
+    setSyncProgress({ current: 0, total: 0, isRunning: true });
+    
     try {
-      const response = await fetch('/api/cars/sync', {
+      let offset = 0;
+      let total = 0;
+      let totalCreated = 0;
+      let totalUpdated = 0;
+      let totalMarkedAsSold = 0;
+      
+      // Primer lote para obtener el total y hacer limpieza
+      const firstResponse = await fetch('/api/cars/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -30,13 +44,65 @@ export default function SyncPage() {
           cleanupMode: cleanupMode
         }),
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Ocurrió un error durante la sincronización.');
-      setFeedback({ message: result.message, type: 'success' });
+      
+      if (!firstResponse.ok) {
+        throw new Error('Error en el primer lote de sincronización');
+      }
+      
+      const firstResult = await firstResponse.json();
+      total = firstResult.total;
+      totalCreated += firstResult.createdCount || 0;
+      totalUpdated += firstResult.updatedCount || 0;
+      totalMarkedAsSold += firstResult.markedAsSold || 0;
+      
+      setSyncProgress({ current: 50, total, isRunning: true });
+      
+      // Procesar lotes restantes automáticamente
+      offset = 50;
+      while (offset < total) {
+        const response = await fetch('/api/cars/sync', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            offset,
+            limit: 50,
+            cleanupMode: false // Solo limpieza en el primer lote
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error en lote ${Math.floor(offset / 50) + 1}`);
+        }
+        
+        const result = await response.json();
+        totalCreated += result.createdCount || 0;
+        totalUpdated += result.updatedCount || 0;
+        
+        offset += 50;
+        setSyncProgress({ current: Math.min(offset, total), total, isRunning: true });
+        
+        // Pequeña pausa para no sobrecargar el servidor
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      setSyncProgress({ current: total, total, isRunning: false });
+      
+      let finalMessage = `Sincronización completada. Total: ${total} coches. ` +
+                        `Creados: ${totalCreated}, Actualizados: ${totalUpdated}`;
+      
+      if (totalMarkedAsSold > 0) {
+        finalMessage += `, Marcados como vendidos: ${totalMarkedAsSold}`;
+      }
+      
+      setFeedback({ message: finalMessage, type: 'success' });
       setViewerKey(prevKey => prevKey + 1); // Refresh the viewer
+      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Un error desconocido ocurrió.';
       setFeedback({ message: errorMessage, type: 'error' });
+      setSyncProgress(null);
     } finally {
       setIsLoading(false);
     }
@@ -169,10 +235,29 @@ export default function SyncPage() {
               <strong>Limpieza automática:</strong> Cuando está activada, el sistema automáticamente marca como vendidos todos los coches que ya no aparecen en el feed. Esto mantiene tu inventario sincronizado con la realidad del feed.
             </p>
           </div>
+
+          {/* Barra de progreso de sincronización */}
+          {syncProgress && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Progreso de sincronización</span>
+                <span>{syncProgress.current} de {syncProgress.total} coches</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(syncProgress.current / syncProgress.total) * 100}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500">
+                {syncProgress.isRunning ? 'Procesando lotes automáticamente...' : 'Sincronización completada'}
+              </p>
+            </div>
+          )}
           
           <Button onClick={handleSync} disabled={isLoading} size="lg">
             <RefreshCw className={`mr-2 h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
-            {isLoading ? 'Sincronizando...' : 'Iniciar Sincronización Ahora'}
+            {isLoading ? 'Sincronizando...' : 'Iniciar Sincronización Completa'}
           </Button>
         </CardContent>
         {feedback && (
