@@ -72,6 +72,9 @@ model Car {
   description             String?   @db.Text // From <content>
   equipment               String?   @db.Text // From <equipment>
   
+  // Source tracking
+  source                  String    @default("feed") // "feed" or "manual"
+  
   images                  Image[]
   offers                  Offer[]   @relation("CarToOffer")
 

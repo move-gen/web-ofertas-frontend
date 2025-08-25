@@ -37,11 +37,10 @@ const extractInt = (item: XmlItem, key: string): number | null => {
     return val ? parseInt(val, 10) : null;
 };
 
-
 export async function POST(req: Request) {
     try {
-        const { offset = 0, limit = 50 } = await (async () => {
-            try { return await req.json(); } catch { return { offset: 0, limit: 50 }; }
+        const { offset = 0, limit = 50, cleanupMode = false } = await (async () => {
+            try { return await req.json(); } catch { return { offset: 0, limit: 50, cleanupMode: false }; }
         })();
 
         const safeOffset = Math.max(0, Number(offset) || 0);
@@ -71,7 +70,34 @@ export async function POST(req: Request) {
 
         let createdCount = 0;
         let updatedCount = 0;
+        let markedAsSoldCount = 0;
         const errorDetails: string[] = [];
+
+        // Si es el primer lote (offset = 0), hacer limpieza automática
+        if (safeOffset === 0 && cleanupMode) {
+            try {
+                // Obtener todos los SKUs del feed
+                const feedSkus = items.map(item => extract(item, 'id')).filter(sku => sku !== null);
+                
+                // Marcar como vendidos los coches que ya no están en el feed
+                const cleanupResult = await prisma.car.updateMany({
+                    where: {
+                        sku: { notIn: feedSkus },
+                        isSold: false, // Solo los que no estén ya marcados como vendidos
+                        source: 'feed' // Solo los que vienen del feed
+                    },
+                    data: {
+                        isSold: true
+                    }
+                });
+                
+                markedAsSoldCount = cleanupResult.count;
+                console.log(`Limpieza automática: ${markedAsSoldCount} coches marcados como vendidos`);
+            } catch (cleanupError) {
+                console.error('Error durante la limpieza automática:', cleanupError);
+                errorDetails.push(`Error de limpieza: ${cleanupError instanceof Error ? cleanupError.message : 'Error desconocido'}`);
+            }
+        }
 
         for (const item of batch) { // item here is an <ad>
             const sku = extract(item, 'id');
@@ -115,6 +141,8 @@ export async function POST(req: Request) {
                 crashed: extract(item, 'crashed') === '1',
                 description: extract(item, 'content'),
                 equipment: extract(item, 'equipment'),
+                isSold: false, // Asegurar que los coches del feed están disponibles
+                source: 'feed' // Marcar que vienen del feed
             };
 
             const imageUrls = item.pictures?.[0]?.picture
@@ -123,7 +151,6 @@ export async function POST(req: Request) {
                     return url && typeof url === 'string' ? { url } : null;
                 })
                 .filter((img: { url: string; } | null): img is { url: string } => img !== null) ?? [];
-
 
             try {
                 // We use a transaction to ensure data integrity
@@ -165,14 +192,27 @@ export async function POST(req: Request) {
         const done = nextOffset >= total;
 
         let message = `Lote procesado (${safeOffset + 1}-${nextOffset} de ${total}). ` +
-                      `Creados: ${createdCount}, Actualizados: ${updatedCount}.` +
-                      (done ? ' Sincronización completada.' : ' Continúe con el siguiente lote.');
+                      `Creados: ${createdCount}, Actualizados: ${updatedCount}`;
+        
+        if (markedAsSoldCount > 0) {
+            message += `, Marcados como vendidos: ${markedAsSoldCount}`;
+        }
+        
+        message += done ? '. Sincronización completada.' : '. Continúe con el siguiente lote.';
+        
         if (errorDetails.length > 0) {
             message += ` Errores: ${errorDetails.length}. Consulte los logs del servidor para más detalles.`;
             console.error('Errores durante la sincronización:', errorDetails);
         }
 
-        return NextResponse.json({ message, nextOffset, total, done, processed: batch.length });
+        return NextResponse.json({ 
+            message, 
+            nextOffset, 
+            total, 
+            done, 
+            processed: batch.length,
+            markedAsSold: markedAsSoldCount
+        });
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';

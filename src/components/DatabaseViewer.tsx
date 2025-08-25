@@ -13,6 +13,7 @@ import { Input } from './ui/input';
 
 interface CarWithImages extends CarType {
   images: CarImage[];
+  source: string;
 }
 
 
@@ -98,17 +99,38 @@ export default function DatabaseViewer({ refreshKey }: { refreshKey?: number }) 
               <TableHead>Matrícula</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Precio</TableHead>
+              <TableHead className="text-center">Estado</TableHead>
+              <TableHead className="text-center">Origen</TableHead>
               <TableHead className="text-center">Imágenes</TableHead>
               <TableHead className="text-right">Ver</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredCars.map((car) => (
-              <TableRow key={car.id}>
+              <TableRow key={car.id} className={car.isSold ? 'opacity-60 bg-gray-50' : ''}>
                 <TableCell className="font-mono text-xs">{car.numberplate || 'N/A'}</TableCell>
-                <TableCell className="font-medium">{car.name}</TableCell>
+                <TableCell className="font-medium">
+                  {car.name}
+                  {car.isSold && (
+                    <Badge variant="destructive" className="ml-2 text-xs">
+                      VENDIDO
+                    </Badge>
+                  )}
+                </TableCell>
                 <TableCell>
                   {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(car.regularPrice)}
+                </TableCell>
+                <TableCell className="text-center">
+                  {car.isSold ? (
+                    <Badge variant="destructive" className="text-xs">Vendido</Badge>
+                  ) : (
+                    <Badge variant="default" className="text-xs">Disponible</Badge>
+                  )}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Badge variant={car.source === 'feed' ? 'default' : 'secondary'} className="text-xs">
+                    {car.source === 'feed' ? 'Feed' : 'Manual'}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-center">
                   <Badge variant="secondary">{car.images?.length || 0}</Badge>

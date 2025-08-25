@@ -84,10 +84,12 @@ export async function POST(req: NextRequest) {
             where: { sku: row['SKU'] },
             update: {
               ...carData,
+              source: 'manual', // Marcar como importación manual
               images: { deleteMany: {}, create: imageUrls },
             },
             create: {
               sku: row['SKU'],
+              source: 'manual', // Marcar como importación manual
               ...carData,
               images: { create: imageUrls },
             },
