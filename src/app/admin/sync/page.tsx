@@ -2,9 +2,29 @@
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RefreshCw, CheckCircle, AlertTriangle, Trash2, Database, Info } from "lucide-react";
+import { RefreshCw, CheckCircle, AlertTriangle, Trash2, Database, Info, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import DatabaseViewer from "@/components/DatabaseViewer";
+
+interface SyncResult {
+  successful: Array<{ sku: string; name: string; action: 'created' | 'updated'; details: string }>;
+  skipped: Array<{ sku: string; name: string; reason: string }>;
+  errors: Array<{ sku: string; name: string; error: string }>;
+}
+
+interface BatchResult {
+  offset: number;
+  createdCount: number;
+  updatedCount: number;
+  skippedCount: number;
+  errorCount: number;
+  results: SyncResult;
+  batchDetails: {
+    startIndex: number;
+    endIndex: number;
+    totalInBatch: number;
+  };
+}
 
 export default function SyncPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,11 +39,14 @@ export default function SyncPage() {
     total: number;
     isRunning: boolean;
   } | null>(null);
+  const [batchResults, setBatchResults] = useState<BatchResult[]>([]);
+  const [showBatchDetails, setShowBatchDetails] = useState(false);
 
   const handleSync = async () => {
     setIsLoading(true);
     setFeedback(null);
     setSyncProgress({ current: 0, total: 0, isRunning: true });
+    setBatchResults([]);
     
     try {
       let offset = 0;
@@ -31,6 +54,8 @@ export default function SyncPage() {
       let totalCreated = 0;
       let totalUpdated = 0;
       let totalMarkedAsSold = 0;
+      let totalSkipped = 0;
+      let totalErrors = 0;
       
       // Primer lote para obtener el total y hacer limpieza
       const firstResponse = await fetch('/api/cars/sync', {
@@ -54,6 +79,19 @@ export default function SyncPage() {
       totalCreated += firstResult.createdCount || 0;
       totalUpdated += firstResult.updatedCount || 0;
       totalMarkedAsSold += firstResult.markedAsSold || 0;
+      totalSkipped += firstResult.skippedCount || 0;
+      totalErrors += firstResult.errorCount || 0;
+      
+      // Guardar resultado del primer lote
+      setBatchResults(prev => [...prev, {
+        offset: 0,
+        createdCount: firstResult.createdCount || 0,
+        updatedCount: firstResult.updatedCount || 0,
+        skippedCount: firstResult.skippedCount || 0,
+        errorCount: firstResult.errorCount || 0,
+        results: firstResult.results,
+        batchDetails: firstResult.batchDetails
+      }]);
       
       setSyncProgress({ current: 50, total, isRunning: true });
       
@@ -79,6 +117,19 @@ export default function SyncPage() {
         const result = await response.json();
         totalCreated += result.createdCount || 0;
         totalUpdated += result.updatedCount || 0;
+        totalSkipped += result.skippedCount || 0;
+        totalErrors += result.errorCount || 0;
+        
+        // Guardar resultado del lote
+        setBatchResults(prev => [...prev, {
+          offset,
+          createdCount: result.createdCount || 0,
+          updatedCount: result.updatedCount || 0,
+          skippedCount: result.skippedCount || 0,
+          errorCount: result.errorCount || 0,
+          results: result.results,
+          batchDetails: result.batchDetails
+        }]);
         
         offset += 50;
         setSyncProgress({ current: Math.min(offset, total), total, isRunning: true });
@@ -91,6 +142,14 @@ export default function SyncPage() {
       
       let finalMessage = `Sincronización completada. Total: ${total} coches. ` +
                         `Creados: ${totalCreated}, Actualizados: ${totalUpdated}`;
+      
+      if (totalSkipped > 0) {
+        finalMessage += `, Omitidos: ${totalSkipped}`;
+      }
+      
+      if (totalErrors > 0) {
+        finalMessage += `, Errores: ${totalErrors}`;
+      }
       
       if (totalMarkedAsSold > 0) {
         finalMessage += `, Marcados como vendidos: ${totalMarkedAsSold}`;
@@ -252,6 +311,114 @@ export default function SyncPage() {
               <p className="text-xs text-gray-500">
                 {syncProgress.isRunning ? 'Procesando lotes automáticamente...' : 'Sincronización completada'}
               </p>
+            </div>
+          )}
+
+          {/* Detalles de lotes procesados */}
+          {batchResults.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Resultados por Lotes</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowBatchDetails(!showBatchDetails)}
+                >
+                  {showBatchDetails ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+                  {showBatchDetails ? 'Ocultar Detalles' : 'Ver Detalles'}
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {batchResults.map((batch, index) => (
+                  <Card key={index} className="p-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-sm">
+                        Lote {index + 1} (Coches {batch.batchDetails.startIndex}-{batch.batchDetails.endIndex})
+                      </h4>
+                      <div className="text-xs space-y-1">
+                        <div className="flex justify-between">
+                          <span>✅ Creados:</span>
+                          <span className="font-medium">{batch.createdCount}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>🔄 Actualizados:</span>
+                          <span className="font-medium">{batch.updatedCount}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>⏭️ Omitidos:</span>
+                          <span className="font-medium">{batch.skippedCount}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>❌ Errores:</span>
+                          <span className="font-medium">{batch.errorCount}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Detalles expandidos de cada lote */}
+              {showBatchDetails && (
+                <div className="space-y-4">
+                  {batchResults.map((batch, index) => (
+                    <Card key={`details-${index}`} className="p-4">
+                      <h4 className="font-medium mb-3">
+                        Detalles del Lote {index + 1} (Coches {batch.batchDetails.startIndex}-{batch.batchDetails.endIndex})
+                      </h4>
+                      
+                      {/* Coches procesados exitosamente */}
+                      {batch.results.successful.length > 0 && (
+                        <div className="mb-4">
+                          <h5 className="text-sm font-medium text-green-700 mb-2">✅ Coches Procesados Exitosamente</h5>
+                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {batch.results.successful.map((item, idx) => (
+                              <div key={idx} className="text-xs bg-green-50 p-2 rounded">
+                                <div className="font-medium">{item.name}</div>
+                                <div className="text-gray-600">SKU: {item.sku}</div>
+                                <div className="text-gray-600">{item.details}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Coches omitidos */}
+                      {batch.results.skipped.length > 0 && (
+                        <div className="mb-4">
+                          <h5 className="text-sm font-medium text-yellow-700 mb-2">⏭️ Coches Omitidos</h5>
+                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {batch.results.skipped.map((item, idx) => (
+                              <div key={idx} className="text-xs bg-yellow-50 p-2 rounded">
+                                <div className="font-medium">{item.name}</div>
+                                <div className="text-gray-600">SKU: {item.sku}</div>
+                                <div className="text-gray-600">{item.reason}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Coches con errores */}
+                      {batch.results.errors.length > 0 && (
+                        <div className="mb-4">
+                          <h5 className="text-sm font-medium text-red-700 mb-2">❌ Coches con Errores</h5>
+                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {batch.results.errors.map((item, idx) => (
+                              <div key={idx} className="text-xs bg-red-50 p-2 rounded">
+                                <div className="font-medium">{item.name}</div>
+                                <div className="text-gray-600">SKU: {item.sku}</div>
+                                <div className="text-red-600">{item.error}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           

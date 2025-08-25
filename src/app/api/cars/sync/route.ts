@@ -71,7 +71,14 @@ export async function POST(req: Request) {
         let createdCount = 0;
         let updatedCount = 0;
         let markedAsSoldCount = 0;
-        const errorDetails: string[] = [];
+        let skippedCount = 0;
+        let errorCount = 0;
+        
+        const results = {
+            successful: [] as Array<{ sku: string; name: string; action: 'created' | 'updated'; details: string }>,
+            skipped: [] as Array<{ sku: string; name: string; reason: string }>,
+            errors: [] as Array<{ sku: string; name: string; error: string }>
+        };
 
         // Si es el primer lote (offset = 0), hacer limpieza automática
         if (safeOffset === 0 && cleanupMode) {
@@ -95,7 +102,12 @@ export async function POST(req: Request) {
                 console.log(`Limpieza automática: ${markedAsSoldCount} coches marcados como vendidos`);
             } catch (cleanupError) {
                 console.error('Error durante la limpieza automática:', cleanupError);
-                errorDetails.push(`Error de limpieza: ${cleanupError instanceof Error ? cleanupError.message : 'Error desconocido'}`);
+                results.errors.push({
+                    sku: 'CLEANUP',
+                    name: 'Limpieza automática',
+                    error: cleanupError instanceof Error ? cleanupError.message : 'Error desconocido'
+                });
+                errorCount++;
             }
         }
 
@@ -106,7 +118,9 @@ export async function POST(req: Request) {
             const vin = extract(item, 'vin');
 
             if (!sku || !name || regularPrice === null || !vin) {
-                errorDetails.push(`Skipping item due to missing essential data (SKU, Name, Price, or VIN).`);
+                const reason = `Datos faltantes: SKU=${sku ? 'OK' : 'FALTA'}, Nombre=${name ? 'OK' : 'FALTA'}, Precio=${regularPrice !== null ? 'OK' : 'FALTA'}, VIN=${vin ? 'OK' : 'FALTA'}`;
+                results.skipped.push({ sku: sku || 'N/A', name: name || 'N/A', reason });
+                skippedCount++;
                 continue; 
             }
 
@@ -177,14 +191,31 @@ export async function POST(req: Request) {
 
                     if (car.createdAt.getTime() === car.updatedAt.getTime()) {
                         createdCount++;
+                        results.successful.push({
+                            sku,
+                            name,
+                            action: 'created',
+                            details: `Coche creado con ${imageUrls.length} imágenes`
+                        });
                     } else {
                         updatedCount++;
+                        results.successful.push({
+                            sku,
+                            name,
+                            action: 'updated',
+                            details: `Coche actualizado con ${imageUrls.length} imágenes`
+                        });
                     }
                 });
             } catch (e: unknown) {
                 const error = e as Error;
                 console.error(`Failed to process SKU ${sku}: ${error.message}`);
-                errorDetails.push(`SKU ${sku} (${name}): ${error.message}`);
+                results.errors.push({
+                    sku,
+                    name,
+                    error: error.message
+                });
+                errorCount++;
             }
         }
         
@@ -194,16 +225,19 @@ export async function POST(req: Request) {
         let message = `Lote procesado (${safeOffset + 1}-${nextOffset} de ${total}). ` +
                       `Creados: ${createdCount}, Actualizados: ${updatedCount}`;
         
+        if (skippedCount > 0) {
+            message += `, Omitidos: ${skippedCount}`;
+        }
+        
+        if (errorCount > 0) {
+            message += `, Errores: ${errorCount}`;
+        }
+        
         if (markedAsSoldCount > 0) {
             message += `, Marcados como vendidos: ${markedAsSoldCount}`;
         }
         
         message += done ? '. Sincronización completada.' : '. Continúe con el siguiente lote.';
-        
-        if (errorDetails.length > 0) {
-            message += ` Errores: ${errorDetails.length}. Consulte los logs del servidor para más detalles.`;
-            console.error('Errores durante la sincronización:', errorDetails);
-        }
 
         return NextResponse.json({ 
             message, 
@@ -211,7 +245,17 @@ export async function POST(req: Request) {
             total, 
             done, 
             processed: batch.length,
-            markedAsSold: markedAsSoldCount
+            createdCount,
+            updatedCount,
+            skippedCount,
+            errorCount,
+            markedAsSold: markedAsSoldCount,
+            results,
+            batchDetails: {
+                startIndex: safeOffset + 1,
+                endIndex: nextOffset,
+                totalInBatch: batch.length
+            }
         });
 
     } catch (error) {
