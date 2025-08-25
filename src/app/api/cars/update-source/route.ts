@@ -7,8 +7,8 @@ export async function POST() {
         const updateResult = await prisma.car.updateMany({
             where: {
                 OR: [
-                    { source: null },
-                    { source: '' }
+                    { source: '' },
+                    { source: undefined }
                 ]
             },
             data: {
