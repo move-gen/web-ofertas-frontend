@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
 const TransitionProvider = ({ children }: { children: React.ReactNode }) => {
@@ -14,6 +14,16 @@ const TransitionProvider = ({ children }: { children: React.ReactNode }) => {
   const DURATION = 1.0;
   const PAUSE = 1.0;
 
+  // Función para verificar si una ruta es de admin
+  const isAdminRoute = useCallback((path: string) => {
+    return path.startsWith('/admin');
+  }, []);
+
+  // Función para verificar si la transición debe estar habilitada
+  const shouldEnableTransition = useCallback((path: string) => {
+    return !isAdminRoute(path);
+  }, [isAdminRoute]);
+
   // Intercept all link clicks
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
@@ -21,17 +31,20 @@ const TransitionProvider = ({ children }: { children: React.ReactNode }) => {
       const link = target.closest('a');
       
       if (link && link.href && link.href.startsWith(window.location.origin)) {
-        event.preventDefault();
-        event.stopPropagation();
-        
         const url = new URL(link.href);
         const path = url.pathname;
         
-        if ((path !== pathName || path === '/') && !isTransitioning) {
+        // Solo aplicar transición si no es una ruta de admin
+        if (shouldEnableTransition(path) && (path !== pathName || path === '/') && !isTransitioning) {
           console.log('Starting transition to:', path);
           setIsTransitioning(true);
           setPendingPath(path);
           setCurtainClosed(false);
+        } else if (isAdminRoute(path)) {
+          // Para rutas de admin, navegar directamente sin transición
+          event.preventDefault();
+          event.stopPropagation();
+          router.push(path);
         }
       }
     };
@@ -45,10 +58,13 @@ const TransitionProvider = ({ children }: { children: React.ReactNode }) => {
       
       const currentPath = window.location.pathname;
       if (currentPath !== pathName) {
-        event.preventDefault();
-        setIsTransitioning(true);
-        setPendingPath(currentPath);
-        setCurtainClosed(false);
+        // Solo aplicar transición si no es una ruta de admin
+        if (shouldEnableTransition(currentPath)) {
+          event.preventDefault();
+          setIsTransitioning(true);
+          setPendingPath(currentPath);
+          setCurtainClosed(false);
+        }
       }
     };
 
@@ -58,8 +74,8 @@ const TransitionProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       document.removeEventListener('click', handleClick, true);
       window.removeEventListener('popstate', handlePopState);
-    };
-  }, [pathName, isTransitioning]);
+    }
+  }, [pathName, isTransitioning, router, shouldEnableTransition, isAdminRoute])
 
   // Navigate when curtain is fully closed
   useEffect(() => {
@@ -82,6 +98,11 @@ const TransitionProvider = ({ children }: { children: React.ReactNode }) => {
       return () => clearTimeout(timer);
     }
   }, [isTransitioning, pendingPath, curtainClosed, DURATION, PAUSE]);
+
+  // No mostrar transición si estamos en una ruta de admin
+  if (isAdminRoute(pathName)) {
+    return <div>{children}</div>;
+  }
 
   return (
     <div>
