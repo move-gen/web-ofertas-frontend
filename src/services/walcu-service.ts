@@ -249,7 +249,7 @@ export class WalcuService {
         lastSync: new Date().toISOString(),
         status: 'healthy'
       };
-    } catch (error) {
+    } catch {
       return {
         clientsCreated: 0,
         leadsCreated: 0,

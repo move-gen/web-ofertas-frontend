@@ -3,8 +3,15 @@
 import { useState } from 'react';
 import { useWalcuCRM } from '@/hooks/useWalcuCRM';
 
+interface TestResult {
+  success: boolean;
+  data?: unknown;
+  message?: string;
+  error?: string;
+}
+
 export default function WalcuTestComponent() {
-  const [testResults, setTestResults] = useState<any>(null);
+  const [testResults, setTestResults] = useState<TestResult | null>(null);
   const { 
     loading, 
     error, 

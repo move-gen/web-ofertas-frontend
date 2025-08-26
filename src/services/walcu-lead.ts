@@ -6,7 +6,6 @@ import {
   WalcuAftersaleLeadData,
   WalcuCar,
   WalcuCarListItem,
-  WalcuOrigin,
   WalcuFinance
 } from '@/types/walcu-crm';
 
@@ -25,7 +24,7 @@ export class WalcuLeadService extends WalcuCRMService {
       
       return response.data;
     } catch (error) {
-      this.handleError('createSaleLead', error);
+      this.handleError('createSaleLead', error as Error);
     }
   }
 
@@ -42,7 +41,7 @@ export class WalcuLeadService extends WalcuCRMService {
       
       return response.data;
     } catch (error) {
-      this.handleError('createAftersaleLead', error);
+      this.handleError('createAftersaleLead', error as Error);
     }
   }
 
@@ -62,7 +61,7 @@ export class WalcuLeadService extends WalcuCRMService {
       
       return response.data;
     } catch (error) {
-      this.handleError('createAppraisalLead', error);
+      this.handleError('createAppraisalLead', error as Error);
     }
   }
 
@@ -90,7 +89,7 @@ export class WalcuLeadService extends WalcuCRMService {
       const response = await this.api.get(`${endpoint}/${leadId}`);
       return response.data;
     } catch (error) {
-      this.handleError('getLeadById', error);
+      this.handleError('getLeadById', error as Error);
     }
   }
 
@@ -135,7 +134,7 @@ export class WalcuLeadService extends WalcuCRMService {
       console.log('Lead actualizado exitosamente en Walcu CRM:', leadId);
       return response.data;
     } catch (error) {
-      this.handleError('updateLead', error);
+      this.handleError('updateLead', error as Error);
     }
   }
 
@@ -176,7 +175,7 @@ export class WalcuLeadService extends WalcuCRMService {
 
       return await this.createSaleLead(leadData);
     } catch (error) {
-      this.handleError('createCarInterestLead', error);
+      this.handleError('createCarInterestLead', error as Error);
     }
   }
 
@@ -208,7 +207,7 @@ export class WalcuLeadService extends WalcuCRMService {
 
       return await this.createSaleLead(leadData);
     } catch (error) {
-      this.handleError('createContactLead', error);
+      this.handleError('createContactLead', error as Error);
     }
   }
 
@@ -241,7 +240,7 @@ export class WalcuLeadService extends WalcuCRMService {
 
       return await this.createAftersaleLead(leadData);
     } catch (error) {
-      this.handleError('createAppraisalRequestLead', error);
+      this.handleError('createAppraisalRequestLead', error as Error);
     }
   }
 

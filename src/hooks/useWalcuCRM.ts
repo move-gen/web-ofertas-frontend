@@ -1,4 +1,13 @@
 import { useState, useCallback } from 'react';
+import { 
+  WalcuClient, 
+  WalcuSaleLead, 
+  WalcuAftersaleLead,
+  WalcuAddress,
+  WalcuBusinessDetails,
+  WalcuCar,
+  WalcuFinance
+} from '@/types/walcu-crm';
 
 interface WalcuCRMResponse<T> {
   success: boolean;
@@ -13,8 +22,8 @@ interface ContactFormData {
   email: string;
   phone?: string;
   message: string;
-  address?: any;
-  businessDetails?: any;
+  address?: Partial<WalcuAddress>;
+  businessDetails?: Partial<WalcuBusinessDetails>;
   source?: string;
   medium?: string;
   campaign?: string;
@@ -26,13 +35,13 @@ interface CarInterestFormData {
   email: string;
   phone?: string;
   message: string;
-  car: any;
-  address?: any;
-  businessDetails?: any;
+  car: WalcuCar;
+  address?: Partial<WalcuAddress>;
+  businessDetails?: Partial<WalcuBusinessDetails>;
   source?: string;
   medium?: string;
   campaign?: string;
-  finance?: any;
+  finance?: WalcuFinance;
 }
 
 interface AppraisalFormData {
@@ -41,9 +50,9 @@ interface AppraisalFormData {
   email: string;
   phone?: string;
   message: string;
-  car: any;
-  address?: any;
-  businessDetails?: any;
+  car: WalcuCar;
+  address?: Partial<WalcuAddress>;
+  businessDetails?: Partial<WalcuBusinessDetails>;
   source?: string;
   medium?: string;
   campaign?: string;
@@ -53,7 +62,7 @@ export const useWalcuCRM = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const processContactForm = useCallback(async (formData: ContactFormData): Promise<WalcuCRMResponse<any>> => {
+  const processContactForm = useCallback(async (formData: ContactFormData): Promise<WalcuCRMResponse<{ client: WalcuClient; lead: WalcuSaleLead }>> => {
     setLoading(true);
     setError(null);
 
@@ -81,7 +90,7 @@ export const useWalcuCRM = () => {
       setError(errorMessage);
       return {
         success: false,
-        data: null,
+        data: { client: {} as WalcuClient, lead: {} as WalcuSaleLead },
         error: errorMessage
       };
     } finally {
@@ -89,7 +98,7 @@ export const useWalcuCRM = () => {
     }
   }, []);
 
-  const processCarInterestForm = useCallback(async (formData: CarInterestFormData): Promise<WalcuCRMResponse<any>> => {
+  const processCarInterestForm = useCallback(async (formData: CarInterestFormData): Promise<WalcuCRMResponse<{ client: WalcuClient; lead: WalcuSaleLead }>> => {
     setLoading(true);
     setError(null);
 
@@ -117,7 +126,7 @@ export const useWalcuCRM = () => {
       setError(errorMessage);
       return {
         success: false,
-        data: null,
+        data: { client: {} as WalcuClient, lead: {} as WalcuSaleLead },
         error: errorMessage
       };
     } finally {
@@ -125,7 +134,7 @@ export const useWalcuCRM = () => {
     }
   }, []);
 
-  const processAppraisalForm = useCallback(async (formData: AppraisalFormData): Promise<WalcuCRMResponse<any>> => {
+  const processAppraisalForm = useCallback(async (formData: AppraisalFormData): Promise<WalcuCRMResponse<{ client: WalcuClient; lead: WalcuAftersaleLead }>> => {
     setLoading(true);
     setError(null);
 
@@ -153,7 +162,7 @@ export const useWalcuCRM = () => {
       setError(errorMessage);
       return {
         success: false,
-        data: null,
+        data: { client: {} as WalcuClient, lead: {} as WalcuAftersaleLead },
         error: errorMessage
       };
     } finally {
@@ -161,7 +170,7 @@ export const useWalcuCRM = () => {
     }
   }, []);
 
-  const checkConnection = useCallback(async (): Promise<WalcuCRMResponse<any>> => {
+  const checkConnection = useCallback(async (): Promise<WalcuCRMResponse<{ connected: boolean; error?: string }>> => {
     setLoading(true);
     setError(null);
 
@@ -179,7 +188,7 @@ export const useWalcuCRM = () => {
       setError(errorMessage);
       return {
         success: false,
-        data: null,
+        data: { connected: false, error: errorMessage },
         error: errorMessage
       };
     } finally {
@@ -187,7 +196,7 @@ export const useWalcuCRM = () => {
     }
   }, []);
 
-  const getStats = useCallback(async (): Promise<WalcuCRMResponse<any>> => {
+  const getStats = useCallback(async (): Promise<WalcuCRMResponse<{ clientsCreated: number; leadsCreated: number; lastSync: string; status: string }>> => {
     setLoading(true);
     setError(null);
 
@@ -205,7 +214,7 @@ export const useWalcuCRM = () => {
       setError(errorMessage);
       return {
         success: false,
-        data: null,
+        data: { clientsCreated: 0, leadsCreated: 0, lastSync: '', status: 'error' },
         error: errorMessage
       };
     } finally {

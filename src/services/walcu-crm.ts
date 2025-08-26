@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 
 export class WalcuCRMService {
   protected api: AxiosInstance;
@@ -51,11 +51,11 @@ export class WalcuCRMService {
     );
   }
 
-  protected handleError(operation: string, error: any): never {
-    const errorMessage = `Walcu CRM Error - ${operation}: ${error.response?.data?.message || error.message}`;
+  protected handleError(operation: string, error: AxiosError | Error): never {
+    const errorMessage = `Walcu CRM Error - ${operation}: ${error instanceof AxiosError ? error.response?.data?.message || error.message : error.message}`;
     console.error(errorMessage, {
-      status: error.response?.status,
-      data: error.response?.data,
+      status: error instanceof AxiosError ? error.response?.status : undefined,
+      data: error instanceof AxiosError ? error.response?.data : undefined,
       operation,
       timestamp: new Date().toISOString()
     });

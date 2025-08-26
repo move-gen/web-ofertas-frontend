@@ -2,7 +2,6 @@ import { WalcuCRMService } from './walcu-crm';
 import { 
   WalcuClient, 
   WalcuClientData, 
-  WalcuContact, 
   WalcuAddress,
   WalcuBusinessDetails 
 } from '@/types/walcu-crm';
@@ -22,7 +21,7 @@ export class WalcuClientService extends WalcuCRMService {
       
       return response.data;
     } catch (error) {
-      this.handleError('createClient', error);
+      this.handleError('createClient', error as Error);
     }
   }
 
@@ -95,7 +94,7 @@ export class WalcuClientService extends WalcuCRMService {
       console.log('Cliente actualizado exitosamente en Walcu CRM:', clientId);
       return response.data;
     } catch (error) {
-      this.handleError('updateClient', error);
+      this.handleError('updateClient', error as Error);
     }
   }
 
@@ -107,7 +106,7 @@ export class WalcuClientService extends WalcuCRMService {
       const response = await this.api.get(`/clients/${clientId}`);
       return response.data;
     } catch (error) {
-      this.handleError('getClientById', error);
+      this.handleError('getClientById', error as Error);
     }
   }
 
@@ -124,7 +123,7 @@ export class WalcuClientService extends WalcuCRMService {
   }): Promise<WalcuClient> {
     try {
       // Primero intentar encontrar por email
-      let existingClient = await this.findClientByEmail(contactInfo.email);
+      const existingClient = await this.findClientByEmail(contactInfo.email);
       
       if (existingClient) {
         console.log('Cliente existente encontrado, actualizando información...');
@@ -170,7 +169,7 @@ export class WalcuClientService extends WalcuCRMService {
 
       return await this.createClient(newClientData);
     } catch (error) {
-      this.handleError('createOrFindClient', error);
+      this.handleError('createOrFindClient', error as Error);
     }
   }
 
