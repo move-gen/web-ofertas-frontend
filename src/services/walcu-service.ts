@@ -102,10 +102,14 @@ export class WalcuService {
     success: boolean;
     error?: string;
   }> {
+    console.log('🚗 WalcuService: Iniciando processCarInterestForm...');
+    console.log('📋 WalcuService: Datos recibidos:', data);
+    
     try {
-      console.log('Procesando formulario de interés en vehículo para Walcu CRM...');
+      console.log('🔄 WalcuService: Procesando formulario de interés en vehículo para Walcu CRM...');
 
       // 1. Crear o encontrar cliente
+      console.log('👤 WalcuService: Paso 1 - Creando/buscando cliente...');
       const client = await this.clientService.createOrFindClient({
         firstName: data.firstName,
         lastName: data.lastName,
@@ -114,8 +118,10 @@ export class WalcuService {
         address: data.address,
         businessDetails: data.businessDetails
       });
+      console.log('✅ WalcuService: Cliente procesado exitosamente:', client._id);
 
       // 2. Crear lead de interés en vehículo
+      console.log('🎯 WalcuService: Paso 2 - Creando lead de interés en vehículo...');
       const lead = await this.leadService.createCarInterestLead({
         clientId: client._id,
         car: data.car,
@@ -125,8 +131,9 @@ export class WalcuService {
         campaign: data.campaign || 'car_interest',
         finance: data.finance
       });
+      console.log('✅ WalcuService: Lead creado exitosamente:', lead._id);
 
-      console.log('Formulario de interés en vehículo procesado exitosamente en Walcu CRM');
+      console.log('🎉 WalcuService: Formulario de interés en vehículo procesado exitosamente en Walcu CRM');
       
       return {
         client,
@@ -134,7 +141,10 @@ export class WalcuService {
         success: true
       };
     } catch (error) {
-      console.error('Error procesando formulario de interés en vehículo en Walcu CRM:', error);
+      console.error('💥 WalcuService: Error procesando formulario de interés en vehículo en Walcu CRM:', error);
+      console.error('🔍 WalcuService: Tipo de error:', typeof error);
+      console.error('📝 WalcuService: Mensaje de error:', error instanceof Error ? error.message : 'Error desconocido');
+      console.error('📚 WalcuService: Stack trace:', error instanceof Error ? error.stack : 'No disponible');
       
       return {
         client: {} as WalcuClient,
