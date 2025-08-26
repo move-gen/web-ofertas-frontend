@@ -16,7 +16,7 @@ export class WalcuClientService extends WalcuCRMService {
       // Preparar los datos del cliente
       const preparedData = this.prepareClientData(clientData);
       
-      const response = await this.api.post('/clients', preparedData);
+      const response = await this.api.post(`/clients?app_id=${this.appId}`, clientData);
       console.log('Cliente creado exitosamente en Walcu CRM:', response.data._id);
       
       return response.data;
@@ -30,12 +30,7 @@ export class WalcuClientService extends WalcuCRMService {
    */
   async findClientByEmail(email: string): Promise<WalcuClient | null> {
     try {
-      const response = await this.api.get('/clients', {
-        params: {
-          q: JSON.stringify({ "computed.client_emails": email }),
-          limit: 1
-        }
-      });
+      const response = await this.api.get(`/clients?app_id=${this.appId}&email=${email}`);
 
       if (response.data && response.data.length > 0) {
         console.log('Cliente encontrado en Walcu CRM:', response.data[0]._id);
@@ -145,6 +140,8 @@ export class WalcuClientService extends WalcuCRMService {
       const newClientData: WalcuClientData = {
         dealer_id: this.dealerId,
         created_by: 'system',
+        app_id: this.appId, // Incluir appId en el body
+        address: contactInfo.address,
         contacts: [{
           name: {
             first_name: contactInfo.firstName,
@@ -163,7 +160,6 @@ export class WalcuClientService extends WalcuCRMService {
           phones: contactInfo.phone ? [contactInfo.phone] : [],
           emails: [contactInfo.email]
         },
-        address: contactInfo.address,
         business_details: contactInfo.businessDetails
       };
 

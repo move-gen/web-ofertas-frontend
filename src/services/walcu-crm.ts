@@ -52,16 +52,14 @@ export class WalcuCRMService {
       baseURL,
       headers: {
         'Content-Type': 'application/json',
-        'X-App-ID': this.appId,
-        'X-Secret-Key': this.secretKey,
+        'X-App-Key': this.appId,
       },
       timeout: 10000, // 10 segundos de timeout
     });
 
     console.log('🔧 WalcuCRMService: Instancia de Axios creada con headers:', {
       'Content-Type': 'application/json',
-      'X-App-ID': `${this.appId.substring(0, 8)}...`,
-      'X-Secret-Key': `${this.secretKey.substring(0, 8)}...`
+      'X-App-Key': `${this.appId.substring(0, 8)}...`
     });
 
     // Request interceptor para logging
@@ -73,18 +71,16 @@ export class WalcuCRMService {
           fullUrl: `${config.baseURL}${config.url}`,
           headers: {
             'Content-Type': config.headers['Content-Type'],
-            'X-App-ID': config.headers['X-App-ID'] ? `${config.headers['X-App-ID'].toString().substring(0, 8)}...` : 'NO ENVIADO',
-            'X-Secret-Key': config.headers['X-Secret-Key'] ? `${config.headers['X-Secret-Key'].toString().substring(0, 8)}...` : 'NO ENVIADO'
+            'Authorization': config.headers['Authorization'] ? `${config.headers['Authorization'].toString().substring(0, 8)}...` : 'NO ENVIADO'
           },
           data: config.data,
           timestamp: new Date().toISOString()
         });
         
         // Verificar que los headers de autenticación estén presentes
-        if (!config.headers['X-App-ID'] || !config.headers['X-Secret-Key']) {
+        if (!config.headers['X-App-Key']) {
           console.error('🚨 WalcuCRMService: HEADERS DE AUTENTICACIÓN FALTANTES:', {
-            'X-App-ID': !!config.headers['X-App-ID'],
-            'X-Secret-Key': !!config.headers['X-Secret-Key'],
+            'X-App-Key': !!config.headers['X-App-Key'],
             headersCompletos: config.headers
           });
         } else {

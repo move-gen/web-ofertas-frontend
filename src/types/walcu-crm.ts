@@ -65,6 +65,7 @@ export interface WalcuBusinessDetails {
 
 // Tipos para clientes
 export interface WalcuClientData extends WalcuBaseEntity {
+  app_id?: string; // ID de la aplicación para autenticación
   address?: WalcuAddress;
   contacts: WalcuContact[];
   primary_contact: WalcuContact;
