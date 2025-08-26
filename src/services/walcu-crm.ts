@@ -8,17 +8,48 @@ export class WalcuCRMService {
   protected secretKey: string;
 
   constructor() {
+    console.log('🔧 WalcuCRMService: Constructor iniciado');
+    console.log('📋 WalcuCRMService: Verificando variables de entorno...');
+    
     this.dealerId = process.env.WALCU_DEALER_ID!;
     this.baseUrl = process.env.WALCU_BASE_URL!;
     this.appId = process.env.WALCU_APP_ID!;
     this.secretKey = process.env.WALCU_SECRET_KEY!;
 
+    console.log('🔑 WalcuCRMService: Variables de entorno cargadas:', {
+      dealerId: this.dealerId ? `${this.dealerId.substring(0, 8)}...` : 'NO DEFINIDA',
+      baseUrl: this.baseUrl || 'NO DEFINIDA',
+      appId: this.appId ? `${this.appId.substring(0, 8)}...` : 'NO DEFINIDA',
+      secretKey: this.secretKey ? `${this.secretKey.substring(0, 8)}...` : 'NO DEFINIDA'
+    });
+
     if (!this.dealerId || !this.baseUrl || !this.appId || !this.secretKey) {
+      console.error('❌ WalcuCRMService: Variables de entorno faltantes:', {
+        dealerId: !!this.dealerId,
+        baseUrl: !!this.baseUrl,
+        appId: !!this.appId,
+        secretKey: !!this.secretKey
+      });
       throw new Error('Missing required Walcu CRM environment variables');
     }
 
+    console.log('✅ WalcuCRMService: Todas las variables de entorno están configuradas');
+    
+    // Construir la URL base correctamente
+    const baseURL = this.baseUrl.includes('/dealers') 
+      ? `${this.baseUrl}/${this.dealerId}`
+      : `${this.baseUrl}/dealers/${this.dealerId}`;
+    
+    console.log('🌐 WalcuCRMService: Construcción de URL base:', {
+      baseUrl: this.baseUrl,
+      dealerId: this.dealerId,
+      includesDealers: this.baseUrl.includes('/dealers'),
+      finalBaseURL: baseURL
+    });
+    console.log('🌐 WalcuCRMService: URL base configurada:', baseURL);
+
     this.api = axios.create({
-      baseURL: `${this.baseUrl}/dealers/${this.dealerId}`,
+      baseURL,
       headers: {
         'Content-Type': 'application/json',
         'X-App-ID': this.appId,
@@ -27,16 +58,39 @@ export class WalcuCRMService {
       timeout: 10000, // 10 segundos de timeout
     });
 
+    console.log('🔧 WalcuCRMService: Instancia de Axios creada con headers:', {
+      'Content-Type': 'application/json',
+      'X-App-ID': `${this.appId.substring(0, 8)}...`,
+      'X-Secret-Key': `${this.secretKey.substring(0, 8)}...`
+    });
+
     // Request interceptor para logging
     this.api.interceptors.request.use(
       (config) => {
         console.log('🌐 WalcuCRMService: Request enviado:', {
           method: config.method?.toUpperCase(),
           url: config.url,
-          headers: config.headers,
+          fullUrl: `${config.baseURL}${config.url}`,
+          headers: {
+            'Content-Type': config.headers['Content-Type'],
+            'X-App-ID': config.headers['X-App-ID'] ? `${config.headers['X-App-ID'].toString().substring(0, 8)}...` : 'NO ENVIADO',
+            'X-Secret-Key': config.headers['X-Secret-Key'] ? `${config.headers['X-Secret-Key'].toString().substring(0, 8)}...` : 'NO ENVIADO'
+          },
           data: config.data,
           timestamp: new Date().toISOString()
         });
+        
+        // Verificar que los headers de autenticación estén presentes
+        if (!config.headers['X-App-ID'] || !config.headers['X-Secret-Key']) {
+          console.error('🚨 WalcuCRMService: HEADERS DE AUTENTICACIÓN FALTANTES:', {
+            'X-App-ID': !!config.headers['X-App-ID'],
+            'X-Secret-Key': !!config.headers['X-Secret-Key'],
+            headersCompletos: config.headers
+          });
+        } else {
+          console.log('✅ WalcuCRMService: Headers de autenticación verificados correctamente');
+        }
+        
         return config;
       },
       (error) => {

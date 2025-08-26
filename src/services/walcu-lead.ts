@@ -16,14 +16,24 @@ export class WalcuLeadService extends WalcuCRMService {
    */
   async createSaleLead(leadData: WalcuSaleLeadData): Promise<WalcuSaleLead> {
     try {
+      console.log('🚀 WalcuLeadService: Iniciando creación de lead de venta...');
+      console.log('📋 WalcuLeadService: Datos recibidos:', leadData);
+      
       // Preparar los datos del lead
       const preparedData = this.prepareSaleLeadData(leadData);
       
+      console.log('📤 WalcuLeadService: Enviando datos a Walcu CRM:', {
+        endpoint: '/saleleads',
+        data: preparedData,
+        headers: this.api.defaults.headers
+      });
+      
       const response = await this.api.post('/saleleads', preparedData);
-      console.log('Lead de venta creado exitosamente en Walcu CRM:', response.data._id);
+      console.log('✅ WalcuLeadService: Lead de venta creado exitosamente en Walcu CRM:', response.data._id);
       
       return response.data;
     } catch (error) {
+      console.error('💥 WalcuLeadService: Error creando lead de venta:', error);
       this.handleError('createSaleLead', error as Error);
     }
   }
@@ -151,6 +161,9 @@ export class WalcuLeadService extends WalcuCRMService {
     finance?: WalcuFinance;
   }): Promise<WalcuSaleLead> {
     try {
+      console.log('🚀 WalcuLeadService: Creando lead de interés en vehículo...');
+      console.log('📋 WalcuLeadService: Datos recibidos:', data);
+      
       const carListItem: WalcuCarListItem = {
         car: data.car,
         car_id: data.car._id,
@@ -160,7 +173,7 @@ export class WalcuLeadService extends WalcuCRMService {
       const leadData: WalcuSaleLeadData = {
         dealer_id: this.dealerId,
         created_by: 'system',
-        client_id: data.clientId,
+        client_id: data.clientId, // REQUERIDO por la API de Walcu CRM
         inquiry: data.inquiry,
         type: 'car_interest',
         location: 'website',
@@ -173,8 +186,10 @@ export class WalcuLeadService extends WalcuCRMService {
         finance: data.finance
       };
 
+      console.log('📤 WalcuLeadService: Datos del lead preparados:', leadData);
       return await this.createSaleLead(leadData);
     } catch (error) {
+      console.error('💥 WalcuLeadService: Error creando lead de interés:', error);
       this.handleError('createCarInterestLead', error as Error);
     }
   }
@@ -248,14 +263,28 @@ export class WalcuLeadService extends WalcuCRMService {
    * Prepara los datos del lead de venta para envío a Walcu CRM
    */
   private prepareSaleLeadData(leadData: WalcuSaleLeadData): WalcuSaleLeadData {
+    console.log('🔧 WalcuLeadService: Preparando datos del lead de venta...');
+    console.log('📋 WalcuLeadService: Datos originales:', leadData);
+    
     const preparedData = {
       ...leadData,
       dealer_id: this.dealerId,
       created_by: leadData.created_by || 'system',
+      // Asegurar que se envíen los campos requeridos por la API
+      type: leadData.type || 'car_interest',
+      location: leadData.location || 'website',
+      inquiry: leadData.inquiry || 'Interés en vehículo',
       origin: {
         source: leadData.origin.source || 'website',
         medium: leadData.origin.medium || 'form',
         campaign: leadData.origin.campaign || 'general'
+      },
+      // Campos opcionales pero recomendados
+      status: {
+        _id: `temp_${Date.now()}`,
+        status: 'new',
+        assigned_at: new Date().toISOString().split('T')[0],
+        user: 'system'
       },
       car_list: leadData.car_list.map(carItem => ({
         ...carItem,
@@ -267,6 +296,7 @@ export class WalcuLeadService extends WalcuCRMService {
       }))
     };
 
+    console.log('✅ WalcuLeadService: Datos preparados:', preparedData);
     return preparedData;
   }
 

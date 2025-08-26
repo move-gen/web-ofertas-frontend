@@ -187,7 +187,7 @@ export interface WalcuLeadBase extends WalcuBaseEntity {
   imported_from?: string;
   assigned?: WalcuAssignment[];
   current_assigned?: WalcuAssignment;
-  client_id: string;
+  client_id: string; // Requerido por la API de Walcu CRM
   investments?: WalcuInvestment[];
   cost?: number;
   foreign_ids?: string[];

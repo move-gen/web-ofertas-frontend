@@ -108,7 +108,7 @@ export class WalcuService {
     try {
       console.log('🔄 WalcuService: Procesando formulario de interés en vehículo para Walcu CRM...');
 
-      // 1. Crear o encontrar cliente
+      // 1. Crear o encontrar cliente (REQUERIDO por la API de Walcu CRM)
       console.log('👤 WalcuService: Paso 1 - Creando/buscando cliente...');
       const client = await this.clientService.createOrFindClient({
         firstName: data.firstName,
