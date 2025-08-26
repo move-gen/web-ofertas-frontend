@@ -3,7 +3,7 @@
 import { ChevronUp, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 import Image from 'next/image';
-
+import CookieManager from './CookieManager';
 
 const Footer = () => {
   return (
@@ -55,7 +55,7 @@ const Footer = () => {
             <div>
               <h5 className="text-purple-400 font-bold text-xs mb-3 tracking-wider">SOPORTE</h5>
               <ul className="space-y-2">
-                <li><Link href="#" className="hover:text-white">Contacto</Link></li>
+                <li><Link href="/contact" className="hover:text-white">Contacto</Link></li>
                 <li><Link href="#" className="hover:text-white">Preguntas Frecuentes</Link></li>
                 <li><Link href="#" className="hover:text-white">Financiación</Link></li>
                 <li><Link href="#" className="hover:text-white">Garantía</Link></li>
@@ -72,16 +72,15 @@ const Footer = () => {
             </div>
           </div>
 
-
-
         </div>
 
         <div className="mt-12 border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center text-xs">
           <p className="text-gray-500 mb-4 sm:mb-0">&copy; {new Date().getFullYear()} Miguel Leon Automoción. Todos los derechos reservados.</p>
-          <div className="flex space-x-6 text-gray-400">
-            <Link href="#" className="hover:text-white">Política de Privacidad</Link>
-            <Link href="#" className="hover:text-white">Términos de Uso</Link>
-            <Link href="#" className="hover:text-white">Política de Cookies</Link>
+          <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-gray-400">
+            <Link href="/politica-privacidad" className="hover:text-white">Política de Privacidad</Link>
+            <Link href="/terminos-uso" className="hover:text-white">Términos de Uso</Link>
+            <Link href="/aviso-legal" className="hover:text-white">Aviso Legal</Link>
+            <CookieManager />
           </div>
         </div>
 

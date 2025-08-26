@@ -4,6 +4,7 @@ import "./globals.css";
 import ConditionalFooter from "@/components/ConditionalFooter";
 import TransitionProvider from "@/components/animations/TransitionProvider";
 import ConditionalHeader from "@/components/ConditionalHeader";
+import CookieConsent from "@/components/CookieConsent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default function RootLayout({
           <ConditionalHeader />
           <main className="flex-grow">{children}</main>
           <ConditionalFooter />
+          <CookieConsent />
         </TransitionProvider>
       </body>
     </html>
