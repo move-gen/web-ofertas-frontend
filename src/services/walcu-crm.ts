@@ -52,14 +52,14 @@ export class WalcuCRMService {
       baseURL,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.secretKey}`,
+        'X-API-Key': this.secretKey,
       },
       timeout: 10000, // 10 segundos de timeout
     });
 
     console.log('🔧 WalcuCRMService: Instancia de Axios creada con headers:', {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.secretKey.substring(0, 8)}...`
+      'X-API-Key': `${this.secretKey.substring(0, 8)}...`
     });
 
     // Request interceptor para logging
@@ -71,16 +71,16 @@ export class WalcuCRMService {
           fullUrl: `${config.baseURL}${config.url}`,
           headers: {
             'Content-Type': config.headers['Content-Type'],
-            'Authorization': config.headers['Authorization'] ? `${config.headers['Authorization'].toString().substring(0, 8)}...` : 'NO ENVIADO'
+            'X-API-Key': config.headers['X-API-Key'] ? `${config.headers['X-API-Key'].toString().substring(0, 8)}...` : 'NO ENVIADO'
           },
           data: config.data,
           timestamp: new Date().toISOString()
         });
         
         // Verificar que los headers de autenticación estén presentes
-        if (!config.headers['Authorization']) {
+        if (!config.headers['X-API-Key']) {
           console.error('🚨 WalcuCRMService: HEADERS DE AUTENTICACIÓN FALTANTES:', {
-            'Authorization': !!config.headers['Authorization'],
+            'X-API-Key': !!config.headers['X-API-Key'],
             headersCompletos: config.headers
           });
         } else {
