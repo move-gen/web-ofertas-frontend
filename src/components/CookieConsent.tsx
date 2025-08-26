@@ -9,14 +9,14 @@ import { useCookieConsent } from '@/hooks/useCookieConsent';
 export default function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const { preferences, hasConsented, updatePreferences, acceptAll, rejectAll } = useCookieConsent();
+  const { preferences, hasConsented, isInitialized, updatePreferences, acceptAll, rejectAll } = useCookieConsent();
 
   useEffect(() => {
-    // Solo mostrar el banner si no se ha dado consentimiento
-    if (!hasConsented) {
+    // Solo mostrar el banner si se ha inicializado y no se ha dado consentimiento
+    if (isInitialized && !hasConsented) {
       setShowBanner(true);
     }
-  }, [hasConsented]);
+  }, [hasConsented, isInitialized]);
 
   const handleAcceptAll = () => {
     acceptAll();
@@ -41,6 +41,10 @@ export default function CookieConsent() {
     updatePreferences({ [key]: value });
   };
 
+  // No mostrar nada hasta que se haya inicializado
+  if (!isInitialized) return null;
+  
+  // No mostrar nada si se ha dado consentimiento
   if (!showBanner && !showSettings) return null;
 
   return (

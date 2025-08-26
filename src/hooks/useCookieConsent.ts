@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 export interface CookiePreferences {
   necessary: boolean;
@@ -16,8 +16,12 @@ export function useCookieConsent() {
   });
 
   const [hasConsented, setHasConsented] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
+    // Solo cargar una vez al inicializar
+    if (isInitialized) return;
+
     // Cargar preferencias guardadas del localStorage
     const savedPreferences = localStorage.getItem('cookieConsent');
     if (savedPreferences) {
@@ -29,16 +33,17 @@ export function useCookieConsent() {
         console.error('Error parsing cookie preferences:', error);
       }
     }
-  }, []);
+    setIsInitialized(true);
+  }, [isInitialized]);
 
-  const updatePreferences = (newPreferences: Partial<CookiePreferences>) => {
+  const updatePreferences = useCallback((newPreferences: Partial<CookiePreferences>) => {
     const updated = { ...preferences, ...newPreferences };
     setPreferences(updated);
     localStorage.setItem('cookieConsent', JSON.stringify(updated));
     setHasConsented(true);
-  };
+  }, [preferences]);
 
-  const acceptAll = () => {
+  const acceptAll = useCallback(() => {
     const allAccepted = {
       necessary: true,
       analytics: true,
@@ -48,9 +53,9 @@ export function useCookieConsent() {
     setPreferences(allAccepted);
     localStorage.setItem('cookieConsent', JSON.stringify(allAccepted));
     setHasConsented(true);
-  };
+  }, []);
 
-  const rejectAll = () => {
+  const rejectAll = useCallback(() => {
     const onlyNecessary = {
       necessary: true,
       analytics: false,
@@ -60,9 +65,9 @@ export function useCookieConsent() {
     setPreferences(onlyNecessary);
     localStorage.setItem('cookieConsent', JSON.stringify(onlyNecessary));
     setHasConsented(true);
-  };
+  }, []);
 
-  const clearConsent = () => {
+  const clearConsent = useCallback(() => {
     localStorage.removeItem('cookieConsent');
     setPreferences({
       necessary: true,
@@ -71,16 +76,17 @@ export function useCookieConsent() {
       preferences: false,
     });
     setHasConsented(false);
-  };
+  }, []);
 
   // Verificar si se pueden usar cookies específicas
-  const canUseAnalytics = () => preferences.analytics && hasConsented;
-  const canUseMarketing = () => preferences.marketing && hasConsented;
-  const canUsePreferences = () => preferences.preferences && hasConsented;
+  const canUseAnalytics = useMemo(() => preferences.analytics && hasConsented, [preferences.analytics, hasConsented]);
+  const canUseMarketing = useMemo(() => preferences.marketing && hasConsented, [preferences.marketing, hasConsented]);
+  const canUsePreferences = useMemo(() => preferences.preferences && hasConsented, [preferences.preferences, hasConsented]);
 
   return {
     preferences,
     hasConsented,
+    isInitialized,
     updatePreferences,
     acceptAll,
     rejectAll,
