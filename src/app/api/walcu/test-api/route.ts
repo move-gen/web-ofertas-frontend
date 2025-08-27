@@ -104,20 +104,21 @@ export async function POST(request: NextRequest) {
           const clientId = clientResponse.data._id;
           console.log("👤 Cliente de prueba creado:", clientId);
           
-                     // Intentar crear lead con vehicle_id del coche existente
+                                // Intentar crear lead con vehicle_id del coche existente
            const leadData = {
              dealer_id: '60b73cded248d50098adc8cc', // Dealer ID hardcodeado para el test
-            client_id: clientId,
-            vehicle_id: carWithLicense._id,
-            inquiry: "Test de matching real - Lead creado con coche existente",
-            type: "car_interest",
-            location: "api_test",
-            origin: {
-              source: "api_test",
-              medium: "matching_test",
-              campaign: "real_matching_verification"
-            }
-          };
+             client_id: clientId,
+             vehicle_id: carWithLicense._id,
+             inquiry: "Test de matching real - Lead creado con coche existente",
+             type: "car_interest",
+             location: "api_test",
+             status: "new" as any, // Agregar estado para evitar error "no available states found"
+             origin: {
+               source: "api_test",
+               medium: "matching_test",
+               campaign: "real_matching_verification"
+             }
+           };
           
           const leadResponse = await walcuService.api.post("/aftersaleleads", leadData);
           console.log("✅ Lead creado exitosamente con vehicle_id existente:", leadResponse.data._id);
