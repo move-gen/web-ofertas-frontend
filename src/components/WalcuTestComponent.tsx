@@ -73,45 +73,7 @@ export default function WalcuTestComponent() {
     }
   };
 
-  const handleTestMatching = async () => {
-    setLoadingCars(true);
-    try {
-      // Probar matching con una matrícula de ejemplo
-      const testLicensePlate = '7383MGX'; // Matrícula del BMW X1 que vimos
-      const response = await fetch(`/api/walcu/cars?search=${testLicensePlate}`);
-      const result = await response.json();
-      
-      if (result.success && result.cars && result.cars.length > 0) {
-        const matchedCar = result.cars.find((car: WalcuCar) => 
-          car.license_plate?.toLowerCase() === testLicensePlate.toLowerCase()
-        );
-        
-        if (matchedCar) {
-          setCarsResults({
-            success: true,
-            cars: [matchedCar],
-            total: 1,
-            message: `✅ Coche encontrado por matrícula: ${matchedCar.make} ${matchedCar.model} (${matchedCar.license_plate})`
-          });
-        } else {
-          setCarsResults({
-            success: false,
-            error: `No se encontró coincidencia exacta para la matrícula ${testLicensePlate}`
-          });
-        }
-      } else {
-        setCarsResults({
-          success: false,
-          error: 'Error en la búsqueda de coches'
-        });
-      }
-    } catch (err) {
-      console.error('Error probando matching:', err);
-      setCarsResults({ success: false, error: 'Error de conexión' } as CarsResponse);
-    } finally {
-      setLoadingCars(false);
-    }
-  };
+
 
   const handleTestMatchingReal = async () => {
     setLoadingCars(true);

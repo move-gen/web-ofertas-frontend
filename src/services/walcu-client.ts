@@ -13,9 +13,6 @@ export class WalcuClientService extends WalcuCRMService {
    */
   async createClient(clientData: WalcuClientData): Promise<WalcuClient> {
     try {
-      // Preparar los datos del cliente
-      const preparedData = this.prepareClientData(clientData);
-      
       const response = await this.api.post(`/clients?app_id=${this.appId}`, clientData);
       console.log('Cliente creado exitosamente en Walcu CRM:', response.data._id);
       

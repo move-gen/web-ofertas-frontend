@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 
 export const MaskContainer = ({
@@ -17,26 +17,7 @@ export const MaskContainer = ({
   className?: string;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({
-    x: 0,
-    y: 0,
-  });
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const updateMousePosition = (e: MouseEvent) => {
-    const rect = containerRef.current!.getBoundingClientRect();
-    setMousePosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
-
-  useEffect(() => {
-    const currentRef = containerRef.current;
-    if (currentRef) {
-        currentRef.addEventListener("mousemove", updateMousePosition);
-        return () => {
-            currentRef.removeEventListener("mousemove", updateMousePosition);
-        };
-    }
-  }, []);
 
   const maskSize = isHovered ? revealSize : size;
 

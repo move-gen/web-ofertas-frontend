@@ -1,10 +1,8 @@
 import { useState, useCallback } from 'react';
 import { 
   WalcuSaleLead, 
-  WalcuSaleLeadData, 
   WalcuCar,
   WalcuClient, 
-  WalcuClientData, 
   WalcuAddress,
   WalcuBusinessDetails,
   WalcuFinance,
@@ -31,20 +29,7 @@ interface ContactFormData {
   campaign?: string;
 }
 
-interface CarInterestFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  message: string;
-  car: WalcuCar;
-  address?: Partial<WalcuAddress>;
-  businessDetails?: Partial<WalcuBusinessDetails>;
-  source?: string;
-  medium?: string;
-  campaign?: string;
-  finance?: WalcuFinance;
-}
+
 
 interface AppraisalFormData {
   firstName: string;

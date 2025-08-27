@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { WalcuCRMService } from "@/services/walcu-crm";
+import { WalcuCar } from "@/types/walcu-crm";
 
 export async function POST(request: NextRequest) {
   try {
     console.log("🧪 API Route: POST /api/walcu/test-api iniciado");
     
-    const { testType, licensePlate, carData } = await request.json();
+         const { testType, licensePlate } = await request.json();
     const walcuService = new WalcuCRMService();
     
     console.log("🔍 Tipo de test:", testType);
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
          
          console.log("📊 Resultado de búsqueda:", {
            total: searchResponse1.data?.length || 0,
-           cars: searchResponse1.data?.map((car: any) => ({
+           cars: searchResponse1.data?.map((car: WalcuCar) => ({
              _id: car._id,
              make: car.make,
              model: car.model,
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
          }
          
          // Tomar el primer coche que tenga matrícula
-         const carWithLicense = searchResponse2.data.find((car: any) => car.license_plate);
+         const carWithLicense = searchResponse2.data.find((car: WalcuCar) => car.license_plate);
         
         if (!carWithLicense) {
           return NextResponse.json({
