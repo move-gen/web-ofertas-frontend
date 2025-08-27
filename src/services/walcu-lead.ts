@@ -334,6 +334,7 @@ export class WalcuLeadService extends WalcuCRMService {
       // Payload mínimo basado en la documentación de la API
       const minimalPayload = {
         dealer_id: this.dealerId,
+        client_id: this.dealerId, // REQUERIDO por la API
         inquiry: data.message,
         type: 'car_interest',
         location: 'website',
@@ -342,7 +343,7 @@ export class WalcuLeadService extends WalcuCRMService {
           medium: data.medium || 'car_page',
           campaign: data.campaign || 'car_interest'
         }
-        // Solo campos absolutamente requeridos, sin car_list ni client_id
+        // Solo campos absolutamente requeridos, sin car_list
       };
 
       console.log('📤 WalcuLeadService: Payload mínimo preparado:', minimalPayload);
