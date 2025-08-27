@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useWalcuCRM } from '@/hooks/useWalcuCRM';
+import { WalcuCar } from '@/types/walcu-crm';
 
 interface TestResult {
   success: boolean;
@@ -10,9 +11,17 @@ interface TestResult {
   error?: string;
 }
 
+interface CarsResponse {
+  success: boolean;
+  cars?: WalcuCar[];
+  total?: number;
+  message?: string;
+  error?: string;
+}
+
 export default function WalcuTestComponent() {
   const [testResults, setTestResults] = useState<TestResult | null>(null);
-  const [carsResults, setCarsResults] = useState<any>(null);
+  const [carsResults, setCarsResults] = useState<CarsResponse | null>(null);
   const [loadingCars, setLoadingCars] = useState(false);
   const { 
     loading, 
@@ -58,7 +67,7 @@ export default function WalcuTestComponent() {
       console.log('🚗 Resultado de coches:', result);
     } catch (err) {
       console.error('Error obteniendo coches:', err);
-      setCarsResults({ success: false, error: 'Error de conexión' });
+      setCarsResults({ success: false, error: 'Error de conexión' } as CarsResponse);
     } finally {
       setLoadingCars(false);
     }
