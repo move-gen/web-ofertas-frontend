@@ -11,51 +11,51 @@ export async function POST(request: NextRequest) {
     console.log("🔍 Tipo de test:", testType);
     
     switch (testType) {
-      case "search_by_license":
-        // Test 1: Buscar coche por matrícula
-        console.log("🔍 Test 1: Buscando coche por matrícula:", licensePlate);
-        const searchResponse = await walcuService.api.get("/cars", {
-          params: { search: licensePlate, limit: 10 }
-        });
+             case "search_by_license":
+         // Test 1: Buscar coche por matrícula
+         console.log("🔍 Test 1: Buscando coche por matrícula:", licensePlate);
+         const searchResponse1 = await walcuService.api.get("/cars", {
+           params: { search: licensePlate, limit: 10 }
+         });
+         
+         console.log("📊 Resultado de búsqueda:", {
+           total: searchResponse1.data?.length || 0,
+           cars: searchResponse1.data?.map((car: any) => ({
+             _id: car._id,
+             make: car.make,
+             model: car.model,
+             license_plate: car.license_plate
+           }))
+         });
+         
+         return NextResponse.json({
+           success: true,
+           testType: "search_by_license",
+           result: {
+             total: searchResponse1.data?.length || 0,
+             cars: searchResponse1.data || []
+           }
+         });
+         
+       case "test_matching_real":
+         // Test 2: Probar matching real con coches existentes
+         console.log("🔍 Test 2: Probando matching real con coches existentes");
+         
+         // Buscar coches por matrícula real
+         const searchResponse2 = await walcuService.api.get("/cars", {
+           params: { limit: 20 }
+         });
         
-        console.log("📊 Resultado de búsqueda:", {
-          total: searchResponse.data?.length || 0,
-          cars: searchResponse.data?.map((car: any) => ({
-            _id: car._id,
-            make: car.make,
-            model: car.model,
-            license_plate: car.license_plate
-          }))
-        });
-        
-        return NextResponse.json({
-          success: true,
-          testType: "search_by_license",
-          result: {
-            total: searchResponse.data?.length || 0,
-            cars: searchResponse.data || []
-          }
-        });
-        
-      case "test_matching_real":
-        // Test 2: Probar matching real con coches existentes
-        console.log("🔍 Test 2: Probando matching real con coches existentes");
-        
-        // Buscar coches por matrícula real
-        const searchResponse = await walcuService.api.get("/cars", {
-          params: { limit: 20 }
-        });
-        
-        if (!searchResponse.data || searchResponse.data.length === 0) {
-          return NextResponse.json({
-            success: false,
-            testType: "test_matching_real",
-            error: "No se encontraron coches en Walcu CRM"
-          });
-        }
-        
-        // Tomar el primer coche que tenga matrícula
-        const carWithLicense = searchResponse.data.find((car: any) => car.license_plate);
+                 if (!searchResponse2.data || searchResponse2.data.length === 0) {
+           return NextResponse.json({
+             success: false,
+             testType: "test_matching_real",
+             error: "No se encontraron coches en Walcu CRM"
+           });
+         }
+         
+         // Tomar el primer coche que tenga matrícula
+         const carWithLicense = searchResponse2.data.find((car: any) => car.license_plate);
         
         if (!carWithLicense) {
           return NextResponse.json({
