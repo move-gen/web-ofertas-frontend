@@ -173,15 +173,15 @@ export class WalcuLeadService extends WalcuCRMService {
       
       const carListItem: WalcuCarListItem = {
         car: data.car,
-        car_id: data.car._id,
+        car_id: data.car._id, // Mantener el ID original del coche
         quantity: 1
       };
 
       // Crear lead sin client_id - solo con la información del contacto
       const leadData: WalcuSaleLeadData = {
         dealer_id: this.dealerId,
-        created_by: 'system',
-        client_id: 'temp_client', // ID temporal requerido por la API
+        created_by: this.dealerId, // Usar dealer_id en lugar de "system"
+        client_id: this.dealerId, // Usar dealer_id en lugar de "temp_client"
         inquiry: data.message,
         type: 'car_interest',
         location: 'website',
@@ -190,8 +190,8 @@ export class WalcuLeadService extends WalcuCRMService {
           medium: data.medium || 'car_page',
           campaign: data.campaign || 'car_interest'
         },
-        car_list: [carListItem],
-        finance: data.finance
+        car_list: [carListItem]
+        // Remover finance y status para evitar errores de validación
       };
 
       console.log('📤 WalcuLeadService: Datos del lead preparados:', leadData);
@@ -314,6 +314,50 @@ export class WalcuLeadService extends WalcuCRMService {
   }
 
   /**
+   * Crea un lead de interés en vehículo con payload mínimo
+   */
+  async createCarInterestLeadMinimal(data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    message: string;
+    car: WalcuCar;
+    source?: string;
+    medium?: string;
+    campaign?: string;
+  }): Promise<WalcuSaleLead> {
+    try {
+      console.log('🚀 WalcuLeadService: Creando lead de interés en vehículo con payload mínimo...');
+      console.log('📋 WalcuLeadService: Datos recibidos:', data);
+      
+      // Payload mínimo basado en la documentación de la API
+      const minimalPayload = {
+        dealer_id: this.dealerId,
+        inquiry: data.message,
+        type: 'car_interest',
+        location: 'website',
+        origin: {
+          source: data.source || 'website',
+          medium: data.medium || 'car_page',
+          campaign: data.campaign || 'car_interest'
+        }
+        // Solo campos absolutamente requeridos, sin car_list ni client_id
+      };
+
+      console.log('📤 WalcuLeadService: Payload mínimo preparado:', minimalPayload);
+      
+      const response = await this.api.post('/saleleads', minimalPayload);
+      console.log('✅ WalcuLeadService: Lead creado exitosamente:', response.data._id);
+      
+      return response.data;
+    } catch (error) {
+      console.error('💥 WalcuLeadService: Error creando lead de interés mínimo:', error);
+      this.handleError('createCarInterestLeadMinimal', error as Error);
+    }
+  }
+
+  /**
    * Prepara los datos del lead de venta para envío a Walcu CRM
    */
   private prepareSaleLeadData(leadData: WalcuSaleLeadData): WalcuSaleLeadData {
@@ -323,7 +367,7 @@ export class WalcuLeadService extends WalcuCRMService {
     const preparedData = {
       ...leadData,
       dealer_id: this.dealerId,
-      created_by: leadData.created_by || 'system',
+      created_by: leadData.created_by || this.dealerId,
       // Asegurar que se envíen los campos requeridos por la API
       type: leadData.type || 'car_interest',
       location: leadData.location || 'website',
@@ -333,13 +377,7 @@ export class WalcuLeadService extends WalcuCRMService {
         medium: leadData.origin.medium || 'form',
         campaign: leadData.origin.campaign || 'general'
       },
-      // Campos opcionales pero recomendados
-      status: {
-        _id: `temp_${Date.now()}`,
-        status: 'new',
-        assigned_at: new Date().toISOString().split('T')[0],
-        user: 'system'
-      },
+      // Remover campos problemáticos como status
       car_list: leadData.car_list.map(carItem => ({
         ...carItem,
         car: {

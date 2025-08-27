@@ -109,19 +109,16 @@ export class WalcuService {
 
       // Crear lead de interés en vehículo directamente
       console.log('🎯 WalcuService: Creando lead de interés en vehículo...');
-      const lead = await this.leadService.createCarInterestLeadDirect({
+      const lead = await this.leadService.createCarInterestLeadMinimal({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         phone: data.phone,
         message: data.message,
         car: data.car,
-        address: data.address,
-        businessDetails: data.businessDetails,
         source: data.source || 'website',
         medium: data.medium || 'car_page',
-        campaign: data.campaign || 'car_interest',
-        finance: data.finance
+        campaign: data.campaign || 'car_interest'
       });
       console.log('✅ WalcuService: Lead creado exitosamente:', lead._id);
 
