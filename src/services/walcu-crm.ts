@@ -52,14 +52,19 @@ export class WalcuCRMService {
       baseURL,
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': this.secretKey,
+        'Accept': 'application/json',
+      },
+      auth: {
+        username: this.appId,
+        password: this.secretKey
       },
       timeout: 10000, // 10 segundos de timeout
     });
 
     console.log('🔧 WalcuCRMService: Instancia de Axios creada con headers:', {
       'Content-Type': 'application/json',
-      'X-API-Key': `${this.secretKey.substring(0, 8)}...`
+      'Accept': 'application/json',
+      'Basic Auth': `${this.appId.substring(0, 8)}...:${this.secretKey.substring(0, 8)}...`
     });
 
     // Request interceptor para logging
@@ -71,20 +76,21 @@ export class WalcuCRMService {
           fullUrl: `${config.baseURL}${config.url}`,
           headers: {
             'Content-Type': config.headers['Content-Type'],
-            'X-API-Key': config.headers['X-API-Key'] ? `${config.headers['X-API-Key'].toString().substring(0, 8)}...` : 'NO ENVIADO'
+            'Accept': config.headers['Accept'],
+            'Basic Auth': config.auth ? `${config.auth.username?.substring(0, 8)}...:${config.auth.password?.substring(0, 8)}...` : 'NO ENVIADO'
           },
           data: config.data,
           timestamp: new Date().toISOString()
         });
         
         // Verificar que los headers de autenticación estén presentes
-        if (!config.headers['X-API-Key']) {
-          console.error('🚨 WalcuCRMService: HEADERS DE AUTENTICACIÓN FALTANTES:', {
-            'X-API-Key': !!config.headers['X-API-Key'],
+        if (!config.auth) {
+          console.error('🚨 WalcuCRMService: AUTENTICACIÓN BASIC AUTH FALTANTE:', {
+            hasAuth: !!config.auth,
             headersCompletos: config.headers
           });
         } else {
-          console.log('✅ WalcuCRMService: Headers de autenticación verificados correctamente');
+          console.log('✅ WalcuCRMService: Autenticación Basic Auth verificada correctamente');
         }
         
         return config;

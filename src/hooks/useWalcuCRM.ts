@@ -98,7 +98,7 @@ export const useWalcuCRM = () => {
     }
   }, []);
 
-  const processCarInterestForm = useCallback(async (formData: CarInterestFormData): Promise<WalcuCRMResponse<{ client: WalcuClient; lead: WalcuSaleLead }>> => {
+  const processCarInterestForm = useCallback(async (formData: CarInterestFormData): Promise<WalcuCRMResponse<{ lead: WalcuSaleLead }>> => {
     console.log('🎣 useWalcuCRM: Iniciando processCarInterestForm...');
     console.log('📋 Datos recibidos en el hook:', formData);
     
@@ -106,49 +106,41 @@ export const useWalcuCRM = () => {
     setError(null);
 
     try {
-      console.log('🌐 useWalcuCRM: Preparando request a /api/walcu/forms...');
-      
-      const requestBody = {
-        formType: 'car_interest',
-        ...formData
-      };
-      
-      console.log('📤 useWalcuCRM: Request body preparado:', requestBody);
-      console.log('🔗 useWalcuCRM: URL de destino: /api/walcu/forms');
-
       const response = await fetch('/api/walcu/forms', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({
+          formType: 'car_interest',
+          ...formData
+        }),
       });
 
-      console.log('📥 useWalcuCRM: Response recibida:', response);
-      console.log('📊 useWalcuCRM: Status:', response.status);
-      console.log('📋 useWalcuCRM: Headers:', Object.fromEntries(response.headers.entries()));
-
       const result = await response.json();
-      console.log('📄 useWalcuCRM: Response body parseado:', result);
+      console.log('📡 useWalcuCRM: Respuesta de la API:', result);
 
-      if (!result.success) {
-        console.error('❌ useWalcuCRM: Error en la respuesta de la API:', result.message);
-        setError(result.message || 'Error procesando formulario de interés en vehículo');
+      if (result.success) {
+        setError(null);
+        return {
+          success: true,
+          data: { lead: result.data.lead }
+        };
       } else {
-        console.log('✅ useWalcuCRM: Respuesta exitosa de la API');
+        const errorMessage = result.error || 'Error desconocido al procesar el formulario';
+        setError(errorMessage);
+        return {
+          success: false,
+          data: { lead: {} as WalcuSaleLead },
+          error: errorMessage
+        };
       }
-
-      return result;
     } catch (err) {
-      console.error('💥 useWalcuCRM: Error durante la llamada a la API:', err);
-      console.error('🔍 useWalcuCRM: Tipo de error:', typeof err);
-      console.error('📝 useWalcuCRM: Mensaje de error:', err instanceof Error ? err.message : 'Error desconocido');
-      
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      const errorMessage = err instanceof Error ? err.message : 'Error de conexión';
       setError(errorMessage);
       return {
         success: false,
-        data: { client: {} as WalcuClient, lead: {} as WalcuSaleLead },
+        data: { lead: {} as WalcuSaleLead },
         error: errorMessage
       };
     } finally {

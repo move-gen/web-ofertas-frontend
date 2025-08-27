@@ -6,7 +6,9 @@ import {
   WalcuAftersaleLeadData,
   WalcuCar,
   WalcuCarListItem,
-  WalcuFinance
+  WalcuFinance,
+  WalcuAddress,
+  WalcuBusinessDetails
 } from '@/types/walcu-crm';
 
 export class WalcuLeadService extends WalcuCRMService {
@@ -149,7 +151,59 @@ export class WalcuLeadService extends WalcuCRMService {
   }
 
   /**
-   * Crea un lead de interés en un vehículo específico
+   * Crea un lead de interés en vehículo directamente sin crear cliente
+   */
+  async createCarInterestLeadDirect(data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    message: string;
+    car: WalcuCar;
+    address?: Partial<WalcuAddress>;
+    businessDetails?: Partial<WalcuBusinessDetails>;
+    source?: string;
+    medium?: string;
+    campaign?: string;
+    finance?: WalcuFinance;
+  }): Promise<WalcuSaleLead> {
+    try {
+      console.log('🚀 WalcuLeadService: Creando lead de interés en vehículo directamente...');
+      console.log('📋 WalcuLeadService: Datos recibidos:', data);
+      
+      const carListItem: WalcuCarListItem = {
+        car: data.car,
+        car_id: data.car._id,
+        quantity: 1
+      };
+
+      // Crear lead sin client_id - solo con la información del contacto
+      const leadData: WalcuSaleLeadData = {
+        dealer_id: this.dealerId,
+        created_by: 'system',
+        client_id: 'temp_client', // ID temporal requerido por la API
+        inquiry: data.message,
+        type: 'car_interest',
+        location: 'website',
+        origin: {
+          source: data.source || 'website',
+          medium: data.medium || 'car_page',
+          campaign: data.campaign || 'car_interest'
+        },
+        car_list: [carListItem],
+        finance: data.finance
+      };
+
+      console.log('📤 WalcuLeadService: Datos del lead preparados:', leadData);
+      return await this.createSaleLead(leadData);
+    } catch (error) {
+      console.error('💥 WalcuLeadService: Error creando lead de interés directamente:', error);
+      this.handleError('createCarInterestLeadDirect', error as Error);
+    }
+  }
+
+  /**
+   * Crea un lead de interés en vehículo
    */
   async createCarInterestLead(data: {
     clientId: string;

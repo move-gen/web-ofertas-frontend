@@ -97,7 +97,6 @@ export class WalcuService {
     campaign?: string;
     finance?: WalcuFinance;
   }): Promise<{
-    client: WalcuClient;
     lead: WalcuSaleLead;
     success: boolean;
     error?: string;
@@ -108,24 +107,17 @@ export class WalcuService {
     try {
       console.log('🔄 WalcuService: Procesando formulario de interés en vehículo para Walcu CRM...');
 
-      // 1. Crear o encontrar cliente (REQUERIDO por la API de Walcu CRM)
-      console.log('👤 WalcuService: Paso 1 - Creando/buscando cliente...');
-      const client = await this.clientService.createOrFindClient({
+      // Crear lead de interés en vehículo directamente
+      console.log('🎯 WalcuService: Creando lead de interés en vehículo...');
+      const lead = await this.leadService.createCarInterestLeadDirect({
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         phone: data.phone,
-        address: data.address,
-        businessDetails: data.businessDetails
-      });
-      console.log('✅ WalcuService: Cliente procesado exitosamente:', client._id);
-
-      // 2. Crear lead de interés en vehículo
-      console.log('🎯 WalcuService: Paso 2 - Creando lead de interés en vehículo...');
-      const lead = await this.leadService.createCarInterestLead({
-        clientId: client._id,
+        message: data.message,
         car: data.car,
-        inquiry: data.message,
+        address: data.address,
+        businessDetails: data.businessDetails,
         source: data.source || 'website',
         medium: data.medium || 'car_page',
         campaign: data.campaign || 'car_interest',
@@ -136,7 +128,6 @@ export class WalcuService {
       console.log('🎉 WalcuService: Formulario de interés en vehículo procesado exitosamente en Walcu CRM');
       
       return {
-        client,
         lead,
         success: true
       };
@@ -147,7 +138,6 @@ export class WalcuService {
       console.error('📚 WalcuService: Stack trace:', error instanceof Error ? error.stack : 'No disponible');
       
       return {
-        client: {} as WalcuClient,
         lead: {} as WalcuSaleLead,
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido'

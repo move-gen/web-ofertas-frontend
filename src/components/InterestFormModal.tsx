@@ -103,7 +103,6 @@ export default function InterestFormModal({ isOpen, onClose, car }: InterestForm
 
       if (result.success) {
         console.log('✅ Formulario procesado exitosamente en Walcu CRM');
-        console.log('👤 Cliente creado/actualizado:', result.data?.client);
         console.log('🎯 Lead creado:', result.data?.lead);
         
         setIsSubmitted(true);
@@ -163,7 +162,6 @@ export default function InterestFormModal({ isOpen, onClose, car }: InterestForm
                   </p>
                   <p className="text-sm text-gray-500 mb-6">
                     ✅ Lead creado en Walcu CRM<br/>
-                    ✅ Cliente registrado/actualizado<br/>
                     ✅ Vehículo asociado al lead<br/>
                     ✅ Notificación enviada al equipo
                   </p>
