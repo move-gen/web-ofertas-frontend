@@ -1,13 +1,15 @@
 import { useState, useCallback } from 'react';
 import { 
-  WalcuClient, 
   WalcuSaleLead, 
-  WalcuAftersaleLead,
+  WalcuSaleLeadData, 
+  WalcuCar,
+  WalcuClient, 
+  WalcuClientData, 
   WalcuAddress,
   WalcuBusinessDetails,
-  WalcuCar,
-  WalcuFinance
-} from '@/types/walcu-crm';
+  WalcuFinance,
+  WalcuAftersaleLead
+} from '../types/walcu-crm';
 
 interface WalcuCRMResponse<T> {
   success: boolean;
@@ -98,9 +100,26 @@ export const useWalcuCRM = () => {
     }
   }, []);
 
-  const processCarInterestForm = useCallback(async (formData: CarInterestFormData): Promise<WalcuCRMResponse<{ lead: WalcuSaleLead }>> => {
+  const processCarInterestForm = useCallback(async (data: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string;
+    message: string;
+    car: WalcuCar;
+    address?: Partial<WalcuAddress>;
+    businessDetails?: Partial<WalcuBusinessDetails>;
+    source?: string;
+    medium?: string;
+    campaign?: string;
+    finance?: WalcuFinance;
+  }): Promise<{
+    lead: WalcuAftersaleLead;
+    success: boolean;
+    error?: string;
+  }> => {
     console.log('🎣 useWalcuCRM: Iniciando processCarInterestForm...');
-    console.log('📋 Datos recibidos en el hook:', formData);
+    console.log('📋 Datos recibidos en el hook:', data);
     
     setLoading(true);
     setError(null);
@@ -113,7 +132,7 @@ export const useWalcuCRM = () => {
         },
         body: JSON.stringify({
           formType: 'car_interest',
-          ...formData
+          ...data
         }),
       });
 
@@ -124,14 +143,14 @@ export const useWalcuCRM = () => {
         setError(null);
         return {
           success: true,
-          data: { lead: result.data.lead }
+          lead: result.data.lead
         };
       } else {
         const errorMessage = result.error || 'Error desconocido al procesar el formulario';
         setError(errorMessage);
         return {
           success: false,
-          data: { lead: {} as WalcuSaleLead },
+          lead: {} as WalcuAftersaleLead,
           error: errorMessage
         };
       }
@@ -140,7 +159,7 @@ export const useWalcuCRM = () => {
       setError(errorMessage);
       return {
         success: false,
-        data: { lead: {} as WalcuSaleLead },
+        lead: {} as WalcuAftersaleLead,
         error: errorMessage
       };
     } finally {

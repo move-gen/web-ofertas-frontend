@@ -97,7 +97,7 @@ export class WalcuService {
     campaign?: string;
     finance?: WalcuFinance;
   }): Promise<{
-    lead: WalcuSaleLead;
+    lead: WalcuAftersaleLead;
     success: boolean;
     error?: string;
   }> {
@@ -135,7 +135,7 @@ export class WalcuService {
       console.error('📚 WalcuService: Stack trace:', error instanceof Error ? error.stack : 'No disponible');
       
       return {
-        lead: {} as WalcuSaleLead,
+        lead: {} as WalcuAftersaleLead,
         success: false,
         error: error instanceof Error ? error.message : 'Error desconocido'
       };

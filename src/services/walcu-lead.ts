@@ -326,15 +326,48 @@ export class WalcuLeadService extends WalcuCRMService {
     source?: string;
     medium?: string;
     campaign?: string;
-  }): Promise<WalcuSaleLead> {
+  }): Promise<WalcuAftersaleLead> {
     try {
-      console.log('🚀 WalcuLeadService: Creando lead de interés en vehículo con payload mínimo...');
+      console.log('🚀 WalcuLeadService: Creando lead de interés en vehículo usando aftersaleleads...');
       console.log('📋 WalcuLeadService: Datos recibidos:', data);
       
-      // Payload mínimo basado en la documentación de la API
-      const minimalPayload = {
+      // PRIMERO: Crear un cliente real con los datos del formulario
+      console.log('👤 WalcuLeadService: Creando cliente real antes del lead...');
+      const clientData = {
         dealer_id: this.dealerId,
-        client_id: this.dealerId, // REQUERIDO por la API
+        contacts: [{
+          name: {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            raw_name: `${data.firstName} ${data.lastName}`,
+            parsed: true
+          },
+          phones: data.phone ? [data.phone] : [],
+          emails: [data.email]
+        }],
+        primary_contact: {
+          name: {
+            first_name: data.firstName,
+            last_name: data.lastName,
+            raw_name: `${data.firstName} ${data.lastName}`,
+            parsed: true
+          },
+          phones: data.phone ? [data.phone] : [],
+          emails: [data.email]
+        }
+      };
+
+      console.log('📤 WalcuLeadService: Creando cliente con datos:', clientData);
+      const clientResponse = await this.api.post('/clients', clientData);
+      const clientId = clientResponse.data._id;
+      console.log('✅ WalcuLeadService: Cliente creado exitosamente:', clientId);
+      
+      // SEGUNDO: Crear el lead usando aftersaleleads con vehicle_id
+      console.log('🎯 WalcuLeadService: Creando lead de aftersale con vehicle_id...');
+      const leadData = {
+        dealer_id: this.dealerId,
+        client_id: clientId, // ID del cliente real creado
+        vehicle_id: data.car._id?.toString() || data.car.stock_number || 'unknown', // ID del coche
         inquiry: data.message,
         type: 'car_interest',
         location: 'website',
@@ -343,15 +376,13 @@ export class WalcuLeadService extends WalcuCRMService {
           medium: data.medium || 'car_page',
           campaign: data.campaign || 'car_interest'
         }
-        // Solo campos absolutamente requeridos, sin car_list
       };
 
-      console.log('📤 WalcuLeadService: Payload mínimo preparado:', minimalPayload);
+      console.log('📤 WalcuLeadService: Creando lead de aftersale con datos:', leadData);
+      const leadResponse = await this.api.post('/aftersaleleads', leadData);
+      console.log('✅ WalcuLeadService: Lead de aftersale creado exitosamente:', leadResponse.data._id);
       
-      const response = await this.api.post('/saleleads', minimalPayload);
-      console.log('✅ WalcuLeadService: Lead creado exitosamente:', response.data._id);
-      
-      return response.data;
+      return leadResponse.data;
     } catch (error) {
       console.error('💥 WalcuLeadService: Error creando lead de interés mínimo:', error);
       this.handleError('createCarInterestLeadMinimal', error as Error);
