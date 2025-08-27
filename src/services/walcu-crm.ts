@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
 export class WalcuCRMService {
-  protected api: AxiosInstance;
+  public api: AxiosInstance;
   protected dealerId: string;
   protected baseUrl: string;
   protected appId: string;
