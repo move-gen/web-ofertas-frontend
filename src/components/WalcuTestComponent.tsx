@@ -73,6 +73,84 @@ export default function WalcuTestComponent() {
     }
   };
 
+  const handleTestMatching = async () => {
+    setLoadingCars(true);
+    try {
+      // Probar matching con una matrícula de ejemplo
+      const testLicensePlate = '7383MGX'; // Matrícula del BMW X1 que vimos
+      const response = await fetch(`/api/walcu/cars?search=${testLicensePlate}`);
+      const result = await response.json();
+      
+      if (result.success && result.cars && result.cars.length > 0) {
+        const matchedCar = result.cars.find((car: WalcuCar) => 
+          car.license_plate?.toLowerCase() === testLicensePlate.toLowerCase()
+        );
+        
+        if (matchedCar) {
+          setCarsResults({
+            success: true,
+            cars: [matchedCar],
+            total: 1,
+            message: `✅ Coche encontrado por matrícula: ${matchedCar.make} ${matchedCar.model} (${matchedCar.license_plate})`
+          });
+        } else {
+          setCarsResults({
+            success: false,
+            error: `No se encontró coincidencia exacta para la matrícula ${testLicensePlate}`
+          });
+        }
+      } else {
+        setCarsResults({
+          success: false,
+          error: 'Error en la búsqueda de coches'
+        });
+      }
+    } catch (err) {
+      console.error('Error probando matching:', err);
+      setCarsResults({ success: false, error: 'Error de conexión' } as CarsResponse);
+    } finally {
+      setLoadingCars(false);
+    }
+  };
+
+  const handleTestMatchingReal = async () => {
+    setLoadingCars(true);
+    try {
+      console.log('🧪 Probando matching real con coches existentes...');
+      
+      const response = await fetch('/api/walcu/test-api', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ testType: 'test_matching_real' })
+      });
+      
+      const result = await response.json();
+      console.log('🧪 Resultado del test de matching real:', result);
+      
+      if (result.success) {
+        setCarsResults({
+          success: true,
+          cars: result.result?.carUsed ? [result.result.carUsed] : [],
+          total: 1,
+          message: result.result?.message || 'Matching real exitoso'
+        });
+      } else {
+        setCarsResults({
+          success: false,
+          error: `❌ Test de matching real falló: ${result.error}`
+        });
+      }
+    } catch (err) {
+      console.error('Error en test de matching real:', err);
+      setCarsResults({ 
+        success: false, 
+        error: 'Error de conexión en test de matching real' 
+      } as CarsResponse);
+    } finally {
+      setLoadingCars(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
@@ -91,7 +169,7 @@ export default function WalcuTestComponent() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <button
           onClick={handleTestConnection}
           disabled={loading}
@@ -122,6 +200,14 @@ export default function WalcuTestComponent() {
           className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loadingCars ? 'Obteniendo...' : '🚗 Ver Coches'}
+        </button>
+
+        <button
+          onClick={handleTestMatchingReal}
+          disabled={loadingCars}
+          className="px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loadingCars ? 'Probando...' : '🧪 Test Matching Real'}
         </button>
       </div>
 

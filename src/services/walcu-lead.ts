@@ -314,6 +314,45 @@ export class WalcuLeadService extends WalcuCRMService {
   }
 
   /**
+   * Busca un coche en Walcu CRM por matrícula
+   */
+  async findCarByLicensePlate(licensePlate: string): Promise<WalcuCar | null> {
+    try {
+      console.log('🔍 WalcuLeadService: Buscando coche por matrícula:', licensePlate);
+      
+      const response = await this.api.get('/cars', {
+        params: {
+          search: licensePlate,
+          limit: 10
+        }
+      });
+      
+      if (response.data && response.data.length > 0) {
+        // Buscar coincidencia exacta por matrícula
+        const exactMatch = response.data.find((car: WalcuCar) => 
+          car.license_plate?.toLowerCase() === licensePlate.toLowerCase()
+        );
+        
+        if (exactMatch) {
+          console.log('✅ WalcuLeadService: Coche encontrado por matrícula:', {
+            _id: exactMatch._id,
+            make: exactMatch.make,
+            model: exactMatch.model,
+            license_plate: exactMatch.license_plate
+          });
+          return exactMatch;
+        }
+      }
+      
+      console.log('❌ WalcuLeadService: No se encontró coche con matrícula:', licensePlate);
+      return null;
+    } catch (error) {
+      console.error('💥 WalcuLeadService: Error buscando coche por matrícula:', error);
+      return null;
+    }
+  }
+
+  /**
    * Crea un lead de interés en vehículo con payload mínimo
    */
   async createCarInterestLeadMinimal(data: {
@@ -362,12 +401,56 @@ export class WalcuLeadService extends WalcuCRMService {
       const clientId = clientResponse.data._id;
       console.log('✅ WalcuLeadService: Cliente creado exitosamente:', clientId);
       
-      // SEGUNDO: Crear el lead usando aftersaleleads con vehicle_id
-      console.log('🎯 WalcuLeadService: Creando lead de aftersale con vehicle_id...');
+      // SEGUNDO: Buscar o crear el coche en Walcu CRM
+      console.log('🚗 WalcuLeadService: Buscando coche por matrícula para matching...');
+      
+      let vehicleId: string;
+      
+      if (data.car.license_plate) {
+        // Intentar encontrar el coche por matrícula
+        const existingCar = await this.findCarByLicensePlate(data.car.license_plate);
+        
+        if (existingCar) {
+          console.log('✅ WalcuLeadService: Coche encontrado en Walcu CRM, usando ID existente');
+          vehicleId = existingCar._id!;
+        } else {
+          console.log('🆕 WalcuLeadService: Coche no encontrado, creando nuevo coche en Walcu CRM');
+          // Crear el coche en Walcu CRM
+          const carData = {
+            dealer_id: this.dealerId,
+            make: data.car.make,
+            model: data.car.model,
+            year: data.car.year,
+            license_plate: data.car.license_plate,
+            stock_number: data.car.stock_number,
+            mileage: data.car.mileage,
+            fuel: data.car.fuel,
+            transmission: data.car.transmission,
+            power: data.car.power,
+            doors: data.car.doors,
+            seats: data.car.seats,
+            body_style: data.car.body_style,
+            color: data.car.color,
+            vin: data.car.vin,
+            category: data.car.category || 'car',
+            type: data.car.type || 'used'
+          };
+          
+          const carResponse = await this.api.post('/cars', carData);
+          vehicleId = carResponse.data._id;
+          console.log('✅ WalcuLeadService: Nuevo coche creado en Walcu CRM:', vehicleId);
+        }
+      } else {
+        console.log('⚠️ WalcuLeadService: No hay matrícula, usando ID del coche local');
+        vehicleId = data.car._id?.toString() || data.car.stock_number || 'unknown';
+      }
+      
+      // TERCERO: Crear el lead usando aftersaleleads con vehicle_id
+      console.log('🎯 WalcuLeadService: Creando lead de aftersale con vehicle_id:', vehicleId);
       const leadData = {
         dealer_id: this.dealerId,
         client_id: clientId, // ID del cliente real creado
-        vehicle_id: data.car._id?.toString() || data.car.stock_number || 'unknown', // ID del coche
+        vehicle_id: vehicleId, // ID del coche (existente o nuevo)
         inquiry: data.message,
         type: 'car_interest',
         location: 'website',
