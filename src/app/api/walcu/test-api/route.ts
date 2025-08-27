@@ -75,9 +75,9 @@ export async function POST(request: NextRequest) {
         
         // Ahora probar si podemos crear un lead con este vehicle_id
         try {
-          // Crear cliente de prueba
-          const clientData = {
-            dealer_id: walcuService.dealerId,
+                     // Crear cliente de prueba
+           const clientData = {
+             dealer_id: '60b73cded248d50098adc8cc', // Dealer ID hardcodeado para el test
             contacts: [{
               name: {
                 first_name: "Test",
@@ -104,9 +104,9 @@ export async function POST(request: NextRequest) {
           const clientId = clientResponse.data._id;
           console.log("👤 Cliente de prueba creado:", clientId);
           
-          // Intentar crear lead con vehicle_id del coche existente
-          const leadData = {
-            dealer_id: walcuService.dealerId,
+                     // Intentar crear lead con vehicle_id del coche existente
+           const leadData = {
+             dealer_id: '60b73cded248d50098adc8cc', // Dealer ID hardcodeado para el test
             client_id: clientId,
             vehicle_id: carWithLicense._id,
             inquiry: "Test de matching real - Lead creado con coche existente",

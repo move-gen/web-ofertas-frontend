@@ -68,7 +68,7 @@ export default function ContactForm({ isOpen, onClose }: ContactFormProps) {
       } else {
         setSubmitError(result.error || 'Error al enviar el formulario');
       }
-    } catch (error) {
+    } catch (err) {
       setSubmitError('Error inesperado al enviar el formulario');
     }
   };
