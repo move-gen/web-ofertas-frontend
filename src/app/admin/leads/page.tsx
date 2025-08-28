@@ -4,9 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Search, 
-  Filter, 
   RefreshCw, 
-  Eye, 
   Trash2, 
   CheckCircle, 
   XCircle, 
@@ -102,7 +100,7 @@ export default function AdminLeadsPage() {
       } else {
         setError('Error cargando leads');
       }
-    } catch (err) {
+    } catch {
       setError('Error de conexión');
     } finally {
       setLoading(false);
@@ -112,7 +110,7 @@ export default function AdminLeadsPage() {
   // Cargar leads al cambiar filtros o página
   useEffect(() => {
     fetchLeads();
-  }, [currentPage, statusFilter, search]);
+  }, [currentPage, statusFilter, search, fetchLeads]);
 
   // Actualizar estado de Walcu
   const updateWalcuStatus = async (leadId: string, status: string, walcuLeadId?: string, error?: string) => {
@@ -131,7 +129,7 @@ export default function AdminLeadsPage() {
         // Actualizar estado local
         setLeads(prev => prev.map(lead => 
           lead.id === leadId 
-            ? { ...lead, walcuStatus: status as any, walcuLeadId, walcuError: error }
+            ? { ...lead, walcuStatus: status as 'pending' | 'sent' | 'failed', walcuLeadId, walcuError: error }
             : lead
         ));
         fetchLeads(); // Recargar para actualizar contadores

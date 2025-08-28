@@ -5,6 +5,7 @@ import ConditionalFooter from "@/components/ConditionalFooter";
 import TransitionProvider from "@/components/animations/TransitionProvider";
 import ConditionalHeader from "@/components/ConditionalHeader";
 import CookieConsent from "@/components/CookieConsent";
+import TrackingPixels from "@/components/TrackingPixels";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
           <main className="flex-grow">{children}</main>
           <ConditionalFooter />
           <CookieConsent />
+          <TrackingPixels />
         </TransitionProvider>
       </body>
     </html>

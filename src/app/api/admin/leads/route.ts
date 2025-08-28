@@ -13,7 +13,17 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
     
     // Construir filtros
-    const where: any = {};
+    const where: {
+      walcuStatus?: string;
+      OR?: Array<{
+        firstName?: { contains: string; mode: 'insensitive' };
+        lastName?: { contains: string; mode: 'insensitive' };
+        email?: { contains: string; mode: 'insensitive' };
+        carMake?: { contains: string; mode: 'insensitive' };
+        carModel?: { contains: string; mode: 'insensitive' };
+        carLicensePlate?: { contains: string; mode: 'insensitive' };
+      }>;
+    } = {};
     
     if (status && status !== 'all') {
       where.walcuStatus = status;
