@@ -4,10 +4,10 @@ import { prisma } from "@/lib/prisma";
 // PUT - Actualizar lead
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
-    const { id } = params;
     const body = await request.json();
     
     const lead = await prisma.lead.update({
@@ -37,10 +37,10 @@ export async function PUT(
 // DELETE - Eliminar lead
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     await prisma.lead.delete({
       where: { id }

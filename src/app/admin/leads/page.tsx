@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Search, 
@@ -80,7 +80,7 @@ export default function AdminLeadsPage() {
   const [statusSummary, setStatusSummary] = useState<Record<string, number>>({});
 
   // Cargar leads
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -102,10 +102,10 @@ export default function AdminLeadsPage() {
       }
     } catch {
       setError('Error de conexión');
-    } finally {
-      setLoading(false);
-    }
-  };
+          } finally {
+        setLoading(false);
+      }
+    }, [currentPage, statusFilter, search]);
 
   // Cargar leads al cambiar filtros o página
   useEffect(() => {
