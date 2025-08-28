@@ -44,19 +44,33 @@ export default function ContactForm({ isOpen, onClose }: ContactFormProps) {
     clearError();
 
     try {
-      const result = await processContactForm({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        message: formData.message,
-        source: 'website',
-        medium: 'contact_form',
-        campaign: 'general_inquiry'
+      // Usar el nuevo endpoint oficial de Walcu
+      const response = await fetch('/api/walcu/leadimport', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+          car: {
+            make: "Contacto",
+            model: "General",
+            year: new Date().getFullYear(),
+            license_plate: "CONTACT",
+            stock_number: "CONTACT001"
+          }
+        }),
       });
+
+      const result = await response.json();
 
       if (result.success) {
         setIsSubmitted(true);
+        console.log('✅ Formulario de contacto enviado exitosamente usando endpoint oficial:', result);
         // Limpiar el formulario
         setFormData({
           firstName: '',

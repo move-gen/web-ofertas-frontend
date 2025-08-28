@@ -75,6 +75,60 @@ export default function WalcuTestComponent() {
 
 
 
+  const handleTestOfficialEndpoint = async () => {
+    setLoadingCars(true);
+    try {
+      console.log('🧪 Probando endpoint oficial de Walcu (leadimporttasks)...');
+      
+      // Datos de prueba para el endpoint oficial
+      const testData = {
+        firstName: "Test",
+        lastName: "Oficial",
+        email: "test@oficial.com",
+        phone: "+34600000000",
+        message: "Test del endpoint oficial de Walcu CRM",
+        car: {
+          make: "BMW",
+          model: "X1",
+          year: 2020,
+          license_plate: "TEST123",
+          stock_number: "TEST001"
+        }
+      };
+      
+      const response = await fetch('/api/walcu/leadimport', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(testData)
+      });
+      
+      const result = await response.json();
+      console.log('🧪 Resultado del test del endpoint oficial:', result);
+      
+      if (result.success) {
+        setCarsResults({
+          success: true,
+          cars: [],
+          total: 0,
+          message: `✅ Endpoint oficial funcionando: ${result.message}`
+        });
+      } else {
+        setCarsResults({
+          success: false,
+          error: `❌ Endpoint oficial falló: ${result.error}`
+        });
+      }
+    } catch (err) {
+      console.error('Error en test del endpoint oficial:', err);
+      setCarsResults({ 
+        success: false, 
+        error: 'Error de conexión en test del endpoint oficial' 
+      } as CarsResponse);
+    } finally {
+      setLoadingCars(false);
+    }
+  };
+
   const handleTestMatchingReal = async () => {
     setLoadingCars(true);
     try {
@@ -154,6 +208,14 @@ export default function WalcuTestComponent() {
           className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Enviando...' : 'Probar Formulario'}
+        </button>
+
+        <button
+          onClick={handleTestOfficialEndpoint}
+          disabled={loading}
+          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? 'Probando...' : '🧪 Endpoint Oficial'}
         </button>
 
         <button

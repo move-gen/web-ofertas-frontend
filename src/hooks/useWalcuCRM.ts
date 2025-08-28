@@ -92,50 +92,44 @@ export const useWalcuCRM = () => {
     phone?: string;
     message: string;
     car: WalcuCar;
-    address?: Partial<WalcuAddress>;
-    businessDetails?: Partial<WalcuBusinessDetails>;
     source?: string;
     medium?: string;
     campaign?: string;
-    finance?: WalcuFinance;
   }): Promise<{
-    lead: WalcuAftersaleLead;
     success: boolean;
+    lead?: any;
     error?: string;
   }> => {
-    console.log('🎣 useWalcuCRM: Iniciando processCarInterestForm...');
+    console.log('🎣 useWalcuCRM: Iniciando processCarInterestForm con endpoint oficial...');
     console.log('📋 Datos recibidos en el hook:', data);
     
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/walcu/forms', {
+      // Usar el nuevo endpoint oficial de Walcu
+      const response = await fetch('/api/walcu/leadimport', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          formType: 'car_interest',
-          ...data
-        }),
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
-      console.log('📡 useWalcuCRM: Respuesta de la API:', result);
+      console.log('📡 useWalcuCRM: Respuesta del endpoint oficial:', result);
 
       if (result.success) {
         setError(null);
         return {
           success: true,
-          lead: result.data.lead
+          lead: result.data
         };
       } else {
         const errorMessage = result.error || 'Error desconocido al procesar el formulario';
         setError(errorMessage);
         return {
           success: false,
-          lead: {} as WalcuAftersaleLead,
           error: errorMessage
         };
       }
@@ -144,7 +138,6 @@ export const useWalcuCRM = () => {
       setError(errorMessage);
       return {
         success: false,
-        lead: {} as WalcuAftersaleLead,
         error: errorMessage
       };
     } finally {
