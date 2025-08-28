@@ -77,53 +77,62 @@ export default function WalcuTestComponent() {
 
   const handleTestOfficialEndpoint = async () => {
     setLoadingCars(true);
+    setTestResults(null);
+    
     try {
-      console.log('🧪 Probando endpoint oficial de Walcu (leadimporttasks)...');
+      console.log('🧪 Probando endpoint oficial /api/walcu/leadimport...');
       
-      // Datos de prueba para el endpoint oficial
       const testData = {
         firstName: "Test",
-        lastName: "Oficial",
-        email: "test@oficial.com",
-        phone: "+34600000000",
-        message: "Test del endpoint oficial de Walcu CRM",
+        lastName: "Usuario",
+        email: "test@example.com",
+        phone: "123456789",
+        message: "Prueba del endpoint oficial de leadimport",
         car: {
-          make: "BMW",
-          model: "X1",
-          year: 2020,
+          make: "Test",
+          model: "Modelo",
+          year: 2024,
           license_plate: "TEST123",
           stock_number: "TEST001"
         }
       };
-      
+
+      console.log('📤 Datos de prueba enviados:', testData);
+
       const response = await fetch('/api/walcu/leadimport', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(testData)
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(testData),
       });
-      
+
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', response.headers);
+
       const result = await response.json();
-      console.log('🧪 Resultado del test del endpoint oficial:', result);
-      
+      console.log('📡 Resultado del endpoint oficial:', result);
+
       if (result.success) {
-        setCarsResults({
+        setTestResults({
           success: true,
-          cars: [],
-          total: 0,
-          message: `✅ Endpoint oficial funcionando: ${result.message}`
+          message: `✅ Endpoint oficial funcionando correctamente. Lead ID: ${result.leadId}`,
+          data: result
         });
       } else {
-        setCarsResults({
+        setTestResults({
           success: false,
-          error: `❌ Endpoint oficial falló: ${result.error}`
+          message: `❌ Error en endpoint oficial: ${result.error}`,
+          data: result
         });
       }
-    } catch (err) {
-      console.error('Error en test del endpoint oficial:', err);
-      setCarsResults({ 
-        success: false, 
-        error: 'Error de conexión en test del endpoint oficial' 
-      } as CarsResponse);
+    } catch (error) {
+      console.error('💥 Error probando endpoint oficial:', error);
+      setTestResults({
+        success: false,
+        message: `💥 Error de conexión: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+        data: null
+      });
     } finally {
       setLoadingCars(false);
     }

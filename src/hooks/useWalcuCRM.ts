@@ -96,16 +96,19 @@ export const useWalcuCRM = () => {
     campaign?: string;
   }): Promise<{
     success: boolean;
-    lead?: unknown;
+    leadId?: string;
     error?: string;
   }> => {
     console.log('🎣 useWalcuCRM: Iniciando processCarInterestForm con endpoint oficial...');
     console.log('📋 Datos recibidos en el hook:', data);
+    console.log('🌐 Endpoint que se va a llamar: /api/walcu/leadimport');
     
     setLoading(true);
     setError(null);
 
     try {
+      console.log('📤 useWalcuCRM: Enviando request a /api/walcu/leadimport...');
+      
       // Usar el nuevo endpoint oficial de Walcu
       const response = await fetch('/api/walcu/leadimport', {
         method: 'POST',
@@ -115,17 +118,22 @@ export const useWalcuCRM = () => {
         body: JSON.stringify(data),
       });
 
+      console.log('📡 useWalcuCRM: Response status:', response.status);
+      console.log('📡 useWalcuCRM: Response headers:', response.headers);
+
       const result = await response.json();
       console.log('📡 useWalcuCRM: Respuesta del endpoint oficial:', result);
 
       if (result.success) {
+        console.log('✅ useWalcuCRM: Lead creado exitosamente. Lead ID:', result.leadId);
         setError(null);
         return {
           success: true,
-          lead: result.data
+          leadId: result.leadId
         };
       } else {
         const errorMessage = result.error || 'Error desconocido al procesar el formulario';
+        console.error('❌ useWalcuCRM: Error en la respuesta:', errorMessage);
         setError(errorMessage);
         return {
           success: false,
@@ -134,6 +142,7 @@ export const useWalcuCRM = () => {
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error de conexión';
+      console.error('💥 useWalcuCRM: Error de excepción:', err);
       setError(errorMessage);
       return {
         success: false,

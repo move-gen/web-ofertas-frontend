@@ -103,7 +103,8 @@ export default function InterestFormModal({ isOpen, onClose, car }: InterestForm
 
       if (result.success) {
         console.log('✅ Formulario procesado exitosamente en Walcu CRM usando endpoint oficial');
-        console.log('🎯 Lead creado:', result.lead);
+        console.log('🎯 Lead ID creado:', result.leadId);
+        console.log('📊 Respuesta completa:', result);
         
         setIsSubmitted(true);
         // Limpiar el formulario

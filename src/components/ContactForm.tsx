@@ -153,21 +153,13 @@ export default function ContactForm({ isOpen, onClose }: ContactFormProps) {
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-6">Contact Us</h2>
             
-                         {/* Mostrar errores del formulario */}
+                                      {/* Mostrar errores del formulario */}
              {submitError && (
                <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded flex items-center">
                  <AlertCircle className="w-5 h-5 mr-2" />
                  <span>{submitError}</span>
                </div>
              )}
-
-            {/* Mostrar errores del formulario */}
-            {submitError && (
-              <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded flex items-center">
-                <AlertCircle className="w-5 h-5 mr-2" />
-                <span>{submitError}</span>
-              </div>
-            )}
 
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
