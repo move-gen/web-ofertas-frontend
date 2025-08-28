@@ -44,7 +44,36 @@ export default function ContactForm({ isOpen, onClose }: ContactFormProps) {
     clearError();
 
     try {
-      // Usar el nuevo endpoint oficial de Walcu
+      // PRIMERO: Guardar lead en la base de datos local
+      console.log('💾 Guardando lead de contacto en base de datos local...');
+      const localLeadResponse = await fetch('/api/admin/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+          carMake: "Contacto",
+          carModel: "General",
+          carYear: new Date().getFullYear(),
+          carLicensePlate: "CONTACT",
+          carStockNumber: "CONTACT001",
+          source: 'website',
+          medium: 'contact_form',
+          campaign: 'general_contact'
+        })
+      });
+
+      if (!localLeadResponse.ok) {
+        throw new Error('Error guardando lead en base de datos local');
+      }
+
+      const localLead = await localLeadResponse.json();
+      console.log('✅ Lead de contacto guardado localmente:', localLead.data.id);
+      
+      // SEGUNDO: Enviar al endpoint oficial de Walcu
       const response = await fetch('/api/walcu/leadimport', {
         method: 'POST',
         headers: {
@@ -69,6 +98,21 @@ export default function ContactForm({ isOpen, onClose }: ContactFormProps) {
       const result = await response.json();
 
       if (result.success) {
+        // ACTUALIZAR: Estado del lead local a "sent"
+        try {
+          await fetch(`/api/admin/leads/${localLead.data.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              walcuStatus: 'sent',
+              walcuLeadId: result.leadId
+            })
+          });
+          console.log('✅ Estado del lead de contacto actualizado a "sent"');
+        } catch (updateErr) {
+          console.error('⚠️ Error actualizando estado local:', updateErr);
+        }
+        
         setIsSubmitted(true);
         console.log('✅ Formulario de contacto enviado exitosamente usando endpoint oficial:', result);
         // Limpiar el formulario
@@ -80,6 +124,21 @@ export default function ContactForm({ isOpen, onClose }: ContactFormProps) {
           message: ''
         });
       } else {
+        // ACTUALIZAR: Estado del lead local a "failed"
+        try {
+          await fetch(`/api/admin/leads/${localLead.data.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              walcuStatus: 'failed',
+              walcuError: result.error || 'Error desconocido'
+            })
+          });
+          console.log('✅ Estado del lead de contacto actualizado a "failed"');
+        } catch (updateErr) {
+          console.error('⚠️ Error actualizando estado local:', updateErr);
+        }
+        
         setSubmitError(result.error || 'Error al enviar el formulario');
       }
     } catch (error) {

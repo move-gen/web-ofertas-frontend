@@ -54,72 +54,134 @@ export default function InterestFormModal({ isOpen, onClose, car }: InterestForm
     console.log('📋 Datos del formulario:', formData);
     console.log('🚗 Información del vehículo:', car);
 
-    try {
-      // Convertir el coche de Prisma a formato Walcu CRM
-      const walcuCar = {
-        _id: car.id.toString(),
-        make: car.make || '',
-        model: car.model || '',
-        year: car.year || new Date().getFullYear(),
-        version: car.version || '',
-        license_plate: car.numberplate || '',
-        stock_number: car.sku || '',
-        price: car.regularPrice || 0,
-        mileage: car.kms || 0,
-        fuel: car.fuel || '',
-        transmission: car.transmission || '',
-        power: car.power || 0,
-        doors: car.doors || 0,
-        seats: car.seats || 0,
-        body_style: car.bodytype || '',
-        color: car.color || '',
-        vin: car.vin || '',
-        category: 'car' as const,
-        type: 'used' as const,
-        images: car.images.map(img => img.url),
-        ad_urls: [`/car/${car.id}`]
-      };
+          try {
+        // Convertir el coche de Prisma a formato Walcu CRM
+        const walcuCar = {
+          _id: car.id.toString(),
+          make: car.make || '',
+          model: car.model || '',
+          year: car.year || new Date().getFullYear(),
+          version: car.version || '',
+          license_plate: car.numberplate || '',
+          stock_number: car.sku || '',
+          price: car.regularPrice || 0,
+          mileage: car.kms || 0,
+          fuel: car.fuel || '',
+          transmission: car.transmission || '',
+          power: car.power || 0,
+          doors: car.doors || 0,
+          seats: car.seats || 0,
+          body_style: car.bodytype || '',
+          color: car.color || '',
+          vin: car.vin || '',
+          category: 'car' as const,
+          type: 'used' as const,
+          images: car.images.map(img => img.url),
+          ad_urls: [`/car/${car.id}`]
+        };
 
-      console.log('🔄 Vehículo convertido a formato Walcu CRM:', walcuCar);
+        console.log('🔄 Vehículo convertido a formato Walcu CRM:', walcuCar);
 
-      const requestData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        message: formData.message || `Me interesa el ${car.make} ${car.model} ${car.version}`,
-        car: walcuCar,
-        source: 'website',
-        medium: 'car_page',
-        campaign: 'car_interest'
-      };
+        const requestData = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message || `Me interesa el ${car.make} ${car.model} ${car.version}`,
+          car: walcuCar,
+          source: 'website',
+          medium: 'car_page',
+          campaign: 'car_interest'
+        };
 
-      console.log('📤 Enviando datos a Walcu CRM:', requestData);
-      console.log('🌐 Llamando a processCarInterestForm...');
+        console.log('📤 Enviando datos a Walcu CRM:', requestData);
+        console.log('🌐 Llamando a processCarInterestForm...');
 
-      const result = await processCarInterestForm(requestData);
+        // PRIMERO: Guardar lead en la base de datos local
+        console.log('💾 Guardando lead en base de datos local...');
+        const localLeadResponse = await fetch('/api/admin/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            message: formData.message || `Me interesa el ${car.make} ${car.model} ${car.version}`,
+            carId: car.id,
+            carMake: car.make,
+            carModel: car.model,
+            carYear: car.year,
+            carLicensePlate: car.numberplate,
+            carStockNumber: car.sku,
+            source: 'website',
+            medium: 'car_page',
+            campaign: 'car_interest'
+          })
+        });
+
+        if (!localLeadResponse.ok) {
+          throw new Error('Error guardando lead en base de datos local');
+        }
+
+        const localLead = await localLeadResponse.json();
+        console.log('✅ Lead guardado localmente:', localLead.data.id);
+
+        // SEGUNDO: Enviar a Walcu CRM
+        const result = await processCarInterestForm(requestData);
 
       console.log('📥 Respuesta recibida de Walcu CRM:', result);
 
-      if (result.success) {
-        console.log('✅ Formulario procesado exitosamente en Walcu CRM usando endpoint oficial');
-        console.log('🎯 Lead ID creado:', result.leadId);
-        console.log('📊 Respuesta completa:', result);
-        
-        setIsSubmitted(true);
-        // Limpiar el formulario
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          message: ''
-        });
-      } else {
-        console.error('❌ Error en la respuesta de Walcu CRM:', result.error);
-        console.error('📊 Datos de error completos:', result);
-        setSubmitError(result.error || 'Error al enviar el formulario');
-      }
+              if (result.success) {
+          console.log('✅ Formulario procesado exitosamente en Walcu CRM usando endpoint oficial');
+          console.log('🎯 Lead ID creado:', result.leadId);
+          console.log('📊 Respuesta completa:', result);
+          
+          // ACTUALIZAR: Estado del lead local con la respuesta de Walcu
+          try {
+            await fetch(`/api/admin/leads/${localLead.data.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                walcuStatus: 'sent',
+                walcuLeadId: result.leadId
+              })
+            });
+            console.log('✅ Estado del lead local actualizado a "sent"');
+          } catch (updateErr) {
+            console.error('⚠️ Error actualizando estado local:', updateErr);
+          }
+          
+          setIsSubmitted(true);
+          // Limpiar el formulario
+          setFormData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            phone: '',
+            message: ''
+          });
+        } else {
+          console.error('❌ Error en la respuesta de Walcu CRM:', result.error);
+          console.error('📊 Datos de error completos:', result);
+          
+          // ACTUALIZAR: Estado del lead local a "failed"
+          try {
+            await fetch(`/api/admin/leads/${localLead.data.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                walcuStatus: 'failed',
+                walcuError: result.error || 'Error desconocido'
+              })
+            });
+            console.log('✅ Estado del lead local actualizado a "failed"');
+          } catch (updateErr) {
+            console.error('⚠️ Error actualizando estado local:', updateErr);
+          }
+          
+          setSubmitError(result.error || 'Error al enviar el formulario');
+        }
     } catch (err) {
       console.error('💥 Error inesperado durante el proceso:', err);
       console.error('🔍 Tipo de error:', typeof err);

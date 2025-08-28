@@ -4,13 +4,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, List, RefreshCw, Images } from 'lucide-react';
+import { LayoutDashboard, List, RefreshCw, Images, Users } from 'lucide-react';
 
 const navLinks = [
   { href: '/admin', label: 'Panel de control', icon: LayoutDashboard },
   { href: '/admin/sync', label: 'Sincronizar Feed', icon: RefreshCw },
   { href: '/admin/manage-offers', label: 'Gestionar Ofertas', icon: List },
   { href: '/admin/manage-photos', label: 'Gestionar Fotos', icon: Images },
+  { href: '/admin/leads', label: 'Gestión de Leads', icon: Users },
 ];
 
 export default function Sidebar() {
