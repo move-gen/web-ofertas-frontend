@@ -28,7 +28,7 @@ export default function ContactForm({ isOpen, onClose }: ContactFormProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   
-  const { processContactForm, loading, error, clearError } = useWalcuCRM();
+  const { loading, clearError } = useWalcuCRM();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -153,19 +153,13 @@ export default function ContactForm({ isOpen, onClose }: ContactFormProps) {
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-6">Contact Us</h2>
             
-            {/* Mostrar errores de Walcu CRM */}
-            {error && (
-              <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded flex items-center">
-                <AlertCircle className="w-5 h-5 mr-2" />
-                <span>Error de Walcu CRM: {error}</span>
-                <button 
-                  onClick={clearError}
-                  className="ml-auto text-red-500 hover:text-red-700 underline text-sm"
-                >
-                  Cerrar
-                </button>
-              </div>
-            )}
+                         {/* Mostrar errores del formulario */}
+             {submitError && (
+               <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded flex items-center">
+                 <AlertCircle className="w-5 h-5 mr-2" />
+                 <span>{submitError}</span>
+               </div>
+             )}
 
             {/* Mostrar errores del formulario */}
             {submitError && (

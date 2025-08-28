@@ -5,7 +5,6 @@ import {
   WalcuClient, 
   WalcuAddress,
   WalcuBusinessDetails,
-  WalcuFinance,
   WalcuAftersaleLead
 } from '../types/walcu-crm';
 
@@ -97,7 +96,7 @@ export const useWalcuCRM = () => {
     campaign?: string;
   }): Promise<{
     success: boolean;
-    lead?: any;
+    lead?: unknown;
     error?: string;
   }> => {
     console.log('🎣 useWalcuCRM: Iniciando processCarInterestForm con endpoint oficial...');
