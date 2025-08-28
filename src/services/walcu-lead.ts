@@ -299,7 +299,6 @@ export class WalcuLeadService extends WalcuCRMService {
         inquiry: data.inquiry,
         type: 'appraisal_request',
         location: 'website',
-        status: 'new' as any, // Agregar estado para evitar error "no available states found"
         origin: {
           source: data.source || 'website',
           medium: data.medium || 'appraisal_form',
@@ -455,7 +454,6 @@ export class WalcuLeadService extends WalcuCRMService {
         inquiry: data.message,
         type: 'car_interest',
         location: 'website',
-        status: 'new' as any, // Agregar estado para evitar error "no available states found"
         origin: {
           source: data.source || 'website',
           medium: data.medium || 'car_page',

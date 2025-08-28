@@ -112,12 +112,11 @@ export async function POST(request: NextRequest) {
              inquiry: "Test de matching real - Lead creado con coche existente",
              type: "car_interest",
              location: "api_test",
-             status: "new" as any, // Agregar estado para evitar error "no available states found"
-             origin: {
-               source: "api_test",
-               medium: "matching_test",
-               campaign: "real_matching_verification"
-             }
+                                         origin: {
+                source: "api_test",
+                medium: "matching_test",
+                campaign: "real_matching_verification"
+              }
            };
           
           const leadResponse = await walcuService.api.post("/aftersaleleads", leadData);
