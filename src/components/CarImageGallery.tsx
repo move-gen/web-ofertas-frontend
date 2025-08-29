@@ -48,7 +48,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
   return (
     <div>
       {/* Imagen principal */}
-      <div className="aspect-[750/421] rounded-xl shadow-lg overflow-hidden relative flex items-center justify-center">
+      <div className="aspect-[750/421] rounded-xl shadow-lg overflow-hidden relative flex items-center justify-center bg-gray-50">
         {/* Flecha izquierda */}
         {validImages.length > 1 && (
           <button 
@@ -63,7 +63,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
         <img
           src={validImages[currentIndex].url}
           alt={carName}
-          className="object-cover w-full h-full rounded-xl"
+          className="object-contain w-full h-full rounded-xl"
           onError={() => handleImageError(currentIndex)}
         />
         
@@ -109,7 +109,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
               <img
                 src={image.url}
                 alt={`${carName} - Imagen ${index + 1}`}
-                className="w-full h-full object-cover"
+                className="object-contain w-full h-full"
                 onError={() => handleImageError(index)}
               />
             </button>

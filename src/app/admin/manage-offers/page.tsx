@@ -198,7 +198,23 @@ export default function ManageOffersPage() {
                   <ul className="divide-y">
                     {availableCarsToSelect.map(car => (
                       <li key={car.id} onClick={() => handleSelectCar(car)} className="p-3 flex items-center space-x-3 hover:bg-gray-50 cursor-pointer">
-                        <img src={car.images?.[0]?.url || '/placeholder.svg'} alt={car.name} className="rounded object-cover h-12 w-16" />
+                        <div className="h-12 w-16 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
+                          {car.images && car.images.length > 0 && car.images[0]?.url ? (
+                            <img 
+                              src={car.images[0].url} 
+                              alt={car.name} 
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.nextElementSibling?.classList.remove('hidden');
+                              }}
+                            />
+                          ) : null}
+                          <div className={`text-xs text-gray-500 text-center ${car.images && car.images.length > 0 ? 'hidden' : ''}`}>
+                            Sin foto
+                          </div>
+                        </div>
                         <div className="flex-1">
                           <p className="font-medium text-sm">{car.name}</p>
                           <p className="text-xs text-gray-500">{car.numberplate || 'Sin matrícula'}</p>
@@ -243,7 +259,23 @@ export default function ManageOffersPage() {
               <ul className="space-y-3">
                 {selectedCars.map(car => (
                   <li key={car.id} className="p-2 rounded-md border flex items-center space-x-3">
-                    <img src={car.images?.[0]?.url || '/placeholder.svg'} alt={car.name} className="rounded object-cover h-9 w-12" />
+                    <div className="h-9 w-12 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
+                      {car.images && car.images.length > 0 && car.images[0]?.url ? (
+                        <img 
+                          src={car.images[0].url} 
+                          alt={car.name} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      <div className={`text-xs text-gray-400 text-center ${car.images && car.images.length > 0 ? 'hidden' : ''}`}>
+                        Sin foto
+                      </div>
+                    </div>
                     <div className="flex-1">
                       <p className="font-medium text-sm">{car.name}</p>
                       <p className="text-xs text-gray-500">{car.numberplate || 'Sin matrícula'}</p>
