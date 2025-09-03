@@ -16,7 +16,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
   
   if (!images || images.length === 0) {
     return (
-      <div className="aspect-[750/421] bg-gray-100 rounded-xl shadow-lg flex items-center justify-center relative">
+      <div className="aspect-[750/421] bg-white rounded-xl shadow-lg flex items-center justify-center relative">
         <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-cover w-full h-full rounded-xl" priority />
         <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">0/0</span>
       </div>
@@ -28,7 +28,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
   
   if (validImages.length === 0) {
     return (
-      <div className="aspect-[750/421] bg-gray-100 rounded-xl shadow-lg flex items-center justify-center relative">
+      <div className="aspect-[750/421] bg-white rounded-xl shadow-lg flex items-center justify-center relative">
         <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-cover w-full h-full rounded-xl" priority />
         <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">Sin imágenes</span>
       </div>
@@ -49,7 +49,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
   return (
     <div>
       {/* Imagen principal */}
-      <div className="aspect-[750/421] rounded-xl shadow-lg overflow-hidden relative flex items-center justify-center bg-gray-50">
+      <div className="aspect-[750/421] rounded-xl shadow-lg overflow-hidden relative flex items-center justify-center bg-white">
         {/* Flecha izquierda */}
         {validImages.length > 1 && (
           <button 
@@ -66,7 +66,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
           alt={carName}
           className="object-contain w-full h-full rounded-xl"
           onError={() => handleImageError(currentIndex)}
-          cropTop={20}
+          cropTop={15}
           cropBottom={10}
         />
         
@@ -114,7 +114,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
                 alt={`${carName} - Imagen ${index + 1}`}
                 className="object-contain w-full h-full"
                 onError={() => handleImageError(index)}
-                cropTop={20}
+                cropTop={15}
                 cropBottom={10}
               />
             </button>
