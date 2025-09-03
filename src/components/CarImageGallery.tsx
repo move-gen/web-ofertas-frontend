@@ -18,7 +18,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
     return (
       <div className="aspect-[750/421] bg-white rounded-xl shadow-lg flex items-center justify-center relative">
         <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-cover w-full h-full rounded-xl" priority />
-        <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">0/0</span>
+        <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">Sin imágenes</span>
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
           alt={carName}
           className="object-contain w-full h-full rounded-xl"
           onError={() => handleImageError(currentIndex)}
-          cropTop={15}
+          cropTop={12}
           cropBottom={10}
         />
         
@@ -82,7 +82,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
         
         {/* Contador */}
         <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">
-          {currentIndex + 1}/{validImages.length}
+          {String(currentIndex + 1)}/{String(validImages.length)}
         </span>
         
         {/* Botón ver interior y zoom */}
@@ -114,7 +114,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
                 alt={`${carName} - Imagen ${index + 1}`}
                 className="object-contain w-full h-full"
                 onError={() => handleImageError(index)}
-                cropTop={15}
+                cropTop={12}
                 cropBottom={10}
               />
             </button>
