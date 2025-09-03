@@ -14,7 +14,7 @@ export default function ImageCropper({
   alt, 
   className = "", 
   onError,
-  cropTop = 12, // Recortar 12% del borde superior
+  cropTop = 13, // Recortar 13% del borde superior
   cropBottom = 10 // Recortar 10% del borde inferior
 }: ImageCropperProps) {
   
