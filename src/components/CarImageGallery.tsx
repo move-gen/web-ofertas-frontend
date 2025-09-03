@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { CarImage } from '@/utils/types';
 import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import ImageCropper from './ImageCropper';
 
 interface CarImageGalleryProps {
   images: CarImage[];
@@ -60,11 +61,14 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
         )}
         
         {/* Imagen */}
-        <img
+        <ImageCropper
           src={validImages[currentIndex].url}
           alt={carName}
           className="object-contain w-full h-full rounded-xl"
           onError={() => handleImageError(currentIndex)}
+          autoDetect={true}
+          cropTop={20}
+          cropBottom={10}
         />
         
         {/* Flecha derecha */}
@@ -106,11 +110,14 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <img
+              <ImageCropper
                 src={image.url}
                 alt={`${carName} - Imagen ${index + 1}`}
                 className="object-contain w-full h-full"
                 onError={() => handleImageError(index)}
+                autoDetect={true}
+                cropTop={20}
+                cropBottom={10}
               />
             </button>
           ))}
