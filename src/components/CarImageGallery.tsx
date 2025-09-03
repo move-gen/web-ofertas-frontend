@@ -66,7 +66,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
           alt={carName}
           className="object-contain w-full h-full rounded-xl"
           onError={() => handleImageError(currentIndex)}
-          cropTop={11}
+          cropTop={10}
           cropBottom={10}
         />
         
@@ -114,7 +114,7 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
                 alt={`${carName} - Imagen ${index + 1}`}
                 className="object-contain w-full h-full"
                 onError={() => handleImageError(index)}
-                cropTop={11}
+                cropTop={10}
                 cropBottom={10}
               />
             </button>
