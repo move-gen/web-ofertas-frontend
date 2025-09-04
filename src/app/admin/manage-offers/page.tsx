@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ImageUpload from "@/components/ImageUpload";
 import { Loader2, Search, X, CheckCircle, AlertTriangle, Link as LinkIcon, Trash2 } from 'lucide-react';
 import { getToken } from '@/utils/auth';
 import { Car, Offer } from '@/utils/types';
@@ -228,15 +229,14 @@ export default function ManageOffersPage() {
               {hasPromotionalBanner && (
                 <div className="space-y-4 pl-6 border-l-2 border-blue-200">
                   <div>
-                    <Label htmlFor="banner-image" className="block text-sm font-medium text-gray-700 mb-1">
-                      URL de la Imagen/Video/GIF
+                    <Label className="block text-sm font-medium text-gray-700 mb-1">
+                      Imagen del Banner
                     </Label>
-                    <Input
-                      id="banner-image"
+                    <ImageUpload
                       value={bannerImageUrl}
-                      onChange={(e) => setBannerImageUrl(e.target.value)}
-                      placeholder="https://ejemplo.com/imagen.jpg"
-                      disabled={isLoading}
+                      onChange={(url) => setBannerImageUrl(url || '')}
+                      accept="image/*"
+                      maxSize={5}
                     />
                   </div>
 
