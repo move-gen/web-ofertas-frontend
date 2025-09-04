@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
+import { put } from '@vercel/blob';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,48 +26,21 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // En Vercel, usar /tmp para archivos temporales
-    const isVercel = process.env.VERCEL === '1';
-    const uploadDir = isVercel 
-      ? join('/tmp', 'uploads', 'banners')
-      : join(process.cwd(), 'public', 'uploads', 'banners');
-    
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
     // Generar nombre único para el archivo
     const timestamp = Date.now();
     const fileExtension = file.name.split('.').pop();
     const fileName = `banner_${timestamp}.${fileExtension}`;
-    const filePath = join(uploadDir, fileName);
 
-    // Guardar archivo
-    await writeFile(filePath, buffer);
-
-    // En Vercel, convertir a base64 para almacenar en BD
-    if (isVercel) {
-      const base64 = buffer.toString('base64');
-      const dataUrl = `data:${file.type};base64,${base64}`;
-      
-      return NextResponse.json({ 
-        success: true, 
-        url: dataUrl,
-        fileName: fileName,
-        isBase64: true
-      });
-    }
-
-    // Retornar URL pública (solo en desarrollo)
-    const publicUrl = `/uploads/banners/${fileName}`;
+    // Subir a Vercel Blob Storage
+    const blob = await put(fileName, file, {
+      access: 'public',
+      contentType: file.type,
+    });
 
     return NextResponse.json({ 
       success: true, 
-      url: publicUrl,
-      fileName: fileName 
+      url: blob.url,
+      fileName: fileName
     });
 
   } catch (error) {
