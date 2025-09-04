@@ -19,17 +19,36 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Usar exactamente el mismo sistema que /api/cars/[id]/images
-    const blob = await put(filename, file, {
-      access: 'public',
-      contentType,
-    });
+    // Verificar si estamos en producción y tenemos el token
+    const isProduction = process.env.NODE_ENV === 'production';
+    const hasBlobToken = process.env.BLOB_READ_WRITE_TOKEN;
 
-    return NextResponse.json({ 
-      success: true, 
-      url: blob.url,
-      fileName: filename
-    });
+    if (isProduction && hasBlobToken) {
+      // Usar Vercel Blob en producción
+      const blob = await put(filename, file, {
+        access: 'public',
+        contentType,
+      });
+
+      return NextResponse.json({ 
+        success: true, 
+        url: blob.url,
+        fileName: filename
+      });
+    } else {
+      // En desarrollo o sin token, usar base64
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const base64 = buffer.toString('base64');
+      const dataUrl = `data:${contentType};base64,${base64}`;
+
+      return NextResponse.json({ 
+        success: true, 
+        url: dataUrl,
+        fileName: filename,
+        isBase64: true
+      });
+    }
 
   } catch (error) {
     console.error('Error uploading banner:', error);
