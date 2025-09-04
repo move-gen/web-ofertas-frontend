@@ -35,7 +35,11 @@ export default function ImageUpload({
       const formData = new FormData();
       formData.append('banner', file);
 
-      const response = await fetch('/api/upload/banner', {
+      // Usar Cloudinary en producción, base64 en desarrollo
+      const isProduction = process.env.NODE_ENV === 'production';
+      const endpoint = isProduction ? '/api/upload/banner-cloudinary' : '/api/upload/banner';
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,
       });

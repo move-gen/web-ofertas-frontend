@@ -31,8 +31,12 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Crear directorio si no existe
-    const uploadDir = join(process.cwd(), 'public', 'uploads', 'banners');
+    // En Vercel, usar /tmp para archivos temporales
+    const isVercel = process.env.VERCEL === '1';
+    const uploadDir = isVercel 
+      ? join('/tmp', 'uploads', 'banners')
+      : join(process.cwd(), 'public', 'uploads', 'banners');
+    
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
     }
@@ -46,7 +50,20 @@ export async function POST(request: NextRequest) {
     // Guardar archivo
     await writeFile(filePath, buffer);
 
-    // Retornar URL pública
+    // En Vercel, convertir a base64 para almacenar en BD
+    if (isVercel) {
+      const base64 = buffer.toString('base64');
+      const dataUrl = `data:${file.type};base64,${base64}`;
+      
+      return NextResponse.json({ 
+        success: true, 
+        url: dataUrl,
+        fileName: fileName,
+        isBase64: true
+      });
+    }
+
+    // Retornar URL pública (solo en desarrollo)
     const publicUrl = `/uploads/banners/${fileName}`;
 
     return NextResponse.json({ 
