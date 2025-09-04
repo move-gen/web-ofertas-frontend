@@ -6,16 +6,15 @@ export async function GET() {
     const cars = await prisma.car.findMany({
       include: {
         images: {
-          where: {
-            isPrimary: true  // Solo cargar imagen principal
+          orderBy: {
+            isPrimary: 'desc'  // Primero las primarias, luego las demás
           },
-          take: 1
+          take: 1  // Solo cargar 1 imagen por coche
         },
       },
       orderBy: {
         createdAt: 'desc',
-      },
-      take: 50  // Limitar a 50 coches máximo
+      }
     });
 
     return NextResponse.json(cars);

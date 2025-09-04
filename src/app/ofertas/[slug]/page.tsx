@@ -25,10 +25,10 @@ export default async function OfferPage({ params }: OfferPageProps) {
       cars: {
         include: {
           images: {
-            where: {
-              isPrimary: true  // Solo cargar imagen principal
+            orderBy: {
+              isPrimary: 'desc'  // Primero las primarias, luego las demás
             },
-            take: 1
+            take: 1  // Solo cargar 1 imagen por coche
           },
         },
       },

@@ -33,8 +33,6 @@ export default function OffersClientPart() {
   const [allCars, setAllCars] = useState<CarData[]>([]);
   const [filteredCars, setFilteredCars] = useState<CarData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const carsPerPage = 12;
   
   const [activeSort, setActiveSort] = useState<SortType>('all');
   
@@ -66,10 +64,6 @@ export default function OffersClientPart() {
     fetchCars();
   }, []);
 
-  // Reset página cuando cambien los filtros
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedFilters]);
 
   useEffect(() => {
     let carsToProcess = [...allCars];
@@ -121,13 +115,7 @@ export default function OffersClientPart() {
 
   if (loading) return <OffersSkeleton />;
 
-  // Paginación
-  const totalPages = Math.ceil(filteredCars.length / carsPerPage);
-  const startIndex = (currentPage - 1) * carsPerPage;
-  const endIndex = startIndex + carsPerPage;
-  const paginatedCars = filteredCars.slice(startIndex, endIndex);
-
-  const carItems = paginatedCars.map(car => ({
+  const carItems = filteredCars.map(car => ({
     id: car.id,
     link: `/car/${car.id}`,
     children: <CarCard car={car} />
@@ -174,43 +162,6 @@ export default function OffersClientPart() {
         <div className="flex justify-between items-center mb-6"><h1 className="text-2xl font-bold text-gray-800">{filteredCars.length} Coches de km 0 al mejor precio</h1><div className="flex items-center gap-2 flex-wrap">{['all', 'lowest_fee', 'lowest_kms', 'newest'].map(sort => <Button key={sort} onClick={() => setActiveSort(sort as SortType)} variant={getSortButtonVariant(sort as SortType)} size="sm">{ {all: 'Todos', lowest_fee: 'Menos cuota', lowest_kms: 'Menos kilómetros', newest: 'Más nuevos'}[sort] }</Button>)}</div></div>
         
         <HoverEffect items={carItems} />
-
-        {/* Paginación */}
-        {totalPages > 1 && (
-          <div className="mt-8 flex justify-center items-center gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              Anterior
-            </Button>
-            
-            <div className="flex gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = i + 1;
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={currentPage === pageNum ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(pageNum)}
-                  >
-                    {pageNum}
-                  </Button>
-                );
-              })}
-            </div>
-            
-            <Button 
-              variant="outline" 
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              Siguiente
-            </Button>
-          </div>
-        )}
             </div>
     </div></div></div>
   );

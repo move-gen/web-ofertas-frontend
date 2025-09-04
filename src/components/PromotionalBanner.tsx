@@ -46,48 +46,50 @@ export default function PromotionalBanner({
   };
 
   return (
-    <div className={`relative w-full ${config.container} bg-white overflow-hidden`}>
-      {/* Imagen de fondo */}
-      <div className={`relative w-full ${config.image} flex items-center justify-center`}>
-        {!imageError ? (
-          imageUrl.startsWith('data:') ? (
-            // Imagen base64 (desarrollo)
-            <img
-              src={imageUrl}
-              alt={title}
-              className="w-full h-full object-contain"
-              onError={handleImageError}
-            />
+    <div className="mt-16"> {/* Espacio del header */}
+      <div className={`relative w-full ${config.container} bg-white overflow-hidden`}>
+        {/* Imagen de fondo */}
+        <div className={`relative w-full ${config.image} flex items-center justify-center`}>
+          {!imageError ? (
+            imageUrl.startsWith('data:') ? (
+              // Imagen base64 (desarrollo)
+              <img
+                src={imageUrl}
+                alt={title}
+                className="w-full h-full object-contain"
+                onError={handleImageError}
+              />
+            ) : (
+              // Imagen URL (producción con Vercel Blob)
+              <Image
+                src={imageUrl}
+                alt={title}
+                fill
+                className="object-contain"
+                onError={handleImageError}
+                priority
+              />
+            )
           ) : (
-            // Imagen URL (producción con Vercel Blob)
-            <Image
-              src={imageUrl}
-              alt={title}
-              fill
-              className="object-contain"
-              onError={handleImageError}
-              priority
-            />
-          )
-        ) : (
-          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-            <span className="text-gray-400 text-sm">Error al cargar imagen</span>
-          </div>
-        )}
-      </div>
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+              <span className="text-gray-400 text-sm">Error al cargar imagen</span>
+            </div>
+          )}
+        </div>
 
-      {/* Overlay de texto */}
-      <div className="absolute inset-0 flex flex-col justify-end p-4 md:p-6">
-        <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 md:p-6 max-w-2xl">
-          {/* Título principal */}
-          <h1 className={`font-bold text-blue-900 mb-2 ${config.title}`}>
-            {title}
-          </h1>
-          
-          {/* Subtítulo */}
-          <p className={`text-blue-800 font-medium ${config.subtitle}`}>
-            {subtitle}
-          </p>
+        {/* Overlay de texto - CENTRADO */}
+        <div className="absolute inset-0 flex items-center justify-center p-4 md:p-6">
+          <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 md:p-6 max-w-2xl text-center">
+            {/* Título principal */}
+            <h1 className={`font-bold text-blue-900 mb-2 ${config.title}`}>
+              {title}
+            </h1>
+            
+            {/* Subtítulo */}
+            <p className={`text-blue-800 font-medium ${config.subtitle}`}>
+              {subtitle}
+            </p>
+          </div>
         </div>
       </div>
     </div>
