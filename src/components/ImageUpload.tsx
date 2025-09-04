@@ -32,12 +32,14 @@ export default function ImageUpload({
     setIsUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('banner', file);
-
+      // Usar el mismo sistema que manage-photos: enviar el archivo directamente
       const response = await fetch('/api/upload/banner', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': file.type,
+          'X-Vercel-Filename': file.name,
+        },
+        body: file,
       });
 
       const result = await response.json();
