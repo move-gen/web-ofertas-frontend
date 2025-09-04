@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         cars: {
           connect: cars.map((carId: number) => ({ id: carId })),
         },
-      } as any,
+      },
       include: {
         cars: true, // Include the related cars in the response
       },
