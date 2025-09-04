@@ -8,37 +8,18 @@ import {
   MobileNavToggle,
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Globe, Search } from 'lucide-react';
-import { Offer } from '@prisma/client';
 
 export default function Header() {
   const isBlue = true;
 
-  const [latestOffer, setLatestOffer] = useState<Offer | null>(null);
-
-  useEffect(() => {
-    const fetchLatestOffer = async () => {
-      try {
-        const response = await fetch('/api/offers/latest-offer');
-        if (!response.ok) {
-          throw new Error('Failed to fetch latest offer');
-        }
-        const offer = await response.json();
-        setLatestOffer(offer);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchLatestOffer();
-  }, []);
-
   const navItems = [
     { name: "Inicio", link: "/" },
     { name: "Coches", link: "/buscador" },
-    { name: "Ofertas", link: latestOffer ? `/ofertas/${latestOffer.slug}` : "/buscador" },
+    { name: "Ofertas", link: "/ofertas" },
     { name: "Contacto", link: "/contact" },
   ];
 

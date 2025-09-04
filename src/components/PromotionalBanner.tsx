@@ -17,25 +17,25 @@ export default function PromotionalBanner({
 }: PromotionalBannerProps) {
   const [imageError, setImageError] = useState(false);
 
-  // Configuración de tamaños responsive
+  // Configuración de tamaños responsive - Aumentados para ser casi el doble
   const sizeConfig = {
     small: {
-      container: 'h-64 md:h-80',
-      image: 'h-48 md:h-64',
-      title: 'text-2xl md:text-3xl',
-      subtitle: 'text-sm md:text-base'
+      container: 'h-96 md:h-[24rem] lg:h-[28rem]',
+      image: 'h-80 md:h-96 lg:h-[24rem]',
+      title: 'text-3xl md:text-4xl lg:text-5xl',
+      subtitle: 'text-base md:text-lg lg:text-xl'
     },
     medium: {
-      container: 'h-80 md:h-96',
-      image: 'h-64 md:h-80',
-      title: 'text-3xl md:text-4xl',
-      subtitle: 'text-base md:text-lg'
+      container: 'h-[24rem] md:h-[32rem] lg:h-[36rem]',
+      image: 'h-96 md:h-[28rem] lg:h-[32rem]',
+      title: 'text-4xl md:text-5xl lg:text-6xl',
+      subtitle: 'text-lg md:text-xl lg:text-2xl'
     },
     large: {
-      container: 'h-96 md:h-[28rem]',
-      image: 'h-80 md:h-96',
-      title: 'text-4xl md:text-5xl',
-      subtitle: 'text-lg md:text-xl'
+      container: 'h-[28rem] md:h-[36rem] lg:h-[40rem]',
+      image: 'h-[24rem] md:h-[32rem] lg:h-[36rem]',
+      title: 'text-5xl md:text-6xl lg:text-7xl',
+      subtitle: 'text-xl md:text-2xl lg:text-3xl'
     }
   };
 
