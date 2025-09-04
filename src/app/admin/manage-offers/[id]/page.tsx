@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation';
 import { Car, Offer } from '@prisma/client';
 import OfferCarsManager from '@/components/OfferCarsManager';
 
+// Forzar renderizado dinámico
+export const dynamic = 'force-dynamic';
+
 interface ManageOfferPageProps {
   params: Promise<{ id: string }>;
 }

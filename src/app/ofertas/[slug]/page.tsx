@@ -6,6 +6,9 @@ import { TypewriterEffectSmooth } from '@/components/ui/typewriter-effect';
 import PromotionalBanner from '@/components/PromotionalBanner';
 import { Car, Image as CarImage } from '@prisma/client';
 
+// Forzar renderizado dinámico
+export const dynamic = 'force-dynamic';
+
 interface OfferPageProps {
   params: Promise<{
     slug: string;

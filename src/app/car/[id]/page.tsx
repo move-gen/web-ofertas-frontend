@@ -2,6 +2,9 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import CarPageClient from '@/components/CarPageClient';
 
+// Forzar renderizado dinámico
+export const dynamic = 'force-dynamic';
+
 export default async function CarPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const carId = parseInt(id, 10);

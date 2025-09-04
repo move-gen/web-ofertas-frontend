@@ -9,6 +9,9 @@ import CarStack from '@/components/CarStack';
 import { Car } from '@/utils/types';
 import { Image as PrismaImage } from '@prisma/client';
 
+// Forzar renderizado dinámico
+export const dynamic = 'force-dynamic';
+
 type CarWithImages = Car & { images: PrismaImage[] };
 
 async function getFeaturedCars(): Promise<CarWithImages[]> {
