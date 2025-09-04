@@ -34,7 +34,15 @@ export async function POST(req: NextRequest) {
   if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const { title, cars } = await req.json();
+    const { 
+      title, 
+      cars, 
+      hasPromotionalBanner, 
+      bannerImageUrl, 
+      bannerTitle, 
+      bannerSubtitle, 
+      bannerSize 
+    } = await req.json();
 
     if (!title || !cars || !Array.isArray(cars) || cars.length === 0) {
       return NextResponse.json({ error: 'Invalid data: Title and at least one car are required' }, { status: 400 });
@@ -46,10 +54,15 @@ export async function POST(req: NextRequest) {
       data: {
         title,
         slug,
+        hasPromotionalBanner: hasPromotionalBanner || false,
+        bannerImageUrl: hasPromotionalBanner ? bannerImageUrl : null,
+        bannerTitle: hasPromotionalBanner ? bannerTitle : null,
+        bannerSubtitle: hasPromotionalBanner ? bannerSubtitle : null,
+        bannerSize: hasPromotionalBanner ? bannerSize : null,
         cars: {
           connect: cars.map((carId: number) => ({ id: carId })),
         },
-      },
+      } as any,
       include: {
         cars: true, // Include the related cars in the response
       },

@@ -108,8 +108,8 @@ const TransitionProvider = ({ children }: { children: React.ReactNode }) => {
     <div>
       {children}
       
-      {/* EXIT CURTAIN: Slides up to cover screen */}
-      <AnimatePresence>
+      {/* EXIT CURTAIN: Slides up to cover screen - COMENTADO */}
+      {/* <AnimatePresence>
         {isTransitioning && (
           <motion.div
             className="fixed top-0 left-0 w-full h-screen bg-[#0000FF] z-50 flex justify-center items-center"
@@ -128,7 +128,7 @@ const TransitionProvider = ({ children }: { children: React.ReactNode }) => {
             <Image src="/logo-200x50.png" alt="logo" width={200} height={50} />
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence> */}
     </div>
   );
 };

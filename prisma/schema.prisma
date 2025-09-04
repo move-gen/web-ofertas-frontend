@@ -90,6 +90,13 @@ model Offer {
   slug        String   @unique
   cars        Car[]    @relation("CarToOffer")
   
+  // Banner promocional
+  hasPromotionalBanner Boolean   @default(false)
+  bannerImageUrl       String?   // URL de la imagen/video/gif del banner
+  bannerTitle          String?   // Texto grande del banner
+  bannerSubtitle       String?   // Texto pequeño del banner
+  bannerSize           String?   @default("medium") // small, medium, large
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

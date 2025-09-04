@@ -3,6 +3,9 @@ import { useState, useEffect, useReducer } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Search, X, CheckCircle, AlertTriangle, Link as LinkIcon, Trash2 } from 'lucide-react';
 import { getToken } from '@/utils/auth';
 import { Car, Offer } from '@/utils/types';
@@ -30,6 +33,13 @@ export default function ManageOffersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Car[]>([]);
   const [selectedCars, setSelectedCars] = useState<Car[]>([]);
+  
+  // Campos del banner promocional
+  const [hasPromotionalBanner, setHasPromotionalBanner] = useState(false);
+  const [bannerImageUrl, setBannerImageUrl] = useState('');
+  const [bannerTitle, setBannerTitle] = useState('');
+  const [bannerSubtitle, setBannerSubtitle] = useState('');
+  const [bannerSize, setBannerSize] = useState<'small' | 'medium' | 'large'>('medium');
   
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -108,6 +118,13 @@ export default function ManageOffersPage() {
       setFeedback({ message: 'El título de la oferta y al menos un coche son obligatorios.', type: 'error' });
       return;
     }
+    
+    // Validar campos del banner si está habilitado
+    if (hasPromotionalBanner && (!bannerImageUrl || !bannerTitle || !bannerSubtitle)) {
+      setFeedback({ message: 'Si habilitas el banner promocional, debes completar todos los campos requeridos.', type: 'error' });
+      return;
+    }
+    
     setIsLoading(true);
     setFeedback(null);
     try {
@@ -115,18 +132,32 @@ export default function ManageOffersPage() {
       const response = await fetch('/api/offers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ title: offerTitle, cars: selectedCars.map(c => c.id) }),
+        body: JSON.stringify({ 
+          title: offerTitle, 
+          cars: selectedCars.map(c => c.id),
+          hasPromotionalBanner,
+          bannerImageUrl: hasPromotionalBanner ? bannerImageUrl : null,
+          bannerTitle: hasPromotionalBanner ? bannerTitle : null,
+          bannerSubtitle: hasPromotionalBanner ? bannerSubtitle : null,
+          bannerSize: hasPromotionalBanner ? bannerSize : null
+        }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'No se pudo crear la oferta.');
       
-      const offerUrl = `/buscador/${result.slug}`;
+      const offerUrl = `/ofertas/${result.slug}`;
       setFeedback({ message: `¡Oferta creada con éxito!`, type: 'link', url: offerUrl });
       
+      // Reset form
       setOfferTitle('');
       setSelectedCars([]);
       setSearchTerm('');
       setSearchResults([]);
+      setHasPromotionalBanner(false);
+      setBannerImageUrl('');
+      setBannerTitle('');
+      setBannerSubtitle('');
+      setBannerSize('medium');
       forceUpdate(); // Re-fetch offers
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Un error desconocido ocurrió.';
@@ -178,6 +209,80 @@ export default function ManageOffersPage() {
                 placeholder="Ej: Ofertas de Verano"
                 disabled={isLoading}
               />
+            </div>
+
+            {/* Sección Banner Promocional */}
+            <div className="border-t pt-6">
+              <div className="flex items-center space-x-2 mb-4">
+                <Checkbox
+                  id="has-banner"
+                  checked={hasPromotionalBanner}
+                  onCheckedChange={(checked) => setHasPromotionalBanner(checked as boolean)}
+                  disabled={isLoading}
+                />
+                <Label htmlFor="has-banner" className="text-sm font-medium">
+                  Añadir Banner Promocional
+                </Label>
+              </div>
+
+              {hasPromotionalBanner && (
+                <div className="space-y-4 pl-6 border-l-2 border-blue-200">
+                  <div>
+                    <Label htmlFor="banner-image" className="block text-sm font-medium text-gray-700 mb-1">
+                      URL de la Imagen/Video/GIF
+                    </Label>
+                    <Input
+                      id="banner-image"
+                      value={bannerImageUrl}
+                      onChange={(e) => setBannerImageUrl(e.target.value)}
+                      placeholder="https://ejemplo.com/imagen.jpg"
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="banner-title" className="block text-sm font-medium text-gray-700 mb-1">
+                      Título del Banner (Texto Grande)
+                    </Label>
+                    <Input
+                      id="banner-title"
+                      value={bannerTitle}
+                      onChange={(e) => setBannerTitle(e.target.value)}
+                      placeholder="Ej: Citroen C3"
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="banner-subtitle" className="block text-sm font-medium text-gray-700 mb-1">
+                      Subtítulo del Banner (Texto Pequeño)
+                    </Label>
+                    <Input
+                      id="banner-subtitle"
+                      value={bannerSubtitle}
+                      onChange={(e) => setBannerSubtitle(e.target.value)}
+                      placeholder="Ej: Sin entrada desde 145 €/Mes"
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="banner-size" className="block text-sm font-medium text-gray-700 mb-1">
+                      Tamaño del Banner
+                    </Label>
+                    <Select value={bannerSize} onValueChange={(value: 'small' | 'medium' | 'large') => setBannerSize(value)} disabled={isLoading}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un tamaño" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="small">Pequeño</SelectItem>
+                        <SelectItem value="medium">Mediano</SelectItem>
+                        <SelectItem value="large">Grande</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
             </div>
             <div>
               <label htmlFor="car-search" className="block text-sm font-medium text-gray-700 mb-1">Buscar Coches para Añadir</label>

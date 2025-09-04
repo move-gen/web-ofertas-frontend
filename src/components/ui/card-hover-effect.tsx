@@ -32,7 +32,8 @@ export const HoverEffect = ({
           onMouseEnter={() => setHoveredIndex(idx)}
           onMouseLeave={() => setHoveredIndex(null)}
         >
-          <AnimatePresence>
+          {/* Efecto azul fantasma comentado */}
+          {/* <AnimatePresence>
             {hoveredIndex === idx && (
               <motion.span
                 className="absolute inset-0 h-full w-full bg-primary/[0.4] dark:bg-primary/[0.5] block rounded-3xl"
@@ -48,7 +49,7 @@ export const HoverEffect = ({
                 }}
               />
             )}
-          </AnimatePresence>
+          </AnimatePresence> */}
           {item.children}
         </a>
       ))}
