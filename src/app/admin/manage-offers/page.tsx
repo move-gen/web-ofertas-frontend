@@ -262,50 +262,6 @@ export default function ManageOffersPage() {
                   Esta imagen aparecerá como portada en la página de ofertas
                 </p>
               </div>
-
-              {/* <div>
-                    <Label htmlFor="banner-title" className="block text-sm font-medium text-gray-700 mb-1">
-                      Título del Banner (Texto Grande)
-                    </Label>
-                    <Input
-                      id="banner-title"
-                      value={bannerTitle}
-                      onChange={(e) => setBannerTitle(e.target.value)}
-                      placeholder="Ej: Citroen C3"
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="banner-subtitle" className="block text-sm font-medium text-gray-700 mb-1">
-                      Subtítulo del Banner (Texto Pequeño)
-                    </Label>
-                    <Input
-                      id="banner-subtitle"
-                      value={bannerSubtitle}
-                      onChange={(e) => setBannerSubtitle(e.target.value)}
-                      placeholder="Ej: Sin entrada desde 145 €/Mes"
-                      disabled={isLoading}
-                    />
-                  </div> */}
-
-                  <div>
-                    <Label htmlFor="banner-size" className="block text-sm font-medium text-gray-700 mb-1">
-                      Tamaño del Banner
-                    </Label>
-                    <Select value={bannerSize} onValueChange={(value: 'small' | 'medium' | 'large') => setBannerSize(value)} disabled={isLoading}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un tamaño" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="small">Pequeño</SelectItem>
-                        <SelectItem value="medium">Mediano</SelectItem>
-                        <SelectItem value="large">Grande</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
             </div>
             <div>
               <label htmlFor="car-search" className="block text-sm font-medium text-gray-700 mb-1">Buscar Coches para Añadir</label>
