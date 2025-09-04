@@ -27,15 +27,16 @@ async function getFeaturedCars(): Promise<CarWithImages[]> {
     },
     include: {
       images: {
-        orderBy: {
-          isPrimary: 'desc'
-        }
+        where: {
+          isPrimary: true  // Solo cargar imagen principal
+        },
+        take: 1
       }
     },
     orderBy: {
       updatedAt: 'desc'
     },
-    take: 10
+    take: 8  // Reducir de 10 a 8 coches
   });
   
   // Transform to match the expected type

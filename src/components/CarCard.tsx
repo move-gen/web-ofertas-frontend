@@ -33,6 +33,7 @@ export default function CarCard({ car }: CarCardProps) {
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
+    rootMargin: '50px', // Cargar antes de que sea visible
   });
 
   const [aspectClass, setAspectClass] = useState('aspect-[4/3]');
@@ -68,11 +69,13 @@ export default function CarCard({ car }: CarCardProps) {
       className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transition-shadow hover:shadow-xl h-full"
     >
         <div className={`relative w-full bg-gray-100 overflow-hidden ${aspectClass}`}>
-          {primaryImage?.url && !imageError ? (
-            <img
+          {primaryImage?.url && !imageError && inView ? (
+            <Image
                 src={primaryImage.url}
                 alt={car.name}
-                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
                 onError={() => {
                   console.log(`❌ Imagen falló al cargar:`, primaryImage.url);
                   setImageError(true);
@@ -80,6 +83,7 @@ export default function CarCard({ car }: CarCardProps) {
                 onLoad={() => {
                   console.log(`✅ Imagen cargó exitosamente:`, primaryImage.url);
                 }}
+                priority={false} // Lazy loading
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200">
@@ -89,6 +93,7 @@ export default function CarCard({ car }: CarCardProps) {
                 width={200}
                 height={150}
                 className="object-contain opacity-50"
+                priority={false}
               />
             </div>
           )}
