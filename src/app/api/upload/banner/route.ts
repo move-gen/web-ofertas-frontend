@@ -37,7 +37,22 @@ export async function POST(request: NextRequest) {
       });
     } else {
       // En desarrollo o sin token, usar base64
-      const bytes = await file.arrayBuffer();
+      const chunks = [];
+      const reader = file.getReader();
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      
+      const bytes = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
+      let offset = 0;
+      for (const chunk of chunks) {
+        bytes.set(chunk, offset);
+        offset += chunk.length;
+      }
+      
       const buffer = Buffer.from(bytes);
       const base64 = buffer.toString('base64');
       const dataUrl = `data:${contentType};base64,${base64}`;
