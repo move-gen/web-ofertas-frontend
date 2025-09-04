@@ -39,8 +39,8 @@ export async function POST(req: NextRequest) {
       cars, 
       hasPromotionalBanner, 
       bannerImageUrl, 
-      bannerTitle, 
-      bannerSubtitle, 
+      // bannerTitle, 
+      // bannerSubtitle, 
       bannerSize 
     } = await req.json();
 
@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
         slug,
         hasPromotionalBanner: hasPromotionalBanner || false,
         bannerImageUrl: hasPromotionalBanner ? bannerImageUrl : null,
-        bannerTitle: hasPromotionalBanner ? bannerTitle : null,
-        bannerSubtitle: hasPromotionalBanner ? bannerSubtitle : null,
+        // bannerTitle: hasPromotionalBanner ? bannerTitle : null,
+        // bannerSubtitle: hasPromotionalBanner ? bannerSubtitle : null,
         bannerSize: hasPromotionalBanner ? bannerSize : null,
         cars: {
           connect: cars.map((carId: number) => ({ id: carId })),

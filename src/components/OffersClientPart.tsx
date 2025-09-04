@@ -33,6 +33,8 @@ export default function OffersClientPart() {
   const [allCars, setAllCars] = useState<CarData[]>([]);
   const [filteredCars, setFilteredCars] = useState<CarData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialCars, setInitialCars] = useState<CarData[]>([]);
+  const [loadingMore, setLoadingMore] = useState(false);
   
   const [activeSort, setActiveSort] = useState<SortType>('all');
   
@@ -53,13 +55,25 @@ export default function OffersClientPart() {
   const debouncedFilters = useDebounce(filters, 300);
 
   useEffect(() => {
-  const fetchCars = async () => {
-    try {
-      const response = await fetch('/api/cars');
-      const data = await response.json();
-        setAllCars(data);
-      } catch (error) { console.error('Error fetching cars:', error); }
-      finally { setLoading(false); }
+    const fetchCars = async () => {
+      try {
+        // Cargar solo los primeros 6 coches inmediatamente
+        const response = await fetch('/api/cars?limit=6');
+        const initialData = await response.json();
+        setInitialCars(initialData);
+        setAllCars(initialData);
+        setLoading(false);
+        
+        // Cargar el resto en segundo plano
+        setLoadingMore(true);
+        const fullResponse = await fetch('/api/cars');
+        const fullData = await fullResponse.json();
+        setAllCars(fullData);
+        setLoadingMore(false);
+      } catch (error) { 
+        console.error('Error fetching cars:', error); 
+        setLoading(false);
+      }
     };
     fetchCars();
   }, []);
@@ -159,9 +173,35 @@ export default function OffersClientPart() {
             </div>
           </div>
           <div className="lg:w-3/4">
-        <div className="flex justify-between items-center mb-6"><h1 className="text-2xl font-bold text-gray-800">{filteredCars.length} Coches de km 0 al mejor precio</h1><div className="flex items-center gap-2 flex-wrap">{['all', 'lowest_fee', 'lowest_kms', 'newest'].map(sort => <Button key={sort} onClick={() => setActiveSort(sort as SortType)} variant={getSortButtonVariant(sort as SortType)} size="sm">{ {all: 'Todos', lowest_fee: 'Menos cuota', lowest_kms: 'Menos kilómetros', newest: 'Más nuevos'}[sort] }</Button>)}</div></div>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">
+            {filteredCars.length} Coches de km 0 al mejor precio
+            {loadingMore && allCars.length > initialCars.length && (
+              <span className="text-sm text-gray-500 ml-2">
+                (Mostrando {filteredCars.length} de {allCars.length})
+              </span>
+            )}
+          </h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            {['all', 'lowest_fee', 'lowest_kms', 'newest'].map(sort => 
+              <Button key={sort} onClick={() => setActiveSort(sort as SortType)} variant={getSortButtonVariant(sort as SortType)} size="sm">
+                { {all: 'Todos', lowest_fee: 'Menos cuota', lowest_kms: 'Menos kilómetros', newest: 'Más nuevos'}[sort] }
+              </Button>
+            )}
+          </div>
+        </div>
         
         <HoverEffect items={carItems} />
+        
+        {/* Indicador de carga de más coches */}
+        {loadingMore && (
+          <div className="mt-8 flex justify-center items-center">
+            <div className="flex items-center space-x-2 text-gray-600">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <span>Cargando más coches...</span>
+            </div>
+          </div>
+        )}
             </div>
     </div></div></div>
   );

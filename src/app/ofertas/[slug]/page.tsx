@@ -53,11 +53,11 @@ export default async function OfferPage({ params }: OfferPageProps) {
   return (
     <div className="bg-gray-50">
       {/* Banner promocional */}
-      {offer.hasPromotionalBanner && offer.bannerImageUrl && offer.bannerTitle && offer.bannerSubtitle && (
+      {offer.hasPromotionalBanner && offer.bannerImageUrl && (
         <PromotionalBanner
           imageUrl={offer.bannerImageUrl}
-          title={offer.bannerTitle}
-          subtitle={offer.bannerSubtitle}
+          title="" // Comentado
+          subtitle="" // Comentado
           size={offer.bannerSize as 'small' | 'medium' | 'large' || 'medium'}
         />
       )}

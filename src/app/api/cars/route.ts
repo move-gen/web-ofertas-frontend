@@ -1,8 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const limit = searchParams.get('limit');
+    
     const cars = await prisma.car.findMany({
       include: {
         images: {
@@ -14,7 +17,8 @@ export async function GET() {
       },
       orderBy: {
         createdAt: 'desc',
-      }
+      },
+      ...(limit && { take: parseInt(limit) })  // Aplicar límite si se proporciona
     });
 
     return NextResponse.json(cars);

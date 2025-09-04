@@ -77,20 +77,18 @@ export default function PromotionalBanner({
           )}
         </div>
 
-        {/* Overlay de texto - CENTRADO */}
-        <div className="absolute inset-0 flex items-center justify-center p-4 md:p-6">
+        {/* Overlay de texto - COMENTADO */}
+        {/* <div className="absolute inset-0 flex items-center justify-center p-4 md:p-6">
           <div className="bg-white/90 backdrop-blur-sm rounded-lg p-4 md:p-6 max-w-2xl text-center">
-            {/* Título principal */}
             <h1 className={`font-bold text-blue-900 mb-2 ${config.title}`}>
               {title}
             </h1>
             
-            {/* Subtítulo */}
             <p className={`text-blue-800 font-medium ${config.subtitle}`}>
               {subtitle}
             </p>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

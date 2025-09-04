@@ -38,8 +38,8 @@ export default function ManageOffersPage() {
   // Campos del banner promocional
   const [hasPromotionalBanner, setHasPromotionalBanner] = useState(false);
   const [bannerImageUrl, setBannerImageUrl] = useState('');
-  const [bannerTitle, setBannerTitle] = useState('');
-  const [bannerSubtitle, setBannerSubtitle] = useState('');
+  // const [bannerTitle, setBannerTitle] = useState('');
+  // const [bannerSubtitle, setBannerSubtitle] = useState('');
   const [bannerSize, setBannerSize] = useState<'small' | 'medium' | 'large'>('medium');
   
   const [isLoading, setIsLoading] = useState(false);
@@ -121,8 +121,8 @@ export default function ManageOffersPage() {
     }
     
     // Validar campos del banner si está habilitado
-    if (hasPromotionalBanner && (!bannerImageUrl || !bannerTitle || !bannerSubtitle)) {
-      setFeedback({ message: 'Si habilitas el banner promocional, debes completar todos los campos requeridos.', type: 'error' });
+    if (hasPromotionalBanner && !bannerImageUrl) {
+      setFeedback({ message: 'Si habilitas el banner promocional, debes subir una imagen.', type: 'error' });
       return;
     }
     
@@ -138,8 +138,8 @@ export default function ManageOffersPage() {
           cars: selectedCars.map(c => c.id),
           hasPromotionalBanner,
           bannerImageUrl: hasPromotionalBanner ? bannerImageUrl : null,
-          bannerTitle: hasPromotionalBanner ? bannerTitle : null,
-          bannerSubtitle: hasPromotionalBanner ? bannerSubtitle : null,
+          // bannerTitle: hasPromotionalBanner ? bannerTitle : null,
+          // bannerSubtitle: hasPromotionalBanner ? bannerSubtitle : null,
           bannerSize: hasPromotionalBanner ? bannerSize : null
         }),
       });
@@ -156,8 +156,8 @@ export default function ManageOffersPage() {
       setSearchResults([]);
       setHasPromotionalBanner(false);
       setBannerImageUrl('');
-      setBannerTitle('');
-      setBannerSubtitle('');
+      // setBannerTitle('');
+      // setBannerSubtitle('');
       setBannerSize('medium');
       forceUpdate(); // Re-fetch offers
     } catch (error) {
@@ -240,7 +240,7 @@ export default function ManageOffersPage() {
                     />
                   </div>
 
-                  <div>
+                  {/* <div>
                     <Label htmlFor="banner-title" className="block text-sm font-medium text-gray-700 mb-1">
                       Título del Banner (Texto Grande)
                     </Label>
@@ -264,7 +264,7 @@ export default function ManageOffersPage() {
                       placeholder="Ej: Sin entrada desde 145 €/Mes"
                       disabled={isLoading}
                     />
-                  </div>
+                  </div> */}
 
                   <div>
                     <Label htmlFor="banner-size" className="block text-sm font-medium text-gray-700 mb-1">
