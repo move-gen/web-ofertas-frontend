@@ -97,6 +97,9 @@ model Offer {
   bannerSubtitle       String?   // Texto pequeño del banner
   bannerSize           String?   @default("medium") // small, medium, large
   
+  // Foto de portada de la oferta
+  coverImageUrl        String?   // URL de la foto de portada de la oferta
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

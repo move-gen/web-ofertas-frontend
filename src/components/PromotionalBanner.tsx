@@ -46,7 +46,7 @@ export default function PromotionalBanner({
   };
 
   return (
-    <div className="mt-16"> {/* Espacio del header */}
+    <div className="mt-24"> {/* Espacio del header - 3 dedos más */}
       <div className={`relative w-full ${config.container} bg-white overflow-hidden`}>
         {/* Imagen de fondo */}
         <div className={`relative w-full ${config.image} flex items-center justify-center`}>

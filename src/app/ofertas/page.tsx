@@ -1,4 +1,4 @@
-import OfferSection from '@/components/OfferSection';
+import OffersGrid from '@/components/OffersGrid';
 import { Car, Offer, Image as CarImage } from '@prisma/client';
 
 type CarWithImages = Car & { images: CarImage[] };
@@ -15,13 +15,14 @@ async function getOffersFeed(): Promise<OfferWithCars[]> {
 }
 
 export default async function OffersFeedPage() {
-  const offers: OfferWithCars[] = await getOffersFeed();
+  const allOffers: OfferWithCars[] = await getOffersFeed();
+  
+  // Mostrar solo las 3 últimas ofertas
+  const offers = allOffers.slice(0, 3);
 
   return (
     <div className="pt-24 bg-gray-50">
-      {offers.map((offer: OfferWithCars) => (
-        <OfferSection key={offer.id} offer={offer} />
-      ))}
+      <OffersGrid offers={offers} />
     </div>
   );
 }

@@ -42,6 +42,9 @@ export default function ManageOffersPage() {
   // const [bannerSubtitle, setBannerSubtitle] = useState('');
   const [bannerSize, setBannerSize] = useState<'small' | 'medium' | 'large'>('medium');
   
+  // Campo de foto de portada
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'error' | 'link'; url?: string } | null>(null);
@@ -140,7 +143,8 @@ export default function ManageOffersPage() {
           bannerImageUrl: hasPromotionalBanner ? bannerImageUrl : null,
           // bannerTitle: hasPromotionalBanner ? bannerTitle : null,
           // bannerSubtitle: hasPromotionalBanner ? bannerSubtitle : null,
-          bannerSize: hasPromotionalBanner ? bannerSize : null
+          bannerSize: hasPromotionalBanner ? bannerSize : null,
+          coverImageUrl: coverImageUrl
         }),
       });
       const result = await response.json();
@@ -159,6 +163,7 @@ export default function ManageOffersPage() {
       // setBannerTitle('');
       // setBannerSubtitle('');
       setBannerSize('medium');
+      setCoverImageUrl(null);
       forceUpdate(); // Re-fetch offers
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Un error desconocido ocurrió.';
@@ -239,8 +244,26 @@ export default function ManageOffersPage() {
                       maxSize={5}
                     />
                   </div>
+                </div>
+              )}
 
-                  {/* <div>
+              {/* Campo de foto de portada */}
+              <div>
+                <Label className="block text-sm font-medium text-gray-700 mb-1">
+                  Foto de Portada de la Oferta
+                </Label>
+                <ImageUpload
+                  value={coverImageUrl || ''}
+                  onChange={(url) => setCoverImageUrl(url)}
+                  accept="image/*"
+                  maxSize={5}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Esta imagen aparecerá como portada en la página de ofertas
+                </p>
+              </div>
+
+              {/* <div>
                     <Label htmlFor="banner-title" className="block text-sm font-medium text-gray-700 mb-1">
                       Título del Banner (Texto Grande)
                     </Label>
