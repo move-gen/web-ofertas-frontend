@@ -8,7 +8,7 @@ type OfferWithCars = Offer & {
     id: number;
     name: string;
     regularPrice: number;
-    monthlyFinancingFee?: number;
+    monthlyFinancingFee?: number | null;
     images: Array<{
       url: string;
       isPrimary: boolean;

@@ -12,7 +12,7 @@ interface PromotionalBannerProps {
 export default function PromotionalBanner({ 
   imageUrl, 
   title, 
-  subtitle, 
+  // subtitle, 
   size 
 }: PromotionalBannerProps) {
   const [imageError, setImageError] = useState(false);
