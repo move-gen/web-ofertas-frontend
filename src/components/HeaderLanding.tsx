@@ -21,7 +21,7 @@ export default function HeaderLanding() {
         <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
           <Link href="/" className="hover:text-gray-300">Inicio</Link>
           <Link href="/buscador" className="hover:text-gray-300">Coches</Link>
-          <Link href="/buscador" className="hover:text-gray-300">Ofertas</Link>
+          <Link href="/ofertas" className="hover:text-gray-300">Ofertas</Link>
           <Link href="/contact" className="hover:text-gray-300">Contacto</Link>
         </nav>
 
@@ -52,7 +52,7 @@ export default function HeaderLanding() {
             <nav className="flex flex-col divide-y divide-gray-200">
               <Link href="/" className="px-5 py-4 hover:bg-gray-100" onClick={() => setIsOpen(false)}>Inicio</Link>
               <Link href="/buscador" className="px-5 py-4 hover:bg-gray-100" onClick={() => setIsOpen(false)}>Coches</Link>
-              <Link href="/buscador" className="px-5 py-4 hover:bg-gray-100" onClick={() => setIsOpen(false)}>Ofertas</Link>
+              <Link href="/ofertas" className="px-5 py-4 hover:bg-gray-100" onClick={() => setIsOpen(false)}>Ofertas</Link>
               <Link href="/contact" className="px-5 py-4 hover:bg-gray-100" onClick={() => setIsOpen(false)}>Contacto</Link>
             </nav>
           </div>
