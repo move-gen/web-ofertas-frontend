@@ -15,6 +15,9 @@ import { Globe, Search } from 'lucide-react';
 
 export default function Header() {
   const isBlue = true;
+  
+  // Forzar actualización del componente
+  console.log('Header renderizado - Ofertas link: /ofertas');
 
   const navItems = [
     { name: "Inicio", link: "/" },

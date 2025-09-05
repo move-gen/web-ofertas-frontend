@@ -11,13 +11,15 @@ export async function GET() {
         cars: {
           include: {
             images: {
-              where: { isPrimary: true },
+              orderBy: { isPrimary: 'desc' },
               take: 1,
             },
           },
         },
       },
     });
+    
+    console.log('📋 Offers found:', offers.length);
     return NextResponse.json(offers);
   } catch (error) {
     console.error('Failed to fetch offers feed:', error);
