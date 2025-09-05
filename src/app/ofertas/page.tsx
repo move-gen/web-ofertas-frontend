@@ -1,5 +1,6 @@
 import OffersGrid from '@/components/OffersGrid';
 import { Car, Offer, Image as CarImage } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,13 +8,24 @@ type CarWithImages = Car & { images: CarImage[] };
 type OfferWithCars = Offer & { cars: CarWithImages[] };
 
 async function getOffersFeed(): Promise<OfferWithCars[]> {
-  const response = await fetch('/api/offers/feed', {
-    cache: 'no-store', // Fetch fresh data on each request
+  const offers = await prisma.offer.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
+    include: {
+      cars: {
+        include: {
+          images: {
+            orderBy: { isPrimary: 'desc' },
+            take: 1,
+          },
+        },
+      },
+    },
   });
-  if (!response.ok) {
-    throw new Error('Failed to fetch offers feed');
-  }
-  return response.json();
+  
+  console.log('📋 Offers found:', offers.length);
+  return offers;
 }
 
 export default async function OffersFeedPage() {
