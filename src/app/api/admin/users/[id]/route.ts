@@ -68,7 +68,11 @@ export async function PUT(
     }
 
     // Preparar datos de actualización
-    const updateData: any = {
+    const updateData: {
+      email: string;
+      role: 'USER' | 'ADMIN';
+      password?: string;
+    } = {
       email,
       role: role as 'USER' | 'ADMIN',
     };
