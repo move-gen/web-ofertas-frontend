@@ -24,13 +24,14 @@ async function verifyAdmin(req: NextRequest) {
 // PUT - Actualizar usuario
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const isAdmin = await verifyAdmin(req);
   if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const userId = parseInt(params.id);
+    const resolvedParams = await params;
+    const userId = parseInt(resolvedParams.id);
     const { email, password, role } = await req.json();
 
     if (!email || !role) {
@@ -108,13 +109,14 @@ export async function PUT(
 // DELETE - Eliminar usuario
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const isAdmin = await verifyAdmin(req);
   if (!isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {
-    const userId = parseInt(params.id);
+    const resolvedParams = await params;
+    const userId = parseInt(resolvedParams.id);
 
     // Verificar si el usuario existe
     const existingUser = await prisma.user.findUnique({
