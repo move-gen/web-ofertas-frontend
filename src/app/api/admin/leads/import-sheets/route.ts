@@ -275,6 +275,93 @@ export async function POST(request: NextRequest) {
 
         results.leads.push(lead);
 
+        // Enviar automáticamente a Walcu como lead de adquisición/tasación
+        try {
+          console.log(`Enviando lead ${lead.id} a Walcu como tasación`);
+          
+          // Preparar datos del vehículo del cliente (que quiere vender)
+          const carData = {
+            make: leadData.carMake ? String(leadData.carMake) : '',
+            model: leadData.carModel ? String(leadData.carModel) : '',
+            year: typeof leadData.carYear === 'number' ? leadData.carYear : new Date().getFullYear(),
+            license_plate: leadData.carLicensePlate ? String(leadData.carLicensePlate) : '',
+            stock_number: leadData.carStockNumber ? String(leadData.carStockNumber) : '',
+            category: 'car' as const,
+            type: 'used' as const
+          };
+
+          // Preparar mensaje con campos adicionales no mapeados
+          let fullMessage = leadData.message ? String(leadData.message) : 'Cliente interesado en vender su vehículo';
+          
+          // Añadir campos adicionales al mensaje si existen
+          const additionalFields = Object.entries(leadData)
+            .filter(([key, value]) => 
+              value && 
+              !['firstName', 'lastName', 'email', 'phone', 'message', 'carMake', 'carModel', 'carYear', 'carLicensePlate', 'carStockNumber', 'source', 'medium', 'campaign'].includes(key)
+            )
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(', ');
+          
+          if (additionalFields) {
+            fullMessage += ` | Información adicional: ${additionalFields}`;
+          }
+
+          // Enviar a Walcu como lead de tasación/adquisición
+          const walcuResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/walcu/leads`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'appraisal', // Tipo tasación para adquisición
+              firstName: String(leadData.firstName),
+              lastName: String(leadData.lastName || ''),
+              email: String(leadData.email),
+              phone: leadData.phone ? String(leadData.phone) : undefined,
+              message: fullMessage,
+              car: carData,
+              source: leadData.source ? String(leadData.source) : 'google_sheets',
+              medium: leadData.medium ? String(leadData.medium) : 'manual_import',
+              campaign: leadData.campaign ? String(leadData.campaign) : 'acquisition_import'
+            })
+          });
+
+          if (walcuResponse.ok) {
+            const walcuResult = await walcuResponse.json();
+            console.log(`Lead ${lead.id} enviado exitosamente a Walcu`, walcuResult.data?._id);
+            
+            // Actualizar el lead con el ID de Walcu
+            await prisma.lead.update({
+              where: { id: lead.id },
+              data: { 
+                walcuLeadId: walcuResult.data?._id || null,
+                walcuStatus: 'sent'
+              }
+            });
+          } else {
+            const walcuError = await walcuResponse.text();
+            console.error(`Error enviando lead ${lead.id} a Walcu:`, walcuResponse.status, walcuError);
+            
+            await prisma.lead.update({
+              where: { id: lead.id },
+              data: { 
+                walcuStatus: 'failed',
+                walcuError: `HTTP ${walcuResponse.status}: ${walcuError}`
+              }
+            });
+          }
+        } catch (walcuError) {
+          console.error(`Error enviando lead ${lead.id} a Walcu:`, walcuError);
+          
+          await prisma.lead.update({
+            where: { id: lead.id },
+            data: { 
+              walcuStatus: 'failed',
+              walcuError: walcuError instanceof Error ? walcuError.message : 'Error desconocido'
+            }
+          });
+        }
+
       } catch (error) {
         console.error(`Error procesando fila ${i + 2}:`, error);
         results.errors.push(`Fila ${i + 2}: Error procesando datos - ${error instanceof Error ? error.message : 'Error desconocido'}`);

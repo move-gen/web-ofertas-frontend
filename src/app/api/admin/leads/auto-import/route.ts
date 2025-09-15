@@ -420,6 +420,92 @@ export async function POST() {
 
         results.leads.push(lead);
 
+        // Enviar automáticamente a Walcu como lead de adquisición/tasación
+        try {
+          logDebug(`Enviando lead ${lead.id} a Walcu como tasación`);
+          
+          // Preparar datos del vehículo del cliente (que quiere vender)
+          const carData = {
+            make: leadData.carMake ? String(leadData.carMake) : '',
+            model: leadData.carModel ? String(leadData.carModel) : '',
+            year: typeof leadData.carYear === 'number' ? leadData.carYear : new Date().getFullYear(),
+            license_plate: leadData.carLicensePlate ? String(leadData.carLicensePlate) : '',
+            stock_number: leadData.carStockNumber ? String(leadData.carStockNumber) : '',
+            category: 'car' as const,
+            type: 'used' as const
+          };
+
+          // Preparar mensaje con campos adicionales no mapeados
+          let fullMessage = leadData.message ? String(leadData.message) : 'Cliente interesado en vender su vehículo';
+          
+          // Añadir campos adicionales al mensaje
+          if (Object.keys(additionalData).length > 0) {
+            const additionalInfo = Object.entries(additionalData)
+              .filter(([, value]) => value)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(', ');
+            
+            if (additionalInfo) {
+              fullMessage += ` | Información adicional: ${additionalInfo}`;
+            }
+          }
+
+          // Enviar a Walcu como lead de tasación/adquisición
+          const walcuResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/walcu/leads`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              type: 'appraisal', // Tipo tasación para adquisición
+              firstName: String(leadData.firstName),
+              lastName: String(leadData.lastName || ''),
+              email: String(leadData.email),
+              phone: leadData.phone ? String(leadData.phone) : undefined,
+              message: fullMessage,
+              car: carData,
+              source: leadData.source ? String(leadData.source) : 'google_sheets',
+              medium: leadData.medium ? String(leadData.medium) : 'auto_import',
+              campaign: leadData.campaign ? String(leadData.campaign) : 'acquisition_import'
+            })
+          });
+
+          if (walcuResponse.ok) {
+            const walcuResult = await walcuResponse.json();
+            logDebug(`Lead ${lead.id} enviado exitosamente a Walcu`, { walcuId: walcuResult.data?._id });
+            
+            // Actualizar el lead con el ID de Walcu
+            await prisma.lead.update({
+              where: { id: lead.id },
+              data: { 
+                walcuLeadId: walcuResult.data?._id || null,
+                walcuStatus: 'sent'
+              }
+            });
+          } else {
+            const walcuError = await walcuResponse.text();
+            logError(`Error enviando lead ${lead.id} a Walcu`, { status: walcuResponse.status, error: walcuError });
+            
+            await prisma.lead.update({
+              where: { id: lead.id },
+              data: { 
+                walcuStatus: 'failed',
+                walcuError: `HTTP ${walcuResponse.status}: ${walcuError}`
+              }
+            });
+          }
+        } catch (walcuError) {
+          logError(`Error enviando lead ${lead.id} a Walcu`, walcuError);
+          
+          await prisma.lead.update({
+            where: { id: lead.id },
+            data: { 
+              walcuStatus: 'failed',
+              walcuError: walcuError instanceof Error ? walcuError.message : 'Error desconocido'
+            }
+          });
+        }
+
       } catch (error) {
         logError(`Error procesando fila ${i + 2}`, error);
         results.errors.push(`Fila ${i + 2}: Error procesando datos - ${error instanceof Error ? error.message : 'Error desconocido'}`);
