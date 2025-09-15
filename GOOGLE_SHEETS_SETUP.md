@@ -40,9 +40,16 @@ Abre el archivo JSON descargado y busca estos campos:
 Crea o edita el archivo `.env.local` en la raíz de tu proyecto:
 
 ```bash
-# Google Sheets API Configuration
+# Google Sheets API Configuration (Requerido)
 GOOGLE_SERVICE_ACCOUNT_EMAIL="genesis-documentos@hallowed-cortex-468010-b4.iam.gserviceaccount.com"
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...\n-----END PRIVATE KEY-----\n"
+
+# Configuración de Importación Automática (Opcional pero Recomendado)
+GOOGLE_SHEETS_DEFAULT_SPREADSHEET_ID="1ABC123DEF456GHI789JKL"
+GOOGLE_SHEETS_DEFAULT_SHEET_NAME="Leads"
+GOOGLE_SHEETS_DEFAULT_RANGE=""
+GOOGLE_SHEETS_AUTO_IMPORT="true"
+GOOGLE_SHEETS_AUTO_IMPORT_INTERVAL="300000"
 ```
 
 **⚠️ Importante**: 
@@ -64,20 +71,34 @@ GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAAS
 6. Haz clic en **"Compartir"**
 
 ### Paso 2: Formato de la Hoja de Cálculo
-La primera fila debe contener los headers. Columnas reconocidas:
+La primera fila debe contener los headers. El sistema reconoce automáticamente múltiples variaciones:
 
-| Columna Recomendada | Alternativas Aceptadas |
-|-------------------|----------------------|
-| nombre | first_name, firstname |
-| apellido | apellidos, last_name, lastname |
-| email | correo, correo_electronico |
-| telefono | teléfono, phone, movil, móvil |
-| mensaje | message, comentario, comentarios |
-| marca | make, car_make |
-| modelo | model, car_model |
-| año | year, car_year |
-| matricula | matrícula, license_plate, numberplate |
-| stock | stock_number, sku |
+#### Campos Principales
+| Campo | Variaciones Reconocidas |
+|-------|------------------------|
+| **Nombre** | nombre, first_name, firstname, first name, name, cliente, contacto |
+| **Apellido** | apellido, apellidos, last_name, lastname, surname, family_name |
+| **Email** | email, correo, correo_electronico, e-mail, mail, email_address |
+| **Teléfono** | telefono, teléfono, phone, movil, móvil, celular, tel, mobile |
+| **Mensaje** | mensaje, message, comentario, observaciones, notas, consulta |
+
+#### Información del Vehículo
+| Campo | Variaciones Reconocidas |
+|-------|------------------------|
+| **Marca** | marca, make, car_make, fabricante, brand |
+| **Modelo** | modelo, model, car_model, version_corta |
+| **Año** | año, year, car_year, anio, año_fabricacion |
+| **Matrícula** | matricula, matrícula, license_plate, numberplate, placa |
+| **Stock/SKU** | stock, stock_number, sku, codigo, referencia |
+
+#### Campos Adicionales (Automáticos)
+El sistema también detecta automáticamente:
+- **Ubicación**: ciudad, provincia, codigo_postal
+- **Comerciales**: presupuesto, financiacion, urgencia
+- **Marketing**: fuente, medio, campaña
+- **Calificación**: puntuacion, lead_score
+
+**💡 Ventaja**: Cualquier columna no reconocida se incluye automáticamente en el campo "mensaje" del lead.
 
 **Ejemplo de estructura:**
 ```
@@ -87,9 +108,23 @@ Juan | Pérez | juan@email.com | 123456789 | Interesado en el coche | Toyota | C
 
 ## 4. Uso del Sistema
 
-### Importar Leads
+### Importación Automática (Recomendado)
+Si configuraste las variables de entorno para importación automática:
+
 1. Ve a **Admin > Gestión de Leads**
-2. Haz clic en **"Importar desde Sheets"**
+2. Haz clic en **"Importar Automático"** (botón azul con rayo ⚡)
+3. El sistema importará automáticamente desde la hoja configurada
+4. Verás un resumen completo con:
+   - Estadísticas de importación
+   - Mapeo automático de columnas
+   - Campos adicionales detectados
+   - Errores si los hay
+
+### Importación Manual
+Si necesitas importar desde una hoja diferente:
+
+1. Ve a **Admin > Gestión de Leads**
+2. Haz clic en **"Configurar Importación"**
 3. Pega la URL completa de tu Google Sheet o solo el ID
 4. Especifica el nombre de la hoja si no es "Hoja1"
 5. Opcionalmente, especifica un rango (ej: A1:H100)

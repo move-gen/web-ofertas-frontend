@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import GoogleSheetsImporter from '@/components/admin/GoogleSheetsImporter';
 import LeadDetailsModal from '@/components/admin/LeadDetailsModal';
+import AutoImportButton from '@/components/admin/AutoImportButton';
 import { Lead, LeadsResponse } from '@/types/lead';
 
 export default function AdminLeadsPage() {
@@ -193,17 +194,22 @@ export default function AdminLeadsPage() {
               </p>
             </div>
             <div className="flex gap-3">
+              <AutoImportButton 
+                onImportComplete={() => {
+                  fetchLeads(); // Recargar leads después de importar
+                }}
+              />
               <button
                 onClick={() => setShowImporter(true)}
                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2 transition-colors"
               >
                 <FileSpreadsheet className="w-4 h-4" />
-                Importar desde Sheets
+                Configurar Importación
               </button>
               <button
                 onClick={fetchLeads}
                 disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Actualizar
