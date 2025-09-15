@@ -14,55 +14,12 @@ import {
   Mail,
   Phone,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  FileSpreadsheet,
 } from 'lucide-react';
-
-interface Lead {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  message?: string;
-  carId?: number;
-  carMake?: string;
-  carModel?: string;
-  carYear?: number;
-  carLicensePlate?: string;
-  carStockNumber?: string;
-  source?: string;
-  medium?: string;
-  campaign?: string;
-  walcuLeadId?: string;
-  walcuStatus: 'pending' | 'sent' | 'failed';
-  walcuError?: string;
-  createdAt: string;
-  car?: {
-    id: number;
-    make?: string;
-    model?: string;
-    version?: string;
-    year?: number;
-    numberplate?: string;
-    sku?: string;
-    regularPrice?: number;
-    images: { url: string }[];
-  };
-}
-
-interface LeadsResponse {
-  success: boolean;
-  data: {
-    leads: Lead[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      pages: number;
-    };
-    statusSummary: Record<string, number>;
-  };
-}
+import GoogleSheetsImporter from '@/components/admin/GoogleSheetsImporter';
+import LeadDetailsModal from '@/components/admin/LeadDetailsModal';
+import { Lead, LeadsResponse } from '@/types/lead';
 
 export default function AdminLeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -78,6 +35,9 @@ export default function AdminLeadsPage() {
     pages: 0
   });
   const [statusSummary, setStatusSummary] = useState<Record<string, number>>({});
+  const [showImporter, setShowImporter] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [showLeadDetails, setShowLeadDetails] = useState(false);
 
   // Cargar leads
   const fetchLeads = useCallback(async () => {
@@ -157,6 +117,32 @@ export default function AdminLeadsPage() {
     }
   };
 
+  // Actualizar lead
+  const updateLead = async (leadId: string, updates: Partial<Lead>) => {
+    try {
+      const response = await fetch(`/api/admin/leads/${leadId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+      });
+
+      if (response.ok) {
+        setLeads(prev => prev.map(lead => 
+          lead.id === leadId ? { ...lead, ...updates } : lead
+        ));
+        fetchLeads(); // Recargar para actualizar contadores
+      }
+    } catch (err) {
+      console.error('Error actualizando lead:', err);
+    }
+  };
+
+  // Abrir detalles del lead
+  const openLeadDetails = (lead: Lead) => {
+    setSelectedLead(lead);
+    setShowLeadDetails(true);
+  };
+
   // Obtener icono de estado
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -197,12 +183,33 @@ export default function AdminLeadsPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Gestión de Leads
-          </h1>
-          <p className="text-gray-600">
-            Administra todos los leads recibidos y su estado de envío a Walcu CRM
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Gestión de Leads
+              </h1>
+              <p className="text-gray-600">
+                Administra todos los leads recibidos y su estado de envío a Walcu CRM
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowImporter(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2 transition-colors"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                Importar desde Sheets
+              </button>
+              <button
+                onClick={fetchLeads}
+                disabled={loading}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Actualizar
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Estadísticas */}
@@ -353,7 +360,8 @@ export default function AdminLeadsPage() {
                         key={lead.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="hover:bg-gray-50"
+                        className="hover:bg-gray-50 cursor-pointer"
+                        onClick={() => openLeadDetails(lead)}
                       >
                         {/* Cliente */}
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -463,9 +471,10 @@ export default function AdminLeadsPage() {
 
                         {/* Acciones */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                             <button
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 // Marcar como enviado manualmente
                                 updateWalcuStatus(lead.id, 'sent', `manual_${Date.now()}`);
                               }}
@@ -477,7 +486,8 @@ export default function AdminLeadsPage() {
                             </button>
 
                             <button
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 // Marcar como fallido
                                 updateWalcuStatus(lead.id, 'failed', undefined, 'Error manual');
                               }}
@@ -489,7 +499,10 @@ export default function AdminLeadsPage() {
                             </button>
 
                             <button
-                              onClick={() => deleteLead(lead.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteLead(lead.id);
+                              }}
                               className="text-red-600 hover:text-red-900"
                               title="Eliminar lead"
                             >
@@ -559,6 +572,28 @@ export default function AdminLeadsPage() {
             </>
           )}
         </div>
+
+        {/* Google Sheets Importer Modal */}
+        <GoogleSheetsImporter
+          isOpen={showImporter}
+          onClose={() => setShowImporter(false)}
+          onImportComplete={() => {
+            setShowImporter(false);
+            fetchLeads(); // Recargar leads después de importar
+          }}
+        />
+
+        {/* Lead Details Modal */}
+        <LeadDetailsModal
+          lead={selectedLead}
+          isOpen={showLeadDetails}
+          onClose={() => {
+            setShowLeadDetails(false);
+            setSelectedLead(null);
+          }}
+          onUpdate={updateLead}
+          onDelete={deleteLead}
+        />
       </div>
     </div>
   );
