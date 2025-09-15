@@ -19,7 +19,7 @@ const logError = (message: string, error?: unknown) => {
 };
 
 // Configuración de autenticación con Google Sheets
-const getGoogleAuth = () => {
+const getGoogleAuth = async () => {
   logDebug('Iniciando configuración de autenticación Google');
   
   // Validar que las variables de entorno existan
@@ -35,16 +35,50 @@ const getGoogleAuth = () => {
     throw new Error('Faltan credenciales de Google Sheets. Verifica GOOGLE_SERVICE_ACCOUNT_EMAIL y GOOGLE_PRIVATE_KEY en las variables de entorno.');
   }
 
-  // Usar JWT directamente para mayor control
-  logDebug('Creando cliente JWT');
-  const auth = new google.auth.JWT({
-    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+  // Procesar la clave privada más cuidadosamente
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY
+    .replace(/\\n/g, '\n')
+    .replace(/"/g, '')  // Remover comillas si las hay
+    .trim();
+    
+  logDebug('Clave privada procesada', {
+    keyStartsWith: privateKey.substring(0, 50),
+    keyEndsWith: privateKey.substring(privateKey.length - 50),
+    keyLength: privateKey.length,
+    hasBeginMarker: privateKey.includes('-----BEGIN PRIVATE KEY-----'),
+    hasEndMarker: privateKey.includes('-----END PRIVATE KEY-----')
   });
-  
-  logDebug('Cliente JWT creado exitosamente');
-  return auth;
+
+  try {
+    // Método 1: Intentar con JWT directo
+    logDebug('Intentando autenticación con JWT directo');
+    const jwtAuth = new google.auth.JWT({
+      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      key: privateKey,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+    });
+    
+    await jwtAuth.authorize();
+    logDebug('Autenticación JWT exitosa');
+    return jwtAuth;
+    
+  } catch (jwtError) {
+    logError('Error con JWT directo, intentando GoogleAuth', jwtError);
+    
+    // Método 2: Usar GoogleAuth como alternativa
+    const googleAuth = new google.auth.GoogleAuth({
+      credentials: {
+        type: 'service_account',
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        private_key: privateKey,
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+    });
+    
+    const authClient = await googleAuth.getClient();
+    logDebug('Autenticación GoogleAuth exitosa');
+    return authClient;
+  }
 };
 
 // Función mejorada para mapear datos del sheet a formato de lead
@@ -120,11 +154,8 @@ export async function POST() {
 
     // Configurar autenticación
     logDebug('Configurando autenticación');
-    const auth = getGoogleAuth();
-    
-    logDebug('Autorizando cliente JWT');
-    await auth.authorize();
-    logDebug('Cliente JWT autorizado exitosamente');
+    const auth = await getGoogleAuth();
+    logDebug('Autenticación completada exitosamente');
     
     const sheets = google.sheets({ version: 'v4', auth });
     logDebug('Cliente Google Sheets creado');
