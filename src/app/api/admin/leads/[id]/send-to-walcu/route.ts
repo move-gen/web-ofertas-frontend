@@ -72,31 +72,49 @@ export async function POST(
       carData
     });
 
-    // Enviar a Walcu usando el mismo endpoint que funciona en los formularios
-    const walcuResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/walcu/leadimport`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        firstName: lead.firstName,
-        lastName: lead.lastName || '',
-        email: lead.email,
-        phone: lead.phone || undefined,
-        message: fullMessage,
-        car: carData
-      })
-    });
-
-    if (walcuResponse.ok) {
-      const walcuResult = await walcuResponse.json();
-      console.log(`[WALCU SEND] Lead enviado exitosamente:`, walcuResult.leadId);
+    // Enviar a Walcu directamente usando el servicio
+    try {
+      console.log(`[WALCU SEND] Enviando lead ${leadId} a Walcu directamente`);
+      
+      const { WalcuCRMService } = await import('@/services/walcu-crm');
+      const walcuService = new WalcuCRMService();
+      
+      // Crear payload según el formato oficial de Walcu (JSONLead)
+      const leadPayload = {
+        payload: {
+          client: {
+            foreign_id: `@${Date.now()}`,
+            first_name: lead.firstName,
+            last_name: lead.lastName || '',
+            email: lead.email,
+            phone: lead.phone || undefined
+          },
+          sales_lead: {
+            foreign_id: `lead_${Date.now()}`,
+            inquiry: fullMessage,
+            car: {
+              make: carData.make,
+              model: carData.model,
+              year: carData.year,
+              license_plate: carData.license_plate,
+              stock_number: carData.stock_number
+            }
+          },
+          version: "1.0.0"
+        }
+      };
+      
+      console.log(`[WALCU SEND] Payload para Walcu:`, leadPayload);
+      
+      const walcuResponse = await walcuService.api.post("/leadimporttasks", leadPayload);
+      
+      console.log(`[WALCU SEND] Lead enviado exitosamente:`, walcuResponse.data._id);
       
       // Actualizar el lead con el ID de Walcu
       await prisma.lead.update({
         where: { id: leadId },
         data: { 
-          walcuLeadId: walcuResult.leadId || undefined,
+          walcuLeadId: walcuResponse.data._id || undefined,
           walcuStatus: 'sent',
           walcuError: undefined // Limpiar errores previos
         }
@@ -106,27 +124,26 @@ export async function POST(
         success: true,
         message: 'Lead enviado exitosamente a Walcu como tasación',
         data: {
-          walcuLeadId: walcuResult.leadId,
+          walcuLeadId: walcuResponse.data._id,
           leadId: leadId
         }
       });
-    } else {
-      const walcuError = await walcuResponse.text();
-      console.error(`[WALCU SEND] Error enviando a Walcu:`, walcuResponse.status, walcuError);
+    } catch (walcuDirectError) {
+      console.error(`[WALCU SEND] Error enviando a Walcu directamente:`, walcuDirectError);
       
       // Actualizar el lead con el error
       await prisma.lead.update({
         where: { id: leadId },
         data: { 
           walcuStatus: 'failed',
-          walcuError: `HTTP ${walcuResponse.status}: ${walcuError}`
+          walcuError: walcuDirectError instanceof Error ? walcuDirectError.message : 'Error desconocido'
         }
       });
 
       return NextResponse.json(
         {
           success: false,
-          error: `Error enviando a Walcu: ${walcuResponse.status} - ${walcuError}`
+          error: `Error enviando a Walcu: ${walcuDirectError instanceof Error ? walcuDirectError.message : 'Error desconocido'}`
         },
         { status: 500 }
       );
