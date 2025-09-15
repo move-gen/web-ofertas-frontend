@@ -1,17 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { prisma } from '@/lib/prisma';
 import { GOOGLE_SHEETS_CONFIG, autoMapColumns, getUnmappedColumns } from '@/lib/google-sheets-config';
 
 // Función para logging detallado
-const logDebug = (message: string, data?: any) => {
+const logDebug = (message: string, data?: unknown) => {
   console.log(`[AUTO-IMPORT DEBUG] ${new Date().toISOString()} - ${message}`);
   if (data) {
     console.log(`[AUTO-IMPORT DATA]`, JSON.stringify(data, null, 2));
   }
 };
 
-const logError = (message: string, error?: any) => {
+const logError = (message: string, error?: unknown) => {
   console.error(`[AUTO-IMPORT ERROR] ${new Date().toISOString()} - ${message}`);
   if (error) {
     console.error(`[AUTO-IMPORT ERROR DETAILS]`, error);
