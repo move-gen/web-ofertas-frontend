@@ -3,20 +3,47 @@ import { google } from 'googleapis';
 import { prisma } from '@/lib/prisma';
 import { GOOGLE_SHEETS_CONFIG, autoMapColumns, getUnmappedColumns } from '@/lib/google-sheets-config';
 
+// Función para logging detallado
+const logDebug = (message: string, data?: any) => {
+  console.log(`[AUTO-IMPORT DEBUG] ${new Date().toISOString()} - ${message}`);
+  if (data) {
+    console.log(`[AUTO-IMPORT DATA]`, JSON.stringify(data, null, 2));
+  }
+};
+
+const logError = (message: string, error?: any) => {
+  console.error(`[AUTO-IMPORT ERROR] ${new Date().toISOString()} - ${message}`);
+  if (error) {
+    console.error(`[AUTO-IMPORT ERROR DETAILS]`, error);
+  }
+};
+
 // Configuración de autenticación con Google Sheets
 const getGoogleAuth = () => {
+  logDebug('Iniciando configuración de autenticación Google');
+  
   // Validar que las variables de entorno existan
+  logDebug('Verificando variables de entorno', {
+    hasEmail: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    hasPrivateKey: !!process.env.GOOGLE_PRIVATE_KEY,
+    emailValue: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ? 'SET' : 'NOT_SET',
+    privateKeyLength: process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.length : 0
+  });
+  
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+    logError('Faltan credenciales de Google Sheets');
     throw new Error('Faltan credenciales de Google Sheets. Verifica GOOGLE_SERVICE_ACCOUNT_EMAIL y GOOGLE_PRIVATE_KEY en las variables de entorno.');
   }
 
   // Usar JWT directamente para mayor control
+  logDebug('Creando cliente JWT');
   const auth = new google.auth.JWT({
     email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
   });
   
+  logDebug('Cliente JWT creado exitosamente');
   return auth;
 };
 
@@ -71,9 +98,17 @@ const mapSheetRowToLead = (
 };
 
 export async function POST() {
+  logDebug('=== INICIANDO IMPORTACIÓN AUTOMÁTICA ===');
+  
   try {
+    // Verificar configuración inicial
+    logDebug('Verificando configuración inicial', {
+      config: GOOGLE_SHEETS_CONFIG
+    });
+    
     // Verificar si hay configuración por defecto
     if (!GOOGLE_SHEETS_CONFIG.DEFAULT_SPREADSHEET_ID) {
+      logError('No hay spreadsheet ID configurado');
       return NextResponse.json(
         { 
           error: 'No hay hoja de cálculo configurada por defecto. Configura GOOGLE_SHEETS_DEFAULT_SPREADSHEET_ID en las variables de entorno.',
@@ -84,18 +119,29 @@ export async function POST() {
     }
 
     // Configurar autenticación
+    logDebug('Configurando autenticación');
     const auth = getGoogleAuth();
+    
+    logDebug('Autorizando cliente JWT');
     await auth.authorize();
+    logDebug('Cliente JWT autorizado exitosamente');
+    
     const sheets = google.sheets({ version: 'v4', auth });
+    logDebug('Cliente Google Sheets creado');
 
     // Usar configuración por defecto
     const spreadsheetId = GOOGLE_SHEETS_CONFIG.DEFAULT_SPREADSHEET_ID;
     const sheetName = GOOGLE_SHEETS_CONFIG.DEFAULT_SHEET_NAME;
     const range = GOOGLE_SHEETS_CONFIG.DEFAULT_RANGE || `${sheetName}!A:ZZ`; // Leer todas las columnas
 
-    console.log(`Importación automática desde: ${spreadsheetId}, hoja: ${sheetName}`);
+    logDebug('Configuración de importación', {
+      spreadsheetId,
+      sheetName,
+      range
+    });
 
     // Leer datos del sheet
+    logDebug('Realizando petición a Google Sheets API');
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
@@ -103,9 +149,16 @@ export async function POST() {
       dateTimeRenderOption: 'FORMATTED_STRING'
     });
 
+    logDebug('Respuesta recibida de Google Sheets API', {
+      hasData: !!response.data,
+      hasValues: !!response.data.values,
+      valuesLength: response.data.values?.length || 0
+    });
+
     const rows = response.data.values;
 
     if (!rows || rows.length === 0) {
+      logError('No se encontraron datos en la hoja de cálculo');
       return NextResponse.json(
         { error: 'No se encontraron datos en la hoja de cálculo' },
         { status: 404 }
@@ -116,15 +169,24 @@ export async function POST() {
     const headers = rows[0].map(h => String(h));
     const dataRows = rows.slice(1);
 
-    console.log(`Headers detectados: ${headers.join(', ')}`);
-    console.log(`Filas de datos: ${dataRows.length}`);
+    logDebug('Datos extraídos del sheet', {
+      headers,
+      totalRows: rows.length,
+      dataRowsCount: dataRows.length,
+      firstDataRow: dataRows[0] || null
+    });
 
     // Mapeo automático de columnas
+    logDebug('Iniciando mapeo automático de columnas');
     const columnMapping = autoMapColumns(headers);
     const unmappedColumns = getUnmappedColumns(headers, columnMapping);
 
-    console.log('Mapeo de columnas:', columnMapping);
-    console.log('Columnas adicionales:', unmappedColumns);
+    logDebug('Mapeo de columnas completado', {
+      columnMapping,
+      unmappedColumns,
+      mappedCount: Object.keys(columnMapping).length,
+      unmappedCount: unmappedColumns.length
+    });
 
     // Procesar cada fila y crear leads
     const results = {
@@ -139,11 +201,22 @@ export async function POST() {
       additionalFieldsFound: unmappedColumns.length > 0
     };
 
+    logDebug('Iniciando procesamiento de filas', {
+      totalDataRows: dataRows.length
+    });
+
     for (let i = 0; i < dataRows.length; i++) {
       const row = dataRows[i];
       
+      logDebug(`Procesando fila ${i + 1}/${dataRows.length}`, {
+        rowIndex: i,
+        rowData: row,
+        isEmpty: !row || row.every(cell => !cell || String(cell).trim() === '')
+      });
+      
       // Saltar filas completamente vacías
       if (!row || row.every(cell => !cell || String(cell).trim() === '')) {
+        logDebug(`Saltando fila ${i + 2} (vacía)`);
         continue;
       }
       
@@ -151,11 +224,19 @@ export async function POST() {
 
       try {
         // Mapear datos de la fila
+        logDebug(`Mapeando datos de fila ${i + 2}`);
         const { leadData, additionalData } = mapSheetRowToLead(row, headers, columnMapping, unmappedColumns);
+
+        logDebug(`Datos mapeados para fila ${i + 2}`, {
+          leadData,
+          additionalData
+        });
 
         // Validar datos mínimos requeridos
         if (!leadData.firstName || !leadData.email) {
-          results.errors.push(`Fila ${i + 2}: Faltan datos requeridos (nombre o email)`);
+          const errorMsg = `Fila ${i + 2}: Faltan datos requeridos (nombre o email)`;
+          logError(errorMsg, { leadData });
+          results.errors.push(errorMsg);
           results.skipped++;
           continue;
         }
@@ -170,18 +251,28 @@ export async function POST() {
         }
 
         // Buscar si ya existe un lead con este email
+        logDebug(`Buscando lead existente con email: ${emailStr}`);
         const existingLead = await prisma.lead.findFirst({
           where: { email: emailStr }
+        });
+        
+        logDebug(`Resultado búsqueda lead existente`, {
+          found: !!existingLead,
+          leadId: existingLead?.id || null
         });
 
         // Intentar encontrar el coche relacionado si se proporciona SKU
         let carId = null;
         if (leadData.carStockNumber) {
+          logDebug(`Buscando coche con SKU: ${leadData.carStockNumber}`);
           const car = await prisma.car.findFirst({
             where: { sku: String(leadData.carStockNumber) }
           });
           if (car) {
             carId = car.id;
+            logDebug(`Coche encontrado`, { carId, carSku: car.sku });
+          } else {
+            logDebug(`No se encontró coche con SKU: ${leadData.carStockNumber}`);
           }
         }
 
@@ -220,6 +311,10 @@ export async function POST() {
           walcuStatus: 'pending'
         };
 
+        logDebug(`Preparando payload del lead para fila ${i + 2}`, {
+          leadPayload
+        });
+
         let lead;
         if (existingLead) {
           // Solo actualizar si han pasado más de 24 horas desde la última actualización
@@ -227,33 +322,54 @@ export async function POST() {
           const now = new Date();
           const hoursDiff = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
           
+          logDebug(`Lead existente - verificando si actualizar`, {
+            lastUpdate: lastUpdate.toISOString(),
+            now: now.toISOString(),
+            hoursDiff,
+            shouldUpdate: hoursDiff > 24
+          });
+          
           if (hoursDiff > 24) {
+            logDebug(`Actualizando lead existente: ${existingLead.id}`);
             lead = await prisma.lead.update({
               where: { id: existingLead.id },
               data: leadPayload
             });
             results.updated++;
+            logDebug(`Lead actualizado exitosamente: ${lead.id}`);
           } else {
+            logDebug(`Saltando lead (actualizado recientemente): ${existingLead.id}`);
             results.skipped++;
             continue;
           }
         } else {
           // Crear nuevo lead
+          logDebug(`Creando nuevo lead`);
           lead = await prisma.lead.create({
             data: leadPayload
           });
           results.created++;
+          logDebug(`Lead creado exitosamente: ${lead.id}`);
         }
 
         results.leads.push(lead);
 
       } catch (error) {
-        console.error(`Error procesando fila ${i + 2}:`, error);
+        logError(`Error procesando fila ${i + 2}`, error);
         results.errors.push(`Fila ${i + 2}: Error procesando datos - ${error instanceof Error ? error.message : 'Error desconocido'}`);
       }
     }
 
-    console.log('Resultados de importación automática:', results);
+    logDebug('=== IMPORTACIÓN COMPLETADA ===', {
+      results: {
+        processed: results.processed,
+        created: results.created,
+        updated: results.updated,
+        skipped: results.skipped,
+        errorsCount: results.errors.length,
+        totalLeads: results.leads.length
+      }
+    });
 
     return NextResponse.json({
       success: true,
@@ -274,7 +390,7 @@ export async function POST() {
     });
 
   } catch (error: unknown) {
-    console.error('Error en importación automática de Google Sheets:', error);
+    logError('=== ERROR CRÍTICO EN IMPORTACIÓN AUTOMÁTICA ===', error);
     
     let errorMessage = 'Error interno del servidor';
     let statusCode = 500;
