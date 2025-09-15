@@ -157,7 +157,8 @@ export async function POST() {
     const auth = await getGoogleAuth();
     logDebug('Autenticación completada exitosamente');
     
-    const sheets = google.sheets({ version: 'v4', auth });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sheets = google.sheets({ version: 'v4', auth: auth as any });
     logDebug('Cliente Google Sheets creado');
 
     // Usar configuración por defecto
