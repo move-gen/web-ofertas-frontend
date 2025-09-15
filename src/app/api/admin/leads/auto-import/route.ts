@@ -22,6 +22,40 @@ const logError = (message: string, error?: unknown) => {
 const getGoogleAuth = async () => {
   logDebug('Iniciando configuración de autenticación Google');
   
+  // Verificar si tenemos credenciales en Base64 (método preferido)
+  if (process.env.GOOGLE_CREDENTIALS_BASE64) {
+    logDebug('Usando credenciales Base64 (método recomendado)');
+    
+    try {
+      // Decodificar las credenciales Base64
+      const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
+      const credentials = JSON.parse(credentialsJson);
+      
+      logDebug('Credenciales Base64 decodificadas exitosamente', {
+        type: credentials.type,
+        client_email: credentials.client_email,
+        project_id: credentials.project_id
+      });
+      
+      // Usar GoogleAuth con las credenciales completas
+      const googleAuth = new google.auth.GoogleAuth({
+        credentials,
+        scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+      });
+      
+      const authClient = await googleAuth.getClient();
+      logDebug('Autenticación con credenciales Base64 exitosa');
+      return authClient;
+      
+    } catch (base64Error) {
+      logError('Error procesando credenciales Base64', base64Error);
+      // Continuar con el método alternativo
+    }
+  }
+  
+  // Método alternativo: usar email y clave privada separados
+  logDebug('Usando método alternativo con email y clave privada separados');
+  
   // Validar que las variables de entorno existan
   logDebug('Verificando variables de entorno', {
     hasEmail: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -32,7 +66,7 @@ const getGoogleAuth = async () => {
   
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
     logError('Faltan credenciales de Google Sheets');
-    throw new Error('Faltan credenciales de Google Sheets. Verifica GOOGLE_SERVICE_ACCOUNT_EMAIL y GOOGLE_PRIVATE_KEY en las variables de entorno.');
+    throw new Error('Faltan credenciales de Google Sheets. Verifica GOOGLE_CREDENTIALS_BASE64 o GOOGLE_SERVICE_ACCOUNT_EMAIL y GOOGLE_PRIVATE_KEY en las variables de entorno.');
   }
 
   // Procesar la clave privada más cuidadosamente

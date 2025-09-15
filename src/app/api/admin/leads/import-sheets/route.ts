@@ -3,10 +3,32 @@ import { google } from 'googleapis';
 import { prisma } from '@/lib/prisma';
 
 // Configuración de autenticación con Google Sheets
-const getGoogleAuth = () => {
-  // Validar que las variables de entorno existan
+const getGoogleAuth = async () => {
+  // Verificar si tenemos credenciales en Base64 (método preferido)
+  if (process.env.GOOGLE_CREDENTIALS_BASE64) {
+    try {
+      // Decodificar las credenciales Base64
+      const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
+      const credentials = JSON.parse(credentialsJson);
+      
+      // Usar GoogleAuth con las credenciales completas
+      const googleAuth = new google.auth.GoogleAuth({
+        credentials,
+        scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+      });
+      
+      const authClient = await googleAuth.getClient();
+      return authClient;
+      
+    } catch (base64Error) {
+      console.error('Error procesando credenciales Base64:', base64Error);
+      // Continuar con el método alternativo
+    }
+  }
+  
+  // Método alternativo: usar email y clave privada separados
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
-    throw new Error('Faltan credenciales de Google Sheets. Verifica GOOGLE_SERVICE_ACCOUNT_EMAIL y GOOGLE_PRIVATE_KEY en las variables de entorno.');
+    throw new Error('Faltan credenciales de Google Sheets. Verifica GOOGLE_CREDENTIALS_BASE64 o GOOGLE_SERVICE_ACCOUNT_EMAIL y GOOGLE_PRIVATE_KEY en las variables de entorno.');
   }
 
   // Usar JWT directamente para mayor control
@@ -16,6 +38,7 @@ const getGoogleAuth = () => {
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
   });
   
+  await auth.authorize();
   return auth;
 };
 
@@ -128,12 +151,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Configurar autenticación
-    const auth = getGoogleAuth();
+    const auth = await getGoogleAuth();
     
-    // Autorizar la conexión
-    await auth.authorize();
-    
-    const sheets = google.sheets({ version: 'v4', auth });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sheets = google.sheets({ version: 'v4', auth: auth as any });
 
     // Determinar el rango a leer
     const finalRange = range || `${sheetName || 'Hoja1'}!A:Z`;
@@ -355,12 +376,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const auth = getGoogleAuth();
+    const auth = await getGoogleAuth();
     
-    // Autorizar la conexión
-    await auth.authorize();
-    
-    const sheets = google.sheets({ version: 'v4', auth });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sheets = google.sheets({ version: 'v4', auth: auth as any });
 
     // Obtener información de la hoja
     const spreadsheetInfo = await sheets.spreadsheets.get({
