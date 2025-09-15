@@ -337,35 +337,31 @@ export async function POST(request: NextRequest) {
             fullMessage += ` | Información adicional: ${additionalFields}`;
           }
 
-          // Enviar a Walcu como lead de tasación/adquisición
-          const walcuResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/walcu/leads`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              type: 'appraisal', // Tipo tasación para adquisición
-              firstName: String(leadData.firstName),
-              lastName: String(leadData.lastName || ''),
-              email: String(leadData.email),
-              phone: leadData.phone ? String(leadData.phone) : undefined,
-              message: fullMessage,
-              car: carData,
-              source: leadData.source ? String(leadData.source) : 'google_sheets',
-              medium: leadData.medium ? String(leadData.medium) : 'manual_import',
-              campaign: leadData.campaign ? String(leadData.campaign) : 'acquisition_import'
-            })
-          });
+            // Enviar a Walcu usando el mismo endpoint que funciona en los formularios
+            const walcuResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/walcu/leadimport`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                firstName: String(leadData.firstName),
+                lastName: String(leadData.lastName || ''),
+                email: String(leadData.email),
+                phone: leadData.phone ? String(leadData.phone) : undefined,
+                message: fullMessage,
+                car: carData
+              })
+            });
 
           if (walcuResponse.ok) {
             const walcuResult = await walcuResponse.json();
-            console.log(`Lead ${lead.id} enviado exitosamente a Walcu`, walcuResult.data?._id);
+            console.log(`Lead ${lead.id} enviado exitosamente a Walcu`, walcuResult.leadId);
             
             // Actualizar el lead con el ID de Walcu
             await prisma.lead.update({
               where: { id: lead.id },
               data: { 
-                walcuLeadId: walcuResult.data?._id || null,
+                walcuLeadId: walcuResult.leadId || undefined,
                 walcuStatus: 'sent'
               }
             });

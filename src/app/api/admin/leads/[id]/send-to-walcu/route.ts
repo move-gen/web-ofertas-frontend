@@ -72,35 +72,31 @@ export async function POST(
       carData
     });
 
-    // Enviar a Walcu como lead de tasación/adquisición
-    const walcuResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/walcu/leads`, {
+    // Enviar a Walcu usando el mismo endpoint que funciona en los formularios
+    const walcuResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/walcu/leadimport`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        type: 'appraisal', // Tipo tasación para adquisición
         firstName: lead.firstName,
         lastName: lead.lastName || '',
         email: lead.email,
         phone: lead.phone || undefined,
         message: fullMessage,
-        car: carData,
-        source: lead.source || 'admin_panel',
-        medium: lead.medium || 'manual_send',
-        campaign: lead.campaign || 'manual_acquisition'
+        car: carData
       })
     });
 
     if (walcuResponse.ok) {
       const walcuResult = await walcuResponse.json();
-      console.log(`[WALCU SEND] Lead enviado exitosamente:`, walcuResult.data?._id);
+      console.log(`[WALCU SEND] Lead enviado exitosamente:`, walcuResult.leadId);
       
       // Actualizar el lead con el ID de Walcu
       await prisma.lead.update({
         where: { id: leadId },
         data: { 
-          walcuLeadId: walcuResult.data?._id || undefined,
+          walcuLeadId: walcuResult.leadId || undefined,
           walcuStatus: 'sent',
           walcuError: undefined // Limpiar errores previos
         }
@@ -110,7 +106,7 @@ export async function POST(
         success: true,
         message: 'Lead enviado exitosamente a Walcu como tasación',
         data: {
-          walcuLeadId: walcuResult.data?._id,
+          walcuLeadId: walcuResult.leadId,
           leadId: leadId
         }
       });

@@ -401,31 +401,14 @@ export async function POST() {
 
         let lead;
         if (existingLead) {
-          // Solo actualizar si han pasado más de 24 horas desde la última actualización
-          const lastUpdate = new Date(existingLead.updatedAt);
-          const now = new Date();
-          const hoursDiff = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60);
-          
-          logDebug(`Lead existente - verificando si actualizar`, {
-            lastUpdate: lastUpdate.toISOString(),
-            now: now.toISOString(),
-            hoursDiff,
-            shouldUpdate: hoursDiff > 24
+          // Siempre actualizar el lead existente con los nuevos datos
+          logDebug(`Actualizando lead existente: ${existingLead.id}`);
+          lead = await prisma.lead.update({
+            where: { id: existingLead.id },
+            data: leadPayload
           });
-          
-          if (hoursDiff > 24) {
-            logDebug(`Actualizando lead existente: ${existingLead.id}`);
-            lead = await prisma.lead.update({
-              where: { id: existingLead.id },
-              data: leadPayload
-            });
-            results.updated++;
-            logDebug(`Lead actualizado exitosamente: ${lead.id}`);
-          } else {
-            logDebug(`Saltando lead (actualizado recientemente): ${existingLead.id}`);
-            results.skipped++;
-            continue;
-          }
+          results.updated++;
+          logDebug(`Lead actualizado exitosamente: ${lead.id}`);
         } else {
           // Crear nuevo lead
           logDebug(`Creando nuevo lead`);
@@ -468,35 +451,31 @@ export async function POST() {
             }
           }
 
-          // Enviar a Walcu como lead de tasación/adquisición
-          const walcuResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/walcu/leads`, {
+          // Enviar a Walcu usando el mismo endpoint que funciona en los formularios
+          const walcuResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/walcu/leadimport`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              type: 'appraisal', // Tipo tasación para adquisición
               firstName: String(leadData.firstName),
               lastName: String(leadData.lastName || ''),
               email: String(leadData.email),
               phone: leadData.phone ? String(leadData.phone) : undefined,
               message: fullMessage,
-              car: carData,
-              source: leadData.source ? String(leadData.source) : 'google_sheets',
-              medium: leadData.medium ? String(leadData.medium) : 'auto_import',
-              campaign: leadData.campaign ? String(leadData.campaign) : 'acquisition_import'
+              car: carData
             })
           });
 
           if (walcuResponse.ok) {
             const walcuResult = await walcuResponse.json();
-            logDebug(`Lead ${lead.id} enviado exitosamente a Walcu`, { walcuId: walcuResult.data?._id });
+            logDebug(`Lead ${lead.id} enviado exitosamente a Walcu`, { leadId: walcuResult.leadId });
             
             // Actualizar el lead con el ID de Walcu
             await prisma.lead.update({
               where: { id: lead.id },
               data: { 
-                walcuLeadId: walcuResult.data?._id || null,
+                walcuLeadId: walcuResult.leadId || undefined,
                 walcuStatus: 'sent'
               }
             });
