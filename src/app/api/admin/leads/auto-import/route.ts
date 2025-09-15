@@ -298,22 +298,40 @@ export async function POST() {
           additionalData
         });
 
-        // Validar datos mínimos requeridos
-        if (!leadData.firstName || !leadData.email) {
-          const errorMsg = `Fila ${i + 2}: Faltan datos requeridos (nombre o email)`;
-          logError(errorMsg, { leadData });
-          results.errors.push(errorMsg);
-          results.skipped++;
-          continue;
+        // Extraer datos de forma flexible
+        // Si no hay firstName, intentar extraer de full_name o usar valor por defecto
+        if (!leadData.firstName && additionalData.full_name) {
+          const fullName = String(additionalData.full_name).trim();
+          const nameParts = fullName.split(' ');
+          leadData.firstName = nameParts[0] || '';
+          leadData.lastName = nameParts.slice(1).join(' ') || '';
+          logDebug(`Extrayendo nombre de full_name: ${fullName} -> ${leadData.firstName} ${leadData.lastName}`);
         }
 
-        // Validar formato de email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Valores por defecto para campos obligatorios
+        if (!leadData.firstName) {
+          leadData.firstName = 'Cliente';
+        }
+        
+        if (!leadData.email) {
+          // Generar un email temporal basado en la fila
+          leadData.email = `lead_fila_${i + 2}_${Date.now()}@temp.local`;
+          logDebug(`Generando email temporal para fila ${i + 2}: ${leadData.email}`);
+        }
+
+        // Validar formato de email solo si parece ser un email real
         const emailStr = String(leadData.email);
-        if (!emailRegex.test(emailStr)) {
-          results.errors.push(`Fila ${i + 2}: Email inválido: ${emailStr}`);
-          results.skipped++;
-          continue;
+        if (!emailStr.includes('@temp.local')) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(emailStr)) {
+            // Si el email es inválido, generar uno temporal pero mantener el original en el mensaje
+            const originalEmail = emailStr;
+            leadData.email = `lead_fila_${i + 2}_${Date.now()}@temp.local`;
+            leadData.message = leadData.message ? 
+              `${leadData.message} | Email original: ${originalEmail}` : 
+              `Email original: ${originalEmail}`;
+            logDebug(`Email inválido convertido a temporal para fila ${i + 2}: ${originalEmail} -> ${leadData.email}`);
+          }
         }
 
         // Buscar si ya existe un lead con este email

@@ -16,6 +16,7 @@ import {
   Calendar,
   MessageSquare,
   FileSpreadsheet,
+  Send,
 } from 'lucide-react';
 import GoogleSheetsImporter from '@/components/admin/GoogleSheetsImporter';
 import LeadDetailsModal from '@/components/admin/LeadDetailsModal';
@@ -39,6 +40,9 @@ export default function AdminLeadsPage() {
   const [showImporter, setShowImporter] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showLeadDetails, setShowLeadDetails] = useState(false);
+  const [sendingToWalcu, setSendingToWalcu] = useState<string | null>(null);
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [bulkSending, setBulkSending] = useState(false);
 
   // Cargar leads
   const fetchLeads = useCallback(async () => {
@@ -73,32 +77,6 @@ export default function AdminLeadsPage() {
     fetchLeads();
   }, [currentPage, statusFilter, search, fetchLeads]);
 
-  // Actualizar estado de Walcu
-  const updateWalcuStatus = async (leadId: string, status: string, walcuLeadId?: string, error?: string) => {
-    try {
-      const response = await fetch(`/api/admin/leads/${leadId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          walcuStatus: status,
-          walcuLeadId,
-          walcuError: error
-        })
-      });
-
-      if (response.ok) {
-        // Actualizar estado local
-        setLeads(prev => prev.map(lead => 
-          lead.id === leadId 
-            ? { ...lead, walcuStatus: status as 'pending' | 'sent' | 'failed', walcuLeadId, walcuError: error }
-            : lead
-        ));
-        fetchLeads(); // Recargar para actualizar contadores
-      }
-    } catch (err) {
-      console.error('Error actualizando estado:', err);
-    }
-  };
 
   // Eliminar lead
   const deleteLead = async (leadId: string) => {
@@ -138,10 +116,127 @@ export default function AdminLeadsPage() {
     }
   };
 
+  // Enviar lead a Walcu
+  const sendToWalcu = async (leadId: string) => {
+    setSendingToWalcu(leadId);
+    
+    try {
+      const response = await fetch(`/api/admin/leads/${leadId}/send-to-walcu`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Actualizar el lead en la lista
+        setLeads(prev => prev.map(lead => 
+          lead.id === leadId 
+            ? { 
+                ...lead, 
+                walcuStatus: 'sent' as const, 
+                walcuLeadId: result.data.walcuLeadId,
+                walcuError: undefined 
+              }
+            : lead
+        ));
+        
+        alert('Lead enviado exitosamente a Walcu como tasación');
+      } else {
+        // Actualizar el lead con el error
+        setLeads(prev => prev.map(lead => 
+          lead.id === leadId 
+            ? { 
+                ...lead, 
+                walcuStatus: 'failed' as const, 
+                walcuError: result.error 
+              }
+            : lead
+        ));
+        
+        alert(`Error enviando a Walcu: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error enviando lead a Walcu:', error);
+      alert('Error de conexión al enviar a Walcu');
+    } finally {
+      setSendingToWalcu(null);
+    }
+  };
+
   // Abrir detalles del lead
   const openLeadDetails = (lead: Lead) => {
     setSelectedLead(lead);
     setShowLeadDetails(true);
+  };
+
+  // Manejar selección de leads
+  const toggleLeadSelection = (leadId: string) => {
+    const newSelected = new Set(selectedLeads);
+    if (newSelected.has(leadId)) {
+      newSelected.delete(leadId);
+    } else {
+      newSelected.add(leadId);
+    }
+    setSelectedLeads(newSelected);
+  };
+
+  const selectAllLeads = () => {
+    const eligibleLeads = leads.filter(lead => lead.walcuStatus !== 'sent');
+    setSelectedLeads(new Set(eligibleLeads.map(lead => lead.id)));
+  };
+
+  const clearSelection = () => {
+    setSelectedLeads(new Set());
+  };
+
+  // Envío masivo a Walcu
+  const bulkSendToWalcu = async () => {
+    if (selectedLeads.size === 0) {
+      alert('Selecciona al menos un lead para enviar');
+      return;
+    }
+
+    if (!confirm(`¿Enviar ${selectedLeads.size} leads a Walcu como tasaciones?`)) {
+      return;
+    }
+
+    setBulkSending(true);
+    
+    try {
+      const response = await fetch('/api/admin/leads/bulk-send-to-walcu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadIds: Array.from(selectedLeads) })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Actualizar los leads en la lista
+        setLeads(prev => prev.map(lead => {
+          if (selectedLeads.has(lead.id)) {
+            return { ...lead, walcuStatus: 'sent' as const, walcuError: undefined };
+          }
+          return lead;
+        }));
+        
+        clearSelection();
+        fetchLeads(); // Recargar para obtener los datos actualizados
+        
+        alert(`Proceso completado: ${result.data.sent} enviados, ${result.data.failed} fallidos`);
+        
+        if (result.data.errors.length > 0) {
+          console.log('Errores en envío masivo:', result.data.errors);
+        }
+      } else {
+        alert(`Error en envío masivo: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error en envío masivo:', error);
+      alert('Error de conexión durante el envío masivo');
+    } finally {
+      setBulkSending(false);
+    }
   };
 
   // Obtener icono de estado
@@ -193,28 +288,59 @@ export default function AdminLeadsPage() {
                 Administra todos los leads recibidos y su estado de envío a Walcu CRM
               </p>
             </div>
-            <div className="flex gap-3">
-              <AutoImportButton 
-                onImportComplete={() => {
-                  fetchLeads(); // Recargar leads después de importar
-                }}
-              />
+        <div className="flex gap-3">
+          <AutoImportButton
+            onImportComplete={() => {
+              fetchLeads(); // Recargar leads después de importar
+            }}
+          />
+          <button
+            onClick={() => setShowImporter(true)}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2 transition-colors"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            Configurar Importación
+          </button>
+          
+          {/* Controles de selección masiva */}
+          {selectedLeads.size > 0 && (
+            <>
               <button
-                onClick={() => setShowImporter(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center gap-2 transition-colors"
+                onClick={bulkSendToWalcu}
+                disabled={bulkSending}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
               >
-                <FileSpreadsheet className="w-4 h-4" />
-                Configurar Importación
+                {bulkSending ? (
+                  <>
+                    <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Enviar {selectedLeads.size} a Walcu
+                  </>
+                )}
               </button>
               <button
-                onClick={fetchLeads}
-                disabled={loading}
-                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
+                onClick={clearSelection}
+                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 flex items-center gap-2 transition-colors"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Actualizar
+                <XCircle className="w-4 h-4" />
+                Limpiar Selección
               </button>
-            </div>
+            </>
+          )}
+          
+          <button
+            onClick={fetchLeads}
+            disabled={loading}
+            className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 flex items-center gap-2 transition-colors"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Actualizar
+          </button>
+        </div>
           </div>
         </div>
 
@@ -338,11 +464,25 @@ export default function AdminLeadsPage() {
             <>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Cliente
-                      </th>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedLeads.size > 0 && selectedLeads.size === leads.filter(l => l.walcuStatus !== 'sent').length}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            selectAllLeads();
+                          } else {
+                            clearSelection();
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      Cliente
+                    </div>
+                  </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Vehículo
                       </th>
@@ -372,6 +512,18 @@ export default function AdminLeadsPage() {
                         {/* Cliente */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
+                            <div className="flex-shrink-0 mr-3">
+                              <input
+                                type="checkbox"
+                                checked={selectedLeads.has(lead.id)}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  toggleLeadSelection(lead.id);
+                                }}
+                                disabled={lead.walcuStatus === 'sent'}
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                              />
+                            </div>
                             <div className="flex-shrink-0 h-10 w-10">
                               <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                                 <User className="w-5 h-5 text-blue-600" />
@@ -478,31 +630,34 @@ export default function AdminLeadsPage() {
                         {/* Acciones */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Marcar como enviado manualmente
-                                updateWalcuStatus(lead.id, 'sent', `manual_${Date.now()}`);
-                              }}
-                              disabled={lead.walcuStatus === 'sent'}
-                              className="text-green-600 hover:text-green-900 disabled:text-gray-400 disabled:cursor-not-allowed"
-                              title="Marcar como enviado"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                            </button>
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // Marcar como fallido
-                                updateWalcuStatus(lead.id, 'failed', undefined, 'Error manual');
-                              }}
-                              disabled={lead.walcuStatus === 'failed'}
-                              className="text-red-600 hover:text-red-900 disabled:text-gray-400 disabled:cursor-not-allowed"
-                              title="Marcar como fallido"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </button>
+                            {lead.walcuStatus !== 'sent' ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  sendToWalcu(lead.id);
+                                }}
+                                disabled={sendingToWalcu === lead.id}
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Enviar a Walcu como tasación"
+                              >
+                                {sendingToWalcu === lead.id ? (
+                                  <>
+                                    <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                    Enviando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Send className="w-3 h-3" />
+                                    Enviar a Walcu
+                                  </>
+                                )}
+                              </button>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded">
+                                <CheckCircle className="w-3 h-3" />
+                                Enviado
+                              </span>
+                            )}
 
                             <button
                               onClick={(e) => {
