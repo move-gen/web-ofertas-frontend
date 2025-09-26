@@ -308,24 +308,25 @@ const processLeadData = async (
     }
   }
 
-  const leadPayload = {
-    firstName: String(leadData.firstName),
-    lastName: String(leadData.lastName || ''),
-    email: emailStr,
-    phone: leadData.phone ? String(leadData.phone) : null,
-    message: messageContent || null,
-    carId,
-    carMake: leadData.carMake ? String(leadData.carMake) : null,
-    carModel: leadData.carModel ? String(leadData.carModel) : null,
-    carYear: typeof leadData.carYear === 'number' ? leadData.carYear : null,
-    carLicensePlate: leadData.carLicensePlate ? String(leadData.carLicensePlate) : null,
-    carStockNumber: leadData.carStockNumber ? String(leadData.carStockNumber) : null,
-    source: leadData.source ? String(leadData.source) : 'google_sheets_auto',
-    medium: leadData.medium ? String(leadData.medium) : 'auto_import',
-    campaign: leadData.campaign ? String(leadData.campaign) : 'sheets_auto_import',
-    sheetName: sheetName, // Nombre de la hoja de origen específica
-    walcuStatus: 'pending'
-  };
+        const leadPayload = {
+          firstName: String(leadData.firstName),
+          lastName: String(leadData.lastName || ''),
+          email: emailStr,
+          phone: leadData.phone ? String(leadData.phone) : null,
+          message: messageContent || null,
+          carId,
+          carMake: leadData.carMake ? String(leadData.carMake) : null,
+          carModel: leadData.carModel ? String(leadData.carModel) : null,
+          carYear: typeof leadData.carYear === 'number' ? leadData.carYear : null,
+          carLicensePlate: leadData.carLicensePlate ? String(leadData.carLicensePlate) : null,
+          carStockNumber: leadData.carStockNumber ? String(leadData.carStockNumber) : null,
+          source: leadData.source ? String(leadData.source) : 'google_sheets_auto',
+          medium: leadData.medium ? String(leadData.medium) : 'auto_import',
+          campaign: leadData.campaign ? String(leadData.campaign) : 'sheets_auto_import',
+          sheetName: sheetName, // Nombre de la hoja de origen específica
+          leadType: 'appraisal', // Leads de Google Sheets son tasaciones
+          walcuStatus: 'pending'
+        };
 
   let lead;
   if (existingLead) {
@@ -386,30 +387,38 @@ const processLeadData = async (
       }
     }
 
-    // Crear payload según el formato oficial de Walcu (JSONLead)
-    const leadPayload = {
-      payload: {
-        client: {
-          foreign_id: `@${Date.now()}`,
-          first_name: String(leadData.firstName),
-          last_name: String(leadData.lastName || ''),
-          email: String(leadData.email),
-          phone: leadData.phone ? String(leadData.phone) : undefined
-        },
-        sales_lead: {
-          foreign_id: `lead_${Date.now()}`,
-          inquiry: fullMessage,
-          car: {
-            make: carData.make,
-            model: carData.model,
-            year: carData.year,
-            license_plate: carData.license_plate,
-            stock_number: carData.stock_number
-          }
-        },
-        version: "1.0.0"
-      }
-    };
+            // Importar el servicio de construcción de payloads
+            const { buildWalcuPayload, determineLeadType, formatLeadMessage } = await import('@/lib/walcu-payload-builder');
+            
+            // Determinar el tipo de lead (appraisal para Google Sheets)
+            const leadType = determineLeadType(leadData.source ? String(leadData.source) : undefined, sheetName);
+            
+            // Preparar datos del cliente
+            const clientData = {
+              foreign_id: `@${Date.now()}`,
+              first_name: String(leadData.firstName),
+              last_name: String(leadData.lastName || ''),
+              email: String(leadData.email),
+              phone: leadData.phone ? String(leadData.phone) : undefined
+            };
+            
+            // Preparar datos del lead
+            const leadInfo = {
+              foreign_id: `lead_${Date.now()}`,
+              inquiry: formatLeadMessage(leadType, fullMessage),
+              car: {
+                make: carData.make,
+                model: carData.model,
+                year: carData.year,
+                license_plate: carData.license_plate,
+                stock_number: carData.stock_number
+              }
+            };
+            
+            // Crear payload según el tipo de lead
+            const leadPayload = buildWalcuPayload(leadType, clientData, leadInfo);
+            
+            logDebug(`Enviando como ${leadType} lead desde hoja: ${sheetName}`);
     
     const walcuResponse = await walcuService.api.post("/leadimporttasks", leadPayload);
     

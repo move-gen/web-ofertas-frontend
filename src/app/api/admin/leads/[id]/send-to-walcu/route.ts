@@ -77,30 +77,38 @@ export async function POST(
       const { WalcuCRMService } = await import('@/services/walcu-crm');
       const walcuService = new WalcuCRMService();
       
-      // Crear payload según el formato oficial de Walcu (JSONLead)
-      const leadPayload = {
-        payload: {
-          client: {
-            foreign_id: `@${Date.now()}`,
-            first_name: lead.firstName,
-            last_name: lead.lastName || '',
-            email: lead.email,
-            phone: lead.phone || undefined
-          },
-          sales_lead: {
-            foreign_id: `lead_${Date.now()}`,
-            inquiry: fullMessage,
-            car: {
-              make: carData.make,
-              model: carData.model,
-              year: carData.year,
-              license_plate: carData.license_plate,
-              stock_number: carData.stock_number
-            }
-          },
-          version: "1.0.0"
+      // Importar el servicio de construcción de payloads
+      const { buildWalcuPayload, determineLeadType, formatLeadMessage } = await import('@/lib/walcu-payload-builder');
+      
+      // Determinar el tipo de lead basado en el origen
+      const leadType = determineLeadType(lead.source || undefined, lead.sheetName || undefined);
+      
+      // Preparar datos del cliente
+      const clientData = {
+        foreign_id: `@${Date.now()}`,
+        first_name: lead.firstName,
+        last_name: lead.lastName || '',
+        email: lead.email,
+        phone: lead.phone || undefined
+      };
+      
+      // Preparar datos del lead
+      const leadInfo = {
+        foreign_id: `lead_${Date.now()}`,
+        inquiry: formatLeadMessage(leadType, fullMessage),
+        car: {
+          make: carData.make,
+          model: carData.model,
+          year: carData.year,
+          license_plate: carData.license_plate,
+          stock_number: carData.stock_number
         }
       };
+      
+      // Crear payload según el tipo de lead
+      const leadPayload = buildWalcuPayload(leadType, clientData, leadInfo);
+      
+      console.log(`[WALCU SEND] Enviando como ${leadType} lead (origen: ${lead.source || 'manual'}, hoja: ${lead.sheetName || 'N/A'})`);
       
       console.log(`[WALCU SEND] Payload para Walcu:`, leadPayload);
       

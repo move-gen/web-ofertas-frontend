@@ -286,6 +286,7 @@ export async function POST(request: NextRequest) {
           medium: leadData.medium ? String(leadData.medium) : 'import',
           campaign: leadData.campaign ? String(leadData.campaign) : 'sheets_import',
           sheetName: sheetName, // Nombre de la hoja de origen
+          leadType: 'appraisal', // Leads de Google Sheets son tasaciones
           walcuStatus: 'pending'
         };
 
@@ -355,30 +356,38 @@ export async function POST(request: NextRequest) {
               const { WalcuCRMService } = await import('@/services/walcu-crm');
               const walcuService = new WalcuCRMService();
               
-              // Crear payload según el formato oficial de Walcu (JSONLead)
-              const leadPayload = {
-                payload: {
-                  client: {
-                    foreign_id: `@${Date.now()}`,
-                    first_name: String(leadData.firstName),
-                    last_name: String(leadData.lastName || ''),
-                    email: String(leadData.email),
-                    phone: leadData.phone ? String(leadData.phone) : undefined
-                  },
-                  sales_lead: {
-                    foreign_id: `lead_${Date.now()}`,
-                    inquiry: fullMessage,
-                    car: {
-                      make: carData.make,
-                      model: carData.model,
-                      year: carData.year,
-                      license_plate: carData.license_plate,
-                      stock_number: carData.stock_number
-                    }
-                  },
-                  version: "1.0.0"
+              // Importar el servicio de construcción de payloads
+              const { buildWalcuPayload, determineLeadType, formatLeadMessage } = await import('@/lib/walcu-payload-builder');
+              
+              // Determinar el tipo de lead (appraisal para Google Sheets)
+              const leadType = determineLeadType(leadData.source ? String(leadData.source) : undefined, sheetName);
+              
+              // Preparar datos del cliente
+              const clientData = {
+                foreign_id: `@${Date.now()}`,
+                first_name: String(leadData.firstName),
+                last_name: String(leadData.lastName || ''),
+                email: String(leadData.email),
+                phone: leadData.phone ? String(leadData.phone) : undefined
+              };
+              
+              // Preparar datos del lead
+              const leadInfo = {
+                foreign_id: `lead_${Date.now()}`,
+                inquiry: formatLeadMessage(leadType, fullMessage),
+                car: {
+                  make: carData.make,
+                  model: carData.model,
+                  year: carData.year,
+                  license_plate: carData.license_plate,
+                  stock_number: carData.stock_number
                 }
               };
+              
+              // Crear payload según el tipo de lead
+              const leadPayload = buildWalcuPayload(leadType, clientData, leadInfo);
+              
+              console.log(`Enviando como ${leadType} lead desde hoja: ${sheetName}`);
               
               console.log(`Payload para Walcu:`, leadPayload);
               
