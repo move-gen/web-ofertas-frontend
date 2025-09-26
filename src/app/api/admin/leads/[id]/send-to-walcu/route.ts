@@ -23,13 +23,11 @@ export async function POST(
       );
     }
 
-    // Verificar si ya fue enviado exitosamente
-    if (lead.walcuStatus === 'sent' && lead.walcuLeadId) {
-      return NextResponse.json({
-        success: true,
-        message: 'Lead ya fue enviado a Walcu anteriormente',
-        data: { walcuLeadId: lead.walcuLeadId }
-      });
+    // Verificar si ya fue enviado exitosamente (permitir reenvío manual pero con advertencia)
+    const isReenvio = lead.walcuStatus === 'sent' && lead.walcuLeadId;
+    
+    if (isReenvio) {
+      console.log(`[WALCU SEND] REENVÍO MANUAL: Lead ${leadId} ya fue enviado anteriormente (ID: ${lead.walcuLeadId}), pero se procederá con el reenvío manual`);
     }
 
     console.log(`[WALCU SEND] Preparando datos del lead:`, {
@@ -122,10 +120,13 @@ export async function POST(
 
       return NextResponse.json({
         success: true,
-        message: 'Lead enviado exitosamente a Walcu como tasación',
+        message: isReenvio 
+          ? 'Lead reenviado exitosamente a Walcu como tasación (reenvío manual)'
+          : 'Lead enviado exitosamente a Walcu como tasación',
         data: {
           walcuLeadId: walcuResponse.data._id,
-          leadId: leadId
+          leadId: leadId,
+          isReenvio: isReenvio
         }
       });
     } catch (walcuDirectError) {

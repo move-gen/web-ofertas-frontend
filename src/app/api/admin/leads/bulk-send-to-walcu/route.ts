@@ -18,11 +18,11 @@ export async function POST(request: NextRequest) {
 
     console.log(`[BULK WALCU SEND] Enviando ${leadIds.length} leads a Walcu`);
     
-    // Buscar todos los leads
+    // Buscar todos los leads (permitir reenvío manual)
     const leads = await prisma.lead.findMany({
       where: { 
-        id: { in: leadIds },
-        walcuStatus: { not: 'sent' } // Solo enviar los que no han sido enviados
+        id: { in: leadIds }
+        // Removido el filtro walcuStatus para permitir reenvío manual
       },
       include: { car: true }
     });
@@ -40,12 +40,20 @@ export async function POST(request: NextRequest) {
       total: leads.length,
       sent: 0,
       failed: 0,
+      reenvios: 0,
       errors: [] as string[]
     };
 
     // Procesar cada lead
     for (const lead of leads) {
       try {
+        const isReenvio = lead.walcuStatus === 'sent' && lead.walcuLeadId;
+        
+        if (isReenvio) {
+          console.log(`[BULK WALCU SEND] REENVÍO MANUAL: Lead ${lead.id} ya fue enviado anteriormente (ID: ${lead.walcuLeadId}), pero se procederá con el reenvío manual`);
+          results.reenvios++;
+        }
+        
         console.log(`[BULK WALCU SEND] Procesando lead ${lead.id}: ${lead.firstName} ${lead.lastName}`);
 
         // Preparar datos del vehículo del cliente (que quiere vender)
@@ -155,9 +163,13 @@ export async function POST(request: NextRequest) {
 
     console.log(`[BULK WALCU SEND] Proceso completado:`, results);
 
+    const message = results.reenvios > 0 
+      ? `Proceso completado: ${results.sent} enviados, ${results.failed} fallidos, ${results.reenvios} reenvíos`
+      : `Proceso completado: ${results.sent} enviados, ${results.failed} fallidos`;
+
     return NextResponse.json({
       success: true,
-      message: `Proceso completado: ${results.sent} enviados, ${results.failed} fallidos`,
+      message,
       data: results
     });
 

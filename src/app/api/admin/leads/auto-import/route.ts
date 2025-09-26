@@ -345,6 +345,16 @@ const processLeadData = async (
 
   results.leads.push(lead);
 
+  // Verificar si el lead ya fue enviado exitosamente a Walcu
+  const shouldSendToWalcu = lead.walcuStatus !== 'sent';
+  
+  if (!shouldSendToWalcu) {
+    logDebug(`Lead ${lead.id} ya fue enviado exitosamente a Walcu (ID: ${lead.walcuLeadId}), omitiendo reenvío automático`);
+    return; // No enviar automáticamente si ya fue enviado
+  }
+
+  logDebug(`Lead ${lead.id} será enviado a Walcu automáticamente (estado actual: ${lead.walcuStatus})`);
+
   // Enviar automáticamente a Walcu como lead de adquisición/tasación
   try {
     const { WalcuCRMService } = await import('@/services/walcu-crm');
