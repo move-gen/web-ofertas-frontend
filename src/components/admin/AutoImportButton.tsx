@@ -21,11 +21,10 @@ interface AutoImportResult {
     skipped: number;
     errors: string[];
     totalLeads: number;
-    columnMapping: Record<string, string>;
-    unmappedColumns: string[];
-    additionalFieldsFound: boolean;
     spreadsheetId: string;
-    sheetName: string;
+    totalSheets: number;
+    sheetsProcessed: string[];
+    sheetsWithData: number;
   };
   error?: string;
   requiresManualConfig?: boolean;
@@ -160,48 +159,37 @@ export default function AutoImportButton({ onImportComplete }: AutoImportButtonP
                       <FileSpreadsheet className="w-5 h-5 text-blue-600" />
                       <h4 className="font-medium text-blue-900">Fuente de datos</h4>
                     </div>
-                    <div className="text-sm text-blue-800">
-                      <p><strong>Hoja:</strong> {result.data.sheetName}</p>
-                      <p><strong>ID:</strong> {result.data.spreadsheetId}</p>
-                    </div>
-                  </div>
-
-                  {/* Mapeo de columnas */}
-                  <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Columnas mapeadas:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {Object.entries(result.data.columnMapping).map(([field, column]) => (
-                        <div key={field} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                          <span className="text-sm font-medium text-gray-700">
-                            {field}
-                          </span>
-                          <span className="text-sm text-gray-600">
-                            {column}
-                          </span>
+                    <div className="text-sm text-blue-800 space-y-2">
+                      <p><strong>Spreadsheet ID:</strong> {result.data.spreadsheetId}</p>
+                      <p><strong>Hojas procesadas:</strong> {result.data.sheetsWithData} de {result.data.totalSheets}</p>
+                      
+                      {/* Lista de hojas procesadas */}
+                      <div>
+                        <p className="font-medium mb-1">Hojas con datos:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {result.data.sheetsProcessed.map((sheetName, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded"
+                            >
+                              {sheetName}
+                            </span>
+                          ))}
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Campos adicionales */}
-                  {result.data.additionalFieldsFound && (
-                    <div>
-                      <h4 className="font-medium text-gray-900 mb-3">Campos adicionales encontrados:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {result.data.unmappedColumns.map((column) => (
-                          <span
-                            key={column}
-                            className="px-2 py-1 bg-purple-100 text-purple-700 text-sm rounded"
-                          >
-                            {column}
-                          </span>
-                        ))}
-                      </div>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Estos campos se han incluido en el mensaje del lead
-                      </p>
+                  {/* Información adicional */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 className="font-medium text-green-900 mb-2">Procesamiento automático</h4>
+                    <div className="text-sm text-green-800 space-y-1">
+                      <p>✅ Mapeo automático de columnas por hoja</p>
+                      <p>✅ Campos adicionales incluidos en mensajes</p>
+                      <p>✅ Leads marcados con hoja de origen</p>
+                      <p>✅ Envío automático a Walcu CRM</p>
                     </div>
-                  )}
+                  </div>
 
                   {/* Errores */}
                   {result.data.errors.length > 0 && (

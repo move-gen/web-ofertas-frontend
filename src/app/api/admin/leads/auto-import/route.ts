@@ -11,6 +11,34 @@ const logDebug = (message: string, data?: unknown) => {
   }
 };
 
+// Función para obtener todas las hojas del spreadsheet
+const getAllSheetsInfo = async (sheets: any, spreadsheetId: string) => {
+  logDebug('Obteniendo información de todas las hojas del spreadsheet');
+  
+  try {
+    const spreadsheetResponse = await sheets.spreadsheets.get({
+      spreadsheetId,
+      fields: 'sheets.properties'
+    });
+    
+    const allSheets = spreadsheetResponse.data.sheets?.map((sheet: any) => ({
+      title: sheet.properties.title,
+      sheetId: sheet.properties.sheetId,
+      index: sheet.properties.index
+    })) || [];
+    
+    logDebug('Hojas detectadas en el spreadsheet', { 
+      totalSheets: allSheets.length,
+      sheets: allSheets 
+    });
+    
+    return allSheets;
+  } catch (error) {
+    logError('Error obteniendo información de las hojas', error);
+    throw error;
+  }
+};
+
 const logError = (message: string, error?: unknown) => {
   console.error(`[AUTO-IMPORT ERROR] ${new Date().toISOString()} - ${message}`);
   if (error) {
@@ -115,6 +143,269 @@ const getGoogleAuth = async () => {
   }
 };
 
+// Función para procesar una hoja específica
+const processSheet = async (
+  sheets: any, 
+  spreadsheetId: string, 
+  sheetName: string, 
+  results: any
+) => {
+  logDebug(`=== PROCESANDO HOJA: ${sheetName} ===`);
+  
+  const range = `${sheetName}!A:ZZ`; // Leer todas las columnas de esta hoja
+  
+  try {
+    // Leer datos de la hoja específica
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+      valueRenderOption: 'UNFORMATTED_VALUE',
+      dateTimeRenderOption: 'FORMATTED_STRING'
+    });
+
+    const rows = response.data.values;
+    
+    if (!rows || rows.length === 0) {
+      logDebug(`Hoja ${sheetName} está vacía, saltando...`);
+      return;
+    }
+
+    // La primera fila contiene los headers
+    const headers = rows[0].map(h => String(h));
+    const dataRows = rows.slice(1);
+
+    logDebug(`Datos de hoja ${sheetName}`, {
+      headers,
+      totalRows: rows.length,
+      dataRowsCount: dataRows.length
+    });
+
+    // Mapeo automático de columnas para esta hoja
+    const columnMapping = autoMapColumns(headers);
+    const unmappedColumns = getUnmappedColumns(headers, columnMapping);
+
+    logDebug(`Mapeo de columnas para hoja ${sheetName}`, {
+      columnMapping,
+      unmappedColumns
+    });
+
+    // Procesar cada fila de esta hoja
+    for (let i = 0; i < dataRows.length; i++) {
+      const row = dataRows[i];
+      
+      // Saltar filas completamente vacías
+      if (!row || row.every(cell => !cell || String(cell).trim() === '')) {
+        continue;
+      }
+      
+      results.processed++;
+
+      try {
+        // Mapear datos de la fila
+        const { leadData, additionalData } = mapSheetRowToLead(row, headers, columnMapping, unmappedColumns);
+
+        // Procesar el lead (misma lógica que antes pero con sheetName específico)
+        await processLeadData(leadData, additionalData, sheetName, results, i);
+
+      } catch (error) {
+        logError(`Error procesando fila ${i + 2} de hoja ${sheetName}`, error);
+        results.errors.push(`Hoja ${sheetName}, Fila ${i + 2}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      }
+    }
+    
+  } catch (error) {
+    logError(`Error procesando hoja ${sheetName}`, error);
+    results.errors.push(`Error procesando hoja ${sheetName}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+  }
+};
+
+// Función para procesar los datos de un lead individual
+const processLeadData = async (
+  leadData: Record<string, string | number | null>,
+  additionalData: Record<string, string | number | null>,
+  sheetName: string,
+  results: any,
+  rowIndex: number
+) => {
+  // Extraer datos de forma flexible
+  if (!leadData.firstName && additionalData.full_name) {
+    const fullName = String(additionalData.full_name).trim();
+    const nameParts = fullName.split(' ');
+    leadData.firstName = nameParts[0] || '';
+    leadData.lastName = nameParts.slice(1).join(' ') || '';
+  }
+
+  // Valores por defecto para campos obligatorios
+  if (!leadData.firstName) {
+    leadData.firstName = 'Cliente';
+  }
+  
+  if (!leadData.email) {
+    leadData.email = `lead_${sheetName}_fila_${rowIndex + 2}_${Date.now()}@temp.local`;
+  }
+
+  // Validar formato de email
+  const emailStr = String(leadData.email);
+  if (!emailStr.includes('@temp.local')) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailStr)) {
+      const originalEmail = emailStr;
+      leadData.email = `lead_${sheetName}_fila_${rowIndex + 2}_${Date.now()}@temp.local`;
+      leadData.message = leadData.message ? 
+        `${leadData.message} | Email original: ${originalEmail}` : 
+        `Email original: ${originalEmail}`;
+    }
+  }
+
+  // Buscar si ya existe un lead con este email
+  const existingLead = await prisma.lead.findFirst({
+    where: { email: emailStr }
+  });
+
+  // Intentar encontrar el coche relacionado si se proporciona SKU
+  let carId = null;
+  if (leadData.carStockNumber) {
+    const car = await prisma.car.findFirst({
+      where: { sku: String(leadData.carStockNumber) }
+    });
+    if (car) {
+      carId = car.id;
+    }
+  }
+
+  // Preparar datos del lead (incluyendo campos adicionales en el mensaje si existen)
+  let messageContent = leadData.message ? String(leadData.message) : '';
+  
+  // Agregar campos adicionales al mensaje si existen
+  if (Object.keys(additionalData).length > 0) {
+    const additionalInfo = Object.entries(additionalData)
+      .filter(([, value]) => value)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\n');
+    
+    if (additionalInfo) {
+      messageContent = messageContent 
+        ? `${messageContent}\n\n--- Información adicional ---\n${additionalInfo}`
+        : `--- Información adicional ---\n${additionalInfo}`;
+    }
+  }
+
+  const leadPayload = {
+    firstName: String(leadData.firstName),
+    lastName: String(leadData.lastName || ''),
+    email: emailStr,
+    phone: leadData.phone ? String(leadData.phone) : null,
+    message: messageContent || null,
+    carId,
+    carMake: leadData.carMake ? String(leadData.carMake) : null,
+    carModel: leadData.carModel ? String(leadData.carModel) : null,
+    carYear: typeof leadData.carYear === 'number' ? leadData.carYear : null,
+    carLicensePlate: leadData.carLicensePlate ? String(leadData.carLicensePlate) : null,
+    carStockNumber: leadData.carStockNumber ? String(leadData.carStockNumber) : null,
+    source: leadData.source ? String(leadData.source) : 'google_sheets_auto',
+    medium: leadData.medium ? String(leadData.medium) : 'auto_import',
+    campaign: leadData.campaign ? String(leadData.campaign) : 'sheets_auto_import',
+    sheetName: sheetName, // Nombre de la hoja de origen específica
+    walcuStatus: 'pending'
+  };
+
+  let lead;
+  if (existingLead) {
+    // Siempre actualizar el lead existente con los nuevos datos
+    lead = await prisma.lead.update({
+      where: { id: existingLead.id },
+      data: leadPayload
+    });
+    results.updated++;
+  } else {
+    // Crear nuevo lead
+    lead = await prisma.lead.create({
+      data: leadPayload
+    });
+    results.created++;
+  }
+
+  results.leads.push(lead);
+
+  // Enviar automáticamente a Walcu como lead de adquisición/tasación
+  try {
+    const { WalcuCRMService } = await import('@/services/walcu-crm');
+    const walcuService = new WalcuCRMService();
+    
+    // Preparar datos del vehículo del cliente (que quiere vender)
+    const carData = {
+      make: leadData.carMake ? String(leadData.carMake) : '',
+      model: leadData.carModel ? String(leadData.carModel) : '',
+      year: typeof leadData.carYear === 'number' ? leadData.carYear : new Date().getFullYear(),
+      license_plate: leadData.carLicensePlate ? String(leadData.carLicensePlate) : '',
+      stock_number: leadData.carStockNumber ? String(leadData.carStockNumber) : '',
+      category: 'car' as const,
+      type: 'used' as const
+    };
+
+    // Preparar mensaje con campos adicionales no mapeados
+    let fullMessage = leadData.message ? String(leadData.message) : 'Cliente interesado en vender su vehículo';
+    
+    // Añadir campos adicionales al mensaje
+    if (Object.keys(additionalData).length > 0) {
+      const additionalInfo = Object.entries(additionalData)
+        .filter(([, value]) => value)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ');
+      
+      if (additionalInfo) {
+        fullMessage += ` | Información adicional: ${additionalInfo}`;
+      }
+    }
+
+    // Crear payload según el formato oficial de Walcu (JSONLead)
+    const leadPayload = {
+      payload: {
+        client: {
+          foreign_id: `@${Date.now()}`,
+          first_name: String(leadData.firstName),
+          last_name: String(leadData.lastName || ''),
+          email: String(leadData.email),
+          phone: leadData.phone ? String(leadData.phone) : undefined
+        },
+        sales_lead: {
+          foreign_id: `lead_${Date.now()}`,
+          inquiry: fullMessage,
+          car: {
+            make: carData.make,
+            model: carData.model,
+            year: carData.year,
+            license_plate: carData.license_plate,
+            stock_number: carData.stock_number
+          }
+        },
+        version: "1.0.0"
+      }
+    };
+    
+    const walcuResponse = await walcuService.api.post("/leadimporttasks", leadPayload);
+    
+    // Actualizar el lead con el ID de Walcu
+    await prisma.lead.update({
+      where: { id: lead.id },
+      data: { 
+        walcuLeadId: walcuResponse.data._id || undefined,
+        walcuStatus: 'sent'
+      }
+    });
+  } catch (walcuError) {
+    logError(`Error enviando lead ${lead.id} a Walcu`, walcuError);
+    
+    await prisma.lead.update({
+      where: { id: lead.id },
+      data: { 
+        walcuStatus: 'failed',
+        walcuError: walcuError instanceof Error ? walcuError.message : 'Error desconocido'
+      }
+    });
+  }
+};
+
 // Función mejorada para mapear datos del sheet a formato de lead
 const mapSheetRowToLead = (
   row: (string | number | boolean)[], 
@@ -197,64 +488,23 @@ export async function POST() {
 
     // Usar configuración por defecto
     const spreadsheetId = GOOGLE_SHEETS_CONFIG.DEFAULT_SPREADSHEET_ID;
-    const sheetName = GOOGLE_SHEETS_CONFIG.DEFAULT_SHEET_NAME;
-    const range = GOOGLE_SHEETS_CONFIG.DEFAULT_RANGE || `${sheetName}!A:ZZ`; // Leer todas las columnas
 
     logDebug('Configuración de importación', {
-      spreadsheetId,
-      sheetName,
-      range
+      spreadsheetId
     });
 
-    // Leer datos del sheet
-    logDebug('Realizando petición a Google Sheets API');
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range,
-      valueRenderOption: 'UNFORMATTED_VALUE',
-      dateTimeRenderOption: 'FORMATTED_STRING'
-    });
-
-    logDebug('Respuesta recibida de Google Sheets API', {
-      hasData: !!response.data,
-      hasValues: !!response.data.values,
-      valuesLength: response.data.values?.length || 0
-    });
-
-    const rows = response.data.values;
-
-    if (!rows || rows.length === 0) {
-      logError('No se encontraron datos en la hoja de cálculo');
+    // Obtener todas las hojas del spreadsheet
+    const allSheets = await getAllSheetsInfo(sheets, spreadsheetId);
+    
+    if (allSheets.length === 0) {
+      logError('No se encontraron hojas en el spreadsheet');
       return NextResponse.json(
-        { error: 'No se encontraron datos en la hoja de cálculo' },
+        { error: 'No se encontraron hojas en el spreadsheet' },
         { status: 404 }
       );
     }
 
-    // La primera fila contiene los headers
-    const headers = rows[0].map(h => String(h));
-    const dataRows = rows.slice(1);
-
-    logDebug('Datos extraídos del sheet', {
-      headers,
-      totalRows: rows.length,
-      dataRowsCount: dataRows.length,
-      firstDataRow: dataRows[0] || null
-    });
-
-    // Mapeo automático de columnas
-    logDebug('Iniciando mapeo automático de columnas');
-    const columnMapping = autoMapColumns(headers);
-    const unmappedColumns = getUnmappedColumns(headers, columnMapping);
-
-    logDebug('Mapeo de columnas completado', {
-      columnMapping,
-      unmappedColumns,
-      mappedCount: Object.keys(columnMapping).length,
-      unmappedCount: unmappedColumns.length
-    });
-
-    // Procesar cada fila y crear leads
+    // Procesar todas las hojas automáticamente
     const results = {
       processed: 0,
       created: 0,
@@ -262,268 +512,25 @@ export async function POST() {
       skipped: 0,
       errors: [] as string[],
       leads: [] as unknown[],
-      columnMapping,
-      unmappedColumns,
-      additionalFieldsFound: unmappedColumns.length > 0
+      sheetsProcessed: [] as string[],
+      totalSheets: allSheets.length
     };
 
-    logDebug('Iniciando procesamiento de filas', {
-      totalDataRows: dataRows.length
+    logDebug(`Iniciando procesamiento de ${allSheets.length} hojas`, {
+      sheets: allSheets.map(s => s.title)
     });
 
-    for (let i = 0; i < dataRows.length; i++) {
-      const row = dataRows[i];
+    // Procesar cada hoja del spreadsheet
+    for (const sheet of allSheets) {
+      logDebug(`=== PROCESANDO HOJA: ${sheet.title} ===`);
       
-      logDebug(`Procesando fila ${i + 1}/${dataRows.length}`, {
-        rowIndex: i,
-        rowData: row,
-        isEmpty: !row || row.every(cell => !cell || String(cell).trim() === '')
-      });
-      
-      // Saltar filas completamente vacías
-      if (!row || row.every(cell => !cell || String(cell).trim() === '')) {
-        logDebug(`Saltando fila ${i + 2} (vacía)`);
-        continue;
-      }
-      
-      results.processed++;
-
       try {
-        // Mapear datos de la fila
-        logDebug(`Mapeando datos de fila ${i + 2}`);
-        const { leadData, additionalData } = mapSheetRowToLead(row, headers, columnMapping, unmappedColumns);
-
-        logDebug(`Datos mapeados para fila ${i + 2}`, {
-          leadData,
-          additionalData
-        });
-
-        // Extraer datos de forma flexible
-        // Si no hay firstName, intentar extraer de full_name o usar valor por defecto
-        if (!leadData.firstName && additionalData.full_name) {
-          const fullName = String(additionalData.full_name).trim();
-          const nameParts = fullName.split(' ');
-          leadData.firstName = nameParts[0] || '';
-          leadData.lastName = nameParts.slice(1).join(' ') || '';
-          logDebug(`Extrayendo nombre de full_name: ${fullName} -> ${leadData.firstName} ${leadData.lastName}`);
-        }
-
-        // Valores por defecto para campos obligatorios
-        if (!leadData.firstName) {
-          leadData.firstName = 'Cliente';
-        }
-        
-        if (!leadData.email) {
-          // Generar un email temporal basado en la fila
-          leadData.email = `lead_fila_${i + 2}_${Date.now()}@temp.local`;
-          logDebug(`Generando email temporal para fila ${i + 2}: ${leadData.email}`);
-        }
-
-        // Validar formato de email solo si parece ser un email real
-        const emailStr = String(leadData.email);
-        if (!emailStr.includes('@temp.local')) {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(emailStr)) {
-            // Si el email es inválido, generar uno temporal pero mantener el original en el mensaje
-            const originalEmail = emailStr;
-            leadData.email = `lead_fila_${i + 2}_${Date.now()}@temp.local`;
-            leadData.message = leadData.message ? 
-              `${leadData.message} | Email original: ${originalEmail}` : 
-              `Email original: ${originalEmail}`;
-            logDebug(`Email inválido convertido a temporal para fila ${i + 2}: ${originalEmail} -> ${leadData.email}`);
-          }
-        }
-
-        // Buscar si ya existe un lead con este email
-        logDebug(`Buscando lead existente con email: ${emailStr}`);
-        const existingLead = await prisma.lead.findFirst({
-          where: { email: emailStr }
-        });
-        
-        logDebug(`Resultado búsqueda lead existente`, {
-          found: !!existingLead,
-          leadId: existingLead?.id || null
-        });
-
-        // Intentar encontrar el coche relacionado si se proporciona SKU
-        let carId = null;
-        if (leadData.carStockNumber) {
-          logDebug(`Buscando coche con SKU: ${leadData.carStockNumber}`);
-          const car = await prisma.car.findFirst({
-            where: { sku: String(leadData.carStockNumber) }
-          });
-          if (car) {
-            carId = car.id;
-            logDebug(`Coche encontrado`, { carId, carSku: car.sku });
-          } else {
-            logDebug(`No se encontró coche con SKU: ${leadData.carStockNumber}`);
-          }
-        }
-
-        // Preparar datos del lead (incluyendo campos adicionales en el mensaje si existen)
-        let messageContent = leadData.message ? String(leadData.message) : '';
-        
-        // Agregar campos adicionales al mensaje si existen
-        if (Object.keys(additionalData).length > 0) {
-          const additionalInfo = Object.entries(additionalData)
-            .filter(([, value]) => value)
-            .map(([key, value]) => `${key}: ${value}`)
-            .join('\n');
-          
-          if (additionalInfo) {
-            messageContent = messageContent 
-              ? `${messageContent}\n\n--- Información adicional ---\n${additionalInfo}`
-              : `--- Información adicional ---\n${additionalInfo}`;
-          }
-        }
-
-        const leadPayload = {
-          firstName: String(leadData.firstName),
-          lastName: String(leadData.lastName || ''),
-          email: emailStr,
-          phone: leadData.phone ? String(leadData.phone) : null,
-          message: messageContent || null,
-          carId,
-          carMake: leadData.carMake ? String(leadData.carMake) : null,
-          carModel: leadData.carModel ? String(leadData.carModel) : null,
-          carYear: typeof leadData.carYear === 'number' ? leadData.carYear : null,
-          carLicensePlate: leadData.carLicensePlate ? String(leadData.carLicensePlate) : null,
-          carStockNumber: leadData.carStockNumber ? String(leadData.carStockNumber) : null,
-          source: leadData.source ? String(leadData.source) : 'google_sheets_auto',
-          medium: leadData.medium ? String(leadData.medium) : 'auto_import',
-          campaign: leadData.campaign ? String(leadData.campaign) : 'sheets_auto_import',
-          sheetName: sheetName, // Nombre de la hoja de origen
-          walcuStatus: 'pending'
-        };
-
-        logDebug(`Preparando payload del lead para fila ${i + 2}`, {
-          leadPayload
-        });
-
-        let lead;
-        if (existingLead) {
-          // Siempre actualizar el lead existente con los nuevos datos
-          logDebug(`Actualizando lead existente: ${existingLead.id}`);
-          lead = await prisma.lead.update({
-            where: { id: existingLead.id },
-            data: leadPayload
-          });
-          results.updated++;
-          logDebug(`Lead actualizado exitosamente: ${lead.id}`);
-        } else {
-          // Crear nuevo lead
-          logDebug(`Creando nuevo lead`);
-          lead = await prisma.lead.create({
-            data: leadPayload
-          });
-          results.created++;
-          logDebug(`Lead creado exitosamente: ${lead.id}`);
-        }
-
-        results.leads.push(lead);
-
-        // Enviar automáticamente a Walcu como lead de adquisición/tasación
-        try {
-          logDebug(`Enviando lead ${lead.id} a Walcu como tasación`);
-          
-          // Preparar datos del vehículo del cliente (que quiere vender)
-          const carData = {
-            make: leadData.carMake ? String(leadData.carMake) : '',
-            model: leadData.carModel ? String(leadData.carModel) : '',
-            year: typeof leadData.carYear === 'number' ? leadData.carYear : new Date().getFullYear(),
-            license_plate: leadData.carLicensePlate ? String(leadData.carLicensePlate) : '',
-            stock_number: leadData.carStockNumber ? String(leadData.carStockNumber) : '',
-            category: 'car' as const,
-            type: 'used' as const
-          };
-
-          // Preparar mensaje con campos adicionales no mapeados
-          let fullMessage = leadData.message ? String(leadData.message) : 'Cliente interesado en vender su vehículo';
-          
-          // Añadir campos adicionales al mensaje
-          if (Object.keys(additionalData).length > 0) {
-            const additionalInfo = Object.entries(additionalData)
-              .filter(([, value]) => value)
-              .map(([key, value]) => `${key}: ${value}`)
-              .join(', ');
-            
-            if (additionalInfo) {
-              fullMessage += ` | Información adicional: ${additionalInfo}`;
-            }
-          }
-
-          // Enviar a Walcu directamente usando el servicio
-          try {
-            logDebug(`Enviando lead ${lead.id} a Walcu directamente`);
-            
-            const { WalcuCRMService } = await import('@/services/walcu-crm');
-            const walcuService = new WalcuCRMService();
-            
-            // Crear payload según el formato oficial de Walcu (JSONLead)
-            const leadPayload = {
-              payload: {
-                client: {
-                  foreign_id: `@${Date.now()}`,
-                  first_name: String(leadData.firstName),
-                  last_name: String(leadData.lastName || ''),
-                  email: String(leadData.email),
-                  phone: leadData.phone ? String(leadData.phone) : undefined
-                },
-                sales_lead: {
-                  foreign_id: `lead_${Date.now()}`,
-                  inquiry: fullMessage,
-                  car: {
-                    make: carData.make,
-                    model: carData.model,
-                    year: carData.year,
-                    license_plate: carData.license_plate,
-                    stock_number: carData.stock_number
-                  }
-                },
-                version: "1.0.0"
-              }
-            };
-            
-            logDebug(`Payload para Walcu:`, leadPayload);
-            
-            const walcuResponse = await walcuService.api.post("/leadimporttasks", leadPayload);
-            
-            logDebug(`Lead ${lead.id} enviado exitosamente a Walcu`, { leadId: walcuResponse.data._id });
-            
-            // Actualizar el lead con el ID de Walcu
-            await prisma.lead.update({
-              where: { id: lead.id },
-              data: { 
-                walcuLeadId: walcuResponse.data._id || undefined,
-                walcuStatus: 'sent'
-              }
-            });
-          } catch (walcuDirectError) {
-            logError(`Error enviando lead ${lead.id} a Walcu directamente`, walcuDirectError);
-            
-            await prisma.lead.update({
-              where: { id: lead.id },
-              data: { 
-                walcuStatus: 'failed',
-                walcuError: walcuDirectError instanceof Error ? walcuDirectError.message : 'Error desconocido'
-              }
-            });
-          }
-        } catch (walcuError) {
-          logError(`Error enviando lead ${lead.id} a Walcu`, walcuError);
-          
-          await prisma.lead.update({
-            where: { id: lead.id },
-            data: { 
-              walcuStatus: 'failed',
-              walcuError: walcuError instanceof Error ? walcuError.message : 'Error desconocido'
-            }
-          });
-        }
-
+        await processSheet(sheets, spreadsheetId, sheet.title, results);
+        results.sheetsProcessed.push(sheet.title);
+        logDebug(`Hoja ${sheet.title} procesada exitosamente`);
       } catch (error) {
-        logError(`Error procesando fila ${i + 2}`, error);
-        results.errors.push(`Fila ${i + 2}: Error procesando datos - ${error instanceof Error ? error.message : 'Error desconocido'}`);
+        logError(`Error procesando hoja ${sheet.title}`, error);
+        results.errors.push(`Error en hoja ${sheet.title}: ${error instanceof Error ? error.message : 'Error desconocido'}`);
       }
     }
 
@@ -540,7 +547,7 @@ export async function POST() {
 
     return NextResponse.json({
       success: true,
-      message: `Importación automática completada. ${results.created} leads creados, ${results.updated} actualizados, ${results.skipped} omitidos`,
+      message: `Importación automática completada desde ${results.sheetsProcessed.length} hojas. ${results.created} leads creados, ${results.updated} actualizados, ${results.skipped} omitidos`,
       data: {
         processed: results.processed,
         created: results.created,
@@ -548,11 +555,10 @@ export async function POST() {
         skipped: results.skipped,
         errors: results.errors,
         totalLeads: results.leads.length,
-        columnMapping: results.columnMapping,
-        unmappedColumns: results.unmappedColumns,
-        additionalFieldsFound: results.additionalFieldsFound,
         spreadsheetId,
-        sheetName
+        totalSheets: results.totalSheets,
+        sheetsProcessed: results.sheetsProcessed,
+        sheetsWithData: results.sheetsProcessed.length
       }
     });
 
