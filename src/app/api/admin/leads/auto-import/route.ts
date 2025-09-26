@@ -12,7 +12,7 @@ const logDebug = (message: string, data?: unknown) => {
 };
 
 // Función para obtener todas las hojas del spreadsheet
-const getAllSheetsInfo = async (sheets: any, spreadsheetId: string) => {
+const getAllSheetsInfo = async (sheets: ReturnType<typeof google.sheets>, spreadsheetId: string) => {
   logDebug('Obteniendo información de todas las hojas del spreadsheet');
   
   try {
@@ -21,10 +21,10 @@ const getAllSheetsInfo = async (sheets: any, spreadsheetId: string) => {
       fields: 'sheets.properties'
     });
     
-    const allSheets = spreadsheetResponse.data.sheets?.map((sheet: any) => ({
-      title: sheet.properties.title,
-      sheetId: sheet.properties.sheetId,
-      index: sheet.properties.index
+    const allSheets = spreadsheetResponse.data.sheets?.map((sheet) => ({
+      title: sheet.properties?.title || 'Sin nombre',
+      sheetId: sheet.properties?.sheetId || 0,
+      index: sheet.properties?.index || 0
     })) || [];
     
     logDebug('Hojas detectadas en el spreadsheet', { 
@@ -145,10 +145,19 @@ const getGoogleAuth = async () => {
 
 // Función para procesar una hoja específica
 const processSheet = async (
-  sheets: any, 
+  sheets: ReturnType<typeof google.sheets>, 
   spreadsheetId: string, 
   sheetName: string, 
-  results: any
+  results: {
+    processed: number;
+    created: number;
+    updated: number;
+    skipped: number;
+    errors: string[];
+    leads: unknown[];
+    sheetsProcessed: string[];
+    totalSheets: number;
+  }
 ) => {
   logDebug(`=== PROCESANDO HOJA: ${sheetName} ===`);
   
@@ -224,7 +233,16 @@ const processLeadData = async (
   leadData: Record<string, string | number | null>,
   additionalData: Record<string, string | number | null>,
   sheetName: string,
-  results: any,
+  results: {
+    processed: number;
+    created: number;
+    updated: number;
+    skipped: number;
+    errors: string[];
+    leads: unknown[];
+    sheetsProcessed: string[];
+    totalSheets: number;
+  },
   rowIndex: number
 ) => {
   // Extraer datos de forma flexible
