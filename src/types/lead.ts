@@ -16,6 +16,7 @@ export interface Lead {
   source?: string;
   medium?: string;
   campaign?: string;
+  sheetName?: string;
   walcuLeadId?: string;
   walcuStatus: 'pending' | 'sent' | 'failed';
   walcuError?: string;
@@ -73,3 +74,5 @@ export interface SheetInfo {
   sampleData: string[][];
   totalRows: number;
 }
+
+

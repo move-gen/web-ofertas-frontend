@@ -17,6 +17,7 @@ import {
   MessageSquare,
   FileSpreadsheet,
   Send,
+  Sheet,
 } from 'lucide-react';
 import GoogleSheetsImporter from '@/components/admin/GoogleSheetsImporter';
 import LeadDetailsModal from '@/components/admin/LeadDetailsModal';
@@ -493,6 +494,9 @@ export default function AdminLeadsPage() {
                         Estado Walcu
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Hoja de Origen
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Fecha
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -615,6 +619,34 @@ export default function AdminLeadsPage() {
                           {lead.walcuError && (
                             <div className="text-xs text-red-500 mt-1 max-w-xs truncate">
                               {lead.walcuError}
+                            </div>
+                          )}
+                        </td>
+
+                        {/* Hoja de Origen */}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {lead.sheetName ? (
+                            <div className="flex items-center gap-2">
+                              <div className="p-1 bg-green-100 rounded">
+                                <Sheet className="w-3 h-3 text-green-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {lead.sheetName}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  Google Sheets
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <div className="p-1 bg-gray-100 rounded">
+                                <User className="w-3 h-3 text-gray-400" />
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                Manual
+                              </div>
                             </div>
                           )}
                         </td>

@@ -56,7 +56,8 @@ export default function LeadDetailsModal({
         carStockNumber: lead.carStockNumber,
         source: lead.source,
         medium: lead.medium,
-        campaign: lead.campaign
+        campaign: lead.campaign,
+        sheetName: lead.sheetName
       });
     }
   }, [lead]);
@@ -430,12 +431,13 @@ export default function LeadDetailsModal({
                   </h3>
 
                   <div className="space-y-3">
-                    {['source', 'medium', 'campaign'].map((field) => {
+                    {['source', 'medium', 'campaign', 'sheetName'].map((field) => {
                       const value = lead[field as keyof Lead];
                       const label = {
                         source: 'Fuente',
                         medium: 'Medio',
-                        campaign: 'Campaña'
+                        campaign: 'Campaña',
+                        sheetName: 'Hoja de Origen'
                       }[field];
 
                       if (!value && !isEditing) return null;

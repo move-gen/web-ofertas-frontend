@@ -133,6 +133,7 @@ model Lead {
   source      String?  // website, phone, etc.
   medium      String?  // car_page, contact_form, etc.
   campaign    String?  // car_interest, general_contact, etc.
+  sheetName   String?  // Nombre de la hoja de Google Sheets de origen
   
   // Estado de envío a Walcu
   walcuLeadId String?  // ID del lead en Walcu CRM

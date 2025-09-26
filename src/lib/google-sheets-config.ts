@@ -140,3 +140,5 @@ export function getUnmappedColumns(headers: string[], mappedColumns: Record<stri
   const mappedHeaders = Object.values(mappedColumns);
   return headers.filter(header => !mappedHeaders.includes(header));
 }
+
+

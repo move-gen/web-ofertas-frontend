@@ -265,3 +265,5 @@ Para problemas técnicos:
 2. Verifica las variables de entorno
 3. Confirma los permisos de Google Sheets
 4. Consulta la documentación de la API de Google Sheets
+
+

@@ -392,6 +392,7 @@ export async function POST() {
           source: leadData.source ? String(leadData.source) : 'google_sheets_auto',
           medium: leadData.medium ? String(leadData.medium) : 'auto_import',
           campaign: leadData.campaign ? String(leadData.campaign) : 'sheets_auto_import',
+          sheetName: sheetName, // Nombre de la hoja de origen
           walcuStatus: 'pending'
         };
 

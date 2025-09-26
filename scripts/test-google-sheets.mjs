@@ -185,3 +185,5 @@ testGoogleSheetsConnection().catch(error => {
   log(`❌ Error fatal: ${error.message}`, 'red');
   process.exit(1);
 });
+
+
