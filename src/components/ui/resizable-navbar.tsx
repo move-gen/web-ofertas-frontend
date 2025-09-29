@@ -15,6 +15,11 @@ interface NavbarProps {
   children: React.ReactNode;
   className?: string;
   isBlue?: boolean;
+  /**
+   * When true, the navbar body/mobile nav shrink with rounded corners and blur on scroll.
+   * Set to false to keep a full-width, square, non-blurred header at all times.
+   */
+  shrinkOnScroll?: boolean;
 }
 interface NavElementProps {
   visible?: boolean;
@@ -55,7 +60,7 @@ interface MobileNavToggleProps {
 }
 
 // --- Componente Principal ---
-export const Navbar = ({ children, className, isBlue }: NavbarProps) => {
+export const Navbar = ({ children, className, isBlue, shrinkOnScroll = true }: NavbarProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({
     target: ref,
@@ -67,11 +72,13 @@ export const Navbar = ({ children, className, isBlue }: NavbarProps) => {
     setVisible(latest > 100);
   });
 
+  const effectiveVisible = shrinkOnScroll ? visible : false;
+
   return (
     <motion.div ref={ref} className={cn("fixed inset-x-0 top-0 z-40 w-full", className)}>
       {React.Children.map(children, (child) =>
         React.isValidElement(child)
-          ? React.cloneElement(child as React.ReactElement<NavElementProps>, { visible, isBlue })
+          ? React.cloneElement(child as React.ReactElement<NavElementProps>, { visible: effectiveVisible, isBlue })
           : child
       )}
     </motion.div>
@@ -87,6 +94,7 @@ export const NavBody = ({ children, className, visible, isBlue }: NavBodyProps) 
         borderRadius: visible ? "9999px" : "0px",
         y: visible ? 20 : 0,
         backdropFilter: visible ? "blur(10px)" : "none",
+        backgroundColor: visible ? "#0f286a" : "transparent",
         boxShadow: visible
           ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
           : "none",
@@ -95,7 +103,7 @@ export const NavBody = ({ children, className, visible, isBlue }: NavBodyProps) 
       className={cn(
         "relative z-[60] hidden lg:flex",
         visible ? "mx-auto" : "mx-0",
-        isBlue ? 'bg-[#0f286a]' : 'bg-transparent',
+        'bg-transparent',
         className
       )}
     >
@@ -114,7 +122,7 @@ export const NavItems = ({ items, className, onItemClick, isBlue }: NavItemsProp
       onMouseLeave={() => setHovered(null)}
       className={cn(
         "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium transition duration-200 lg:flex",
-        isBlue ? "text-white" : "text-zinc-600 hover:text-zinc-800",
+        isBlue ? "text-white" : "text-white",
         className
       )}
     >
@@ -131,7 +139,7 @@ export const NavItems = ({ items, className, onItemClick, isBlue }: NavItemsProp
               layoutId="hovered"
               className={cn(
                 "absolute inset-0 h-full w-full rounded-full",
-                isBlue ? "bg-white/10" : "bg-gray-100 dark:bg-neutral-800"
+                isBlue ? "bg-white/10" : "bg-white/10"
               )}
             />
           )}
@@ -151,6 +159,7 @@ export const MobileNav = ({ children, className, visible, isBlue }: MobileNavPro
         borderRadius: visible ? "2rem" : "0px",
         y: visible ? 20 : 0,
         backdropFilter: visible ? "blur(10px)" : "none",
+        backgroundColor: visible ? "#0f286a" : "transparent",
         boxShadow: visible
           ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
           : "none",
@@ -159,7 +168,7 @@ export const MobileNav = ({ children, className, visible, isBlue }: MobileNavPro
       className={cn(
         "relative z-50 flex w-full flex-col items-center justify-between px-4 py-2 lg:hidden",
         visible && "mx-auto",
-        isBlue ? 'bg-[#0f286a]' : 'bg-transparent',
+        'bg-transparent',
         className
       )}
     >
@@ -199,9 +208,9 @@ export const MobileNavMenu = ({ children, className, isOpen }: MobileNavMenuProp
 
 export const MobileNavToggle = ({ isOpen, onClick, isBlue }: MobileNavToggleProps) => {
   return isOpen ? (
-    <IconX className={cn(isBlue ? "text-white" : "text-black dark:text-white")} onClick={onClick} />
+    <IconX className={cn(isBlue ? "text-white" : "text-white")} onClick={onClick} />
   ) : (
-    <IconMenu2 className={cn(isBlue ? "text-white" : "text-black dark:text-white")} onClick={onClick} />
+    <IconMenu2 className={cn(isBlue ? "text-white" : "text-white")} onClick={onClick} />
   );
 };
 

@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from 'next/navigation';
 import Header from './Header';
-import HeaderLanding from './HeaderLanding';
+import HeaderHome from './HeaderHome';
 
 export default function ConditionalHeader() {
   const pathname = usePathname();
@@ -11,11 +11,11 @@ export default function ConditionalHeader() {
     return null;
   }
 
-  // Render HeaderLanding only on the homepage
+  // En la página de inicio usar HeaderHome (transparente que se vuelve sólido al hacer scroll)
   if (pathname === '/') {
-    return <HeaderLanding />;
+    return <HeaderHome />;
   }
-  
-  // Render the default Header on all other pages
+
+  // En el resto de páginas usar Header normal (azul)
   return <Header />;
 }

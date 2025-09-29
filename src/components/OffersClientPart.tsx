@@ -9,6 +9,7 @@ import { CollapsibleFilterSection } from './ui/CollapsibleFilterSection';
 import { Input } from './ui/input';
 import { Slider } from './ui/slider';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useSearchParams } from 'next/navigation';
 
 interface CarData {
   id: number; name: string; make: string; model: string; version: string;
@@ -50,6 +51,7 @@ export default function OffersClientPart() {
     sellers: { certified: false, inStock: false, withPhoto: false },
     bodyType: [] as string[],
     transmission: 'all',
+    feeMax: null as number | null,
   });
 
   const debouncedFilters = useDebounce(filters, 300);
@@ -78,12 +80,44 @@ export default function OffersClientPart() {
     fetchCars();
   }, []);
 
+  // Inicializar filtros desde query params (make, makeAndModel, priceMin, priceMax, feeMax)
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (!searchParams) return;
+    const make = searchParams.get('make');
+    const makeAndModelParam = searchParams.get('makeAndModel');
+    const priceMinParam = searchParams.get('priceMin');
+    const priceMaxParam = searchParams.get('priceMax');
+    const feeMaxParam = searchParams.get('feeMax');
+
+    const next = { ...filters };
+    if (makeAndModelParam) {
+      next.makeAndModel = makeAndModelParam;
+    } else if (make) {
+      next.makeAndModel = make;
+    }
+
+    const priceMin = priceMinParam ? Number(priceMinParam) : null;
+    const priceMax = priceMaxParam ? Number(priceMaxParam) : null;
+    if (priceMin !== null || priceMax !== null) {
+      next.priceRange = [priceMin ?? 0, priceMax ?? next.priceRange[1]] as [number, number];
+    }
+
+    if (feeMaxParam) {
+      const fee = Number(feeMaxParam);
+      if (!Number.isNaN(fee)) next.feeMax = fee;
+    }
+
+    setFilters(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   useEffect(() => {
     let carsToProcess = [...allCars];
 
     carsToProcess = carsToProcess.filter(car => {
-      const { carType, makeAndModel, version, priceRange, yearRange, kmsRange, bodyType, transmission } = debouncedFilters;
+      const { carType, makeAndModel, version, priceRange, yearRange, kmsRange, bodyType, transmission, feeMax } = debouncedFilters;
       
       const kms = car.kms ?? 0;
       if (carType !== 'all') {
@@ -99,6 +133,10 @@ export default function OffersClientPart() {
       if (kms < kmsRange[0] || kms > kmsRange[1]) return false;
       if (bodyType.length > 0 && !bodyType.includes(car.bodytype || '')) return false;
       if (transmission !== 'all' && car.transmission?.toLowerCase() !== transmission) return false;
+      if (feeMax !== null && typeof feeMax === 'number') {
+        const fee = car.monthlyFinancingFee ?? Infinity;
+        if (fee > feeMax) return false;
+      }
       
       return true;
     });

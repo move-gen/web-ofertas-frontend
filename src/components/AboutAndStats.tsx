@@ -1,7 +1,6 @@
 "use client";
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { AboutUsMask } from '@/components/ui/AboutUsMask';
 
 const statsData = [
     {
@@ -49,9 +48,6 @@ export default function AboutAndStats() {
 
   return (
     <>
-        {/* About Us Section */}
-        <AboutUsMask />
-
         {/* Stats Section with Scroll Animation */}
         <motion.section 
             ref={statsRef}

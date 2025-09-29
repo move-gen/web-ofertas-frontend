@@ -47,11 +47,24 @@ export default function FeaturedOffers() {
     return (
       <section className="py-16 bg-white">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Últimas Ofertas</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Descubre nuestros vehículos más recientes. La calidad y el precio que buscas, ahora a tu alcance.
-            </p>
+          {/* Cabecera con imagen lateral (estilo Home2) */}
+          <div className="mb-12 grid grid-cols-1 md:grid-cols-[auto,1fr] items-center gap-6">
+            <div className="flex justify-center md:justify-start">
+              <Image
+                src="/da4b1e18005fecdf893baf1e80d2e20b0c15e062.png"
+                alt="Decoración ofertas"
+                width={374}
+                height={374}
+                className="w-48 h-48 md:w-72 md:h-72 object-contain"
+                priority
+              />
+            </div>
+            <div className="text-center md:text-left">
+              <h2 className="text-4xl md:text-5xl font-bold text-blue-950 mb-4">Últimas Ofertas</h2>
+              <p className="text-lg text-neutral-600 max-w-2xl md:max-w-3xl md:mx-0 mx-auto">
+                Encuentra promociones activas por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
+              </p>
+            </div>
           </div>
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -64,13 +77,26 @@ export default function FeaturedOffers() {
   if (offers.length === 0) {
     return (
       <section className="py-16 bg-white">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Últimas Ofertas</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Descubre nuestros vehículos más recientes. La calidad y el precio que buscas, ahora a tu alcance.
+      <div className="container mx-auto px-6">
+        {/* Cabecera con imagen lateral (estilo Home2) */}
+        <div className="mb-12 grid grid-cols-1 md:grid-cols-[auto,1fr] items-center gap-6">
+          <div className="flex justify-center md:justify-start">
+            <Image
+              src="/da4b1e18005fecdf893baf1e80d2e20b0c15e062.png"
+              alt="Decoración ofertas"
+              width={374}
+              height={374}
+              className="w-48 h-48 md:w-72 md:h-72 object-contain"
+              priority
+            />
+          </div>
+          <div className="text-center md:text-left">
+            <h2 className="text-4xl md:text-5xl font-bold text-blue-950 mb-4">Últimas Ofertas</h2>
+            <p className="text-lg text-neutral-600 max-w-2xl md:max-w-3xl md:mx-0 mx-auto">
+              Encuentra promociones activas por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
             </p>
           </div>
+        </div>
           <div className="text-center text-gray-500">
             No hay ofertas disponibles en este momento.
           </div>
@@ -82,11 +108,24 @@ export default function FeaturedOffers() {
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Últimas Ofertas</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Descubre nuestros vehículos más recientes. La calidad y el precio que buscas, ahora a tu alcance.
-          </p>
+        {/* Cabecera con imagen lateral (estilo Home2) */}
+        <div className="mb-12 grid grid-cols-1 md:grid-cols-[auto,1fr] items-center gap-6">
+          <div className="flex justify-center md:justify-start">
+            <Image
+              src="/da4b1e18005fecdf893baf1e80d2e20b0c15e062.png"
+              alt="Decoración ofertas"
+              width={374}
+              height={374}
+              className="w-48 h-48 md:w-72 md:h-72 object-contain"
+              priority
+            />
+          </div>
+          <div className="text-center md:text-left">
+            <h2 className="text-4xl md:text-5xl font-bold text-blue-950 mb-4">Últimas Ofertas</h2>
+            <p className="text-lg text-neutral-600 max-w-2xl md:max-w-3xl md:mx-0 mx-auto">
+              Encuentra promociones activas por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
+            </p>
+          </div>
         </div>
 
         {/* Grid de ofertas - Solo imágenes limpias */}
