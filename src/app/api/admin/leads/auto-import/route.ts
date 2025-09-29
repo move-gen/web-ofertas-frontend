@@ -246,11 +246,28 @@ const processLeadData = async (
   rowIndex: number
 ) => {
   // Extraer datos de forma flexible
-  if (!leadData.firstName && additionalData.full_name) {
-    const fullName = String(additionalData.full_name).trim();
-    const nameParts = fullName.split(' ');
-    leadData.firstName = nameParts[0] || '';
-    leadData.lastName = nameParts.slice(1).join(' ') || '';
+  // Priorizar full_name si está disponible y los nombres individuales no están completos
+  if (additionalData.full_name || leadData.fullName) {
+    const fullName = String(additionalData.full_name || leadData.fullName).trim();
+    if (fullName && (!leadData.firstName || !leadData.lastName)) {
+      const nameParts = fullName.split(' ').filter(part => part.trim());
+      if (nameParts.length > 0) {
+        leadData.firstName = nameParts[0];
+        leadData.lastName = nameParts.slice(1).join(' ') || leadData.lastName || '';
+      }
+    }
+  }
+
+  // Mapear platform a source si no hay source definido
+  if (!leadData.source && (additionalData.platform || leadData.platform)) {
+    const platform = String(additionalData.platform || leadData.platform).toLowerCase();
+    if (platform === 'fb' || platform === 'facebook') {
+      leadData.source = 'facebook';
+    } else if (platform === 'ig' || platform === 'instagram') {
+      leadData.source = 'instagram';
+    } else {
+      leadData.source = platform;
+    }
   }
 
   // Valores por defecto para campos obligatorios

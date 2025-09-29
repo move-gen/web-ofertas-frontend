@@ -220,10 +220,32 @@ export async function POST(request: NextRequest) {
           
           if (fullNameIndex !== -1 && row[fullNameIndex]) {
             const fullName = String(row[fullNameIndex]).trim();
-            const nameParts = fullName.split(' ');
-            leadData.firstName = nameParts[0] || '';
-            leadData.lastName = nameParts.slice(1).join(' ') || '';
-            console.log(`Extrayendo nombre de columna ${headers[fullNameIndex]}: ${fullName} -> ${leadData.firstName} ${leadData.lastName}`);
+            const nameParts = fullName.split(' ').filter(part => part.trim());
+            if (nameParts.length > 0) {
+              leadData.firstName = nameParts[0];
+              leadData.lastName = nameParts.slice(1).join(' ') || '';
+              console.log(`Extrayendo nombre de columna ${headers[fullNameIndex]}: ${fullName} -> ${leadData.firstName} ${leadData.lastName}`);
+            }
+          }
+        }
+
+        // Mapear platform a source si no hay source definido
+        if (!leadData.source) {
+          const platformIndex = headers.findIndex(h => 
+            h.toLowerCase().includes('platform') || 
+            h.toLowerCase().includes('plataforma')
+          );
+          
+          if (platformIndex !== -1 && row[platformIndex]) {
+            const platform = String(row[platformIndex]).toLowerCase().trim();
+            if (platform === 'fb' || platform === 'facebook') {
+              leadData.source = 'facebook';
+            } else if (platform === 'ig' || platform === 'instagram') {
+              leadData.source = 'instagram';
+            } else {
+              leadData.source = platform;
+            }
+            console.log(`Mapeando platform ${platform} a source: ${leadData.source}`);
           }
         }
 

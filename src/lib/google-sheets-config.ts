@@ -20,6 +20,10 @@ export const GOOGLE_SHEETS_CONFIG = {
       'apellido', 'apellidos', 'last_name', 'lastname', 'last name',
       'surname', 'family_name'
     ],
+    fullName: [
+      'full_name', 'nombre_completo', 'nombre completo', 'fullname',
+      'complete_name', 'nombre_apellido', 'name_full'
+    ],
     email: [
       'email', 'correo', 'correo_electronico', 'correo electronico',
       'e-mail', 'mail', 'email_address', 'correo_contacto'
@@ -59,6 +63,10 @@ export const GOOGLE_SHEETS_CONFIG = {
     source: [
       'fuente', 'source', 'origen', 'procedencia', 'canal',
       'medio_origen', 'source_medium', 'traffic_source'
+    ],
+    platform: [
+      'platform', 'plataforma', 'red_social', 'social_network',
+      'canal_social', 'medio_social', 'fb', 'ig', 'facebook', 'instagram'
     ],
     medium: [
       'medio', 'medium', 'canal_marketing', 'tipo_trafico',
