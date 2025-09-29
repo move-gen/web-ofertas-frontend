@@ -1,5 +1,6 @@
 import OffersClientPart from '@/components/OffersClientPart';
 import { TypewriterEffectSmooth } from '@/components/ui/typewriter-effect';
+import { Suspense } from 'react';
 
 export default async function BuscadorPage() {
 
@@ -43,7 +44,22 @@ export default async function BuscadorPage() {
         </p>
         <TypewriterEffectSmooth words={words} />
       </div>
-      <OffersClientPart />
+      <Suspense fallback={
+        <div className="bg-gray-50 min-h-screen">
+          <div className="container mx-auto px-4 py-8">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="h-64 bg-gray-200 rounded"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      }>
+        <OffersClientPart />
+      </Suspense>
     </div>
   );
 }
