@@ -7,7 +7,7 @@ import CookieManager from './CookieManager';
 
 const Footer = () => {
   return (
-    <footer className="bg-[#0c0c14] text-gray-300 pt-16 pb-8 px-4 sm:px-6 lg:px-8 rounded-t-3xl">
+    <footer className="bg-[#0f286a] text-gray-300 pt-16 pb-8 px-4 sm:px-6 lg:px-8 rounded-t-3xl">
       <div className="max-w-screen-xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           
@@ -44,7 +44,7 @@ const Footer = () => {
           {/* Middle Section: Links */}
           <div className="md:col-span-5 grid grid-cols-2 sm:grid-cols-3 gap-8 text-sm">
             <div>
-              <h5 className="text-purple-400 font-bold text-xs mb-3 tracking-wider">OFERTAS</h5>
+              <h5 className="text-blue-300 font-bold text-xs mb-3 tracking-wider">OFERTAS</h5>
               <ul className="space-y-2">
                 <li><Link href="/buscador" className="hover:text-white">Ver Todas</Link></li>
                 <li><Link href="#" className="hover:text-white">Coches Nuevos</Link></li>
@@ -53,7 +53,7 @@ const Footer = () => {
               </ul>
             </div>
             <div>
-              <h5 className="text-purple-400 font-bold text-xs mb-3 tracking-wider">SOPORTE</h5>
+              <h5 className="text-blue-300 font-bold text-xs mb-3 tracking-wider">SOPORTE</h5>
               <ul className="space-y-2">
                 <li><Link href="/contact" className="hover:text-white">Contacto</Link></li>
                 <li><Link href="#" className="hover:text-white">Preguntas Frecuentes</Link></li>
@@ -62,7 +62,7 @@ const Footer = () => {
               </ul>
             </div>
             <div>
-              <h5 className="text-purple-400 font-bold text-xs mb-3 tracking-wider">EMPRESA</h5>
+              <h5 className="text-blue-300 font-bold text-xs mb-3 tracking-wider">EMPRESA</h5>
               <ul className="space-y-2">
                 <li><Link href="#" className="hover:text-white">Sobre Nosotros</Link></li>
                 <li><Link href="#" className="hover:text-white">Delegaciones</Link></li>
@@ -86,7 +86,7 @@ const Footer = () => {
 
       </div>
       <div className="absolute right-8 -mt-16">
-        <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center">
+        <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="bg-blue-600 hover:bg-blue-500 text-white rounded-full w-10 h-10 flex items-center justify-center">
             <ChevronUp size={20} />
         </button>
       </div>
