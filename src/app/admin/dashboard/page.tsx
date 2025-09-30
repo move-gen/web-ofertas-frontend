@@ -12,7 +12,8 @@ import {
   Upload,
   Eye,
   UserPlus,
-  Megaphone
+  Megaphone,
+  Images
 } from 'lucide-react';
 
 function AdminDashboard() {
@@ -44,6 +45,13 @@ function AdminDashboard() {
       href: '/admin/leads',
       icon: FileText,
       color: 'bg-orange-500',
+    },
+    {
+      title: 'Galería de Entregas',
+      description: 'Gestionar imágenes del carrusel "Entregas que Apasionan"',
+      href: '/admin/gallery',
+      icon: Images,
+      color: 'bg-pink-500',
     },
     {
       title: 'Importar Datos',
