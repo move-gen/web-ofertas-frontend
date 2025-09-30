@@ -1,9 +1,9 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-// Datos estáticos para evitar carga lenta de API
-const POPULAR_MODELS = [
+// Datos estáticos de respaldo
+const FALLBACK_MODELS = [
   'FIAT 500', 'Nissan Qashqai', 'BMW X3', 'Audi A4', 'Mercedes-Benz Clase C',
   'Volkswagen Golf', 'Ford Focus', 'Peugeot 308', 'Renault Clio', 'Seat Leon',
   'Kia Sportage', 'Hyundai Tucson', 'Toyota Corolla', 'Honda Civic', 'Mazda CX-5',
@@ -28,6 +28,33 @@ const PRICE_RANGES = [
 
 export default function QuickSearchSection() {
   const [activeTab, setActiveTab] = useState<'models' | 'brands' | 'fees' | 'prices'>('models');
+  const [allModels, setAllModels] = useState<string[]>(FALLBACK_MODELS);
+  const [showAllModels, setShowAllModels] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Cargar modelos desde la API
+  useEffect(() => {
+    async function fetchModels() {
+      try {
+        const response = await fetch('/api/models');
+        const data = await response.json();
+        
+        if (data.success && data.models.length > 0) {
+          setAllModels(data.models);
+        }
+      } catch (error) {
+        console.error('Error cargando modelos:', error);
+        // Mantener los datos de respaldo
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchModels();
+  }, []);
+
+  // Mostrar primeros 25 modelos (5x5) o todos
+  const modelsToShow = showAllModels ? allModels : allModels.slice(0, 25);
 
   return (
     <section className="relative mx-auto my-0 mt-10 w-full max-w-[1390px] max-md:p-5">
@@ -56,12 +83,42 @@ export default function QuickSearchSection() {
       {/* Contenido por pestaña */}
       <div className="mt-8">
         {activeTab === 'models' && (
-          <div className="grid grid-cols-4 gap-x-8 gap-y-2 text-base text-neutral-600">
-            {POPULAR_MODELS.map((model, idx) => (
-              <div key={`model-${idx}`} className="leading-10">
-                <Link href={`/buscador?makeAndModel=${encodeURIComponent(model)}`}>{model}</Link>
+          <div>
+            {loading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="text-gray-500">Cargando modelos...</div>
               </div>
-            ))}
+            ) : (
+              <>
+                <div className="grid grid-cols-5 gap-x-6 gap-y-2 text-base text-neutral-600">
+                  {modelsToShow.map((model, idx) => (
+                    <div key={`model-${idx}`} className="leading-10 hover:text-blue-700 transition-colors">
+                      <Link href={`/buscador?makeAndModel=${encodeURIComponent(model)}`}>{model}</Link>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Botón Ver más / Ver menos */}
+                {allModels.length > 25 && (
+                  <div className="mt-6 text-center">
+                    <button
+                      onClick={() => setShowAllModels(!showAllModels)}
+                      className="inline-flex items-center gap-2 text-blue-700 font-semibold hover:text-blue-800 transition-colors"
+                    >
+                      {showAllModels ? 'Ver menos' : `Ver más (${allModels.length - 25} modelos más)`}
+                      <svg 
+                        className={`w-4 h-4 transition-transform ${showAllModels ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
 
