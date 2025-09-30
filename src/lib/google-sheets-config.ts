@@ -105,6 +105,53 @@ export const GOOGLE_SHEETS_CONFIG = {
     leadScore: [
       'puntuacion', 'puntuación', 'score', 'rating', 'calificacion',
       'calificación', 'lead_score', 'quality'
+    ],
+    
+    // Campos de fecha y tiempo
+    createdTime: [
+      'created_time', 'created_at', 'fecha_creacion', 'fecha_registro',
+      'timestamp', 'date_created', 'creation_date', 'date', 'fecha'
+    ],
+    
+    // Campos específicos de Facebook/Instagram Leads
+    leadId: [
+      'id', 'lead_id', 'facebook_id', 'fb_id'
+    ],
+    adId: [
+      'ad_id', 'anuncio_id', 'advertisement_id'
+    ],
+    adName: [
+      'ad_name', 'nombre_anuncio', 'advertisement_name'
+    ],
+    adsetId: [
+      'adset_id', 'conjunto_anuncios_id', 'adset'
+    ],
+    adsetName: [
+      'adset_name', 'nombre_conjunto_anuncios', 'adset'
+    ],
+    campaignId: [
+      'campaign_id', 'campana_id', 'id_campana'
+    ],
+    campaignName: [
+      'campaign_name', 'nombre_campana', 'nombre_campaign'
+    ],
+    formId: [
+      'form_id', 'formulario_id', 'id_formulario'
+    ],
+    formName: [
+      'form_name', 'nombre_formulario', 'formulario'
+    ],
+    isOrganic: [
+      'is_organic', 'organico', 'es_organico', 'organic'
+    ],
+    leadStatus: [
+      'lead_status', 'estado_lead', 'status', 'estado'
+    ],
+    phoneNumber: [
+      'phone_number', 'numero_telefono', 'telefono', 'phone', 'movil', 'móvil'
+    ],
+    makeModel: [
+      'marca_y_modelo', 'make_model', 'marca_modelo', 'vehiculo'
     ]
   }
 };

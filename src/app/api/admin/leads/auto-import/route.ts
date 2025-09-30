@@ -198,6 +198,11 @@ const processSheet = async (
       unmappedColumns
     });
 
+    // Obtener la fecha de hoy para filtrar
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+    logDebug(`Filtrando leads por fecha de hoy: ${todayStr}`);
+
     // Procesar cada fila de esta hoja
     for (let i = 0; i < dataRows.length; i++) {
       const row = dataRows[i];
@@ -212,6 +217,28 @@ const processSheet = async (
       try {
         // Mapear datos de la fila
         const { leadData, additionalData } = mapSheetRowToLead(row, headers, columnMapping, unmappedColumns);
+
+        // FILTRO POR FECHA: Solo procesar leads de hoy
+        const createdTime = leadData.createdTime || additionalData.created_time || additionalData.created_at || additionalData.date;
+        if (createdTime) {
+          try {
+            const createdDate = new Date(String(createdTime));
+            const createdDateStr = createdDate.toISOString().split('T')[0]; // YYYY-MM-DD
+            
+            if (createdDateStr !== todayStr) {
+              logDebug(`Saltando lead de fila ${i + 2} - fecha ${createdDateStr} no es de hoy (${todayStr})`);
+              results.skipped++;
+              continue;
+            }
+            
+            logDebug(`Procesando lead de fila ${i + 2} - fecha ${createdDateStr} es de hoy`);
+          } catch (dateError) {
+            logError(`Error parseando fecha en fila ${i + 2}: ${createdTime}`, dateError);
+            logDebug(`Lead de fila ${i + 2} con fecha inválida, procesando de todas formas`);
+          }
+        } else {
+          logDebug(`Lead de fila ${i + 2} sin fecha created_time, procesando de todas formas`);
+        }
 
         // Procesar el lead (misma lógica que antes pero con sheetName específico)
         await processLeadData(leadData, additionalData, sheetName, results, i);
@@ -246,19 +273,58 @@ const processLeadData = async (
   rowIndex: number
 ) => {
   // Extraer datos de forma flexible
-  // Priorizar full_name si está disponible y los nombres individuales no están completos
-  if (additionalData.full_name || leadData.fullName) {
-    const fullName = String(additionalData.full_name || leadData.fullName).trim();
-    if (fullName && (!leadData.firstName || !leadData.lastName)) {
-      const nameParts = fullName.split(' ').filter(part => part.trim());
+  // 1. PRIORIZAR full_name para extraer nombres
+  const fullNameSources = [
+    additionalData.full_name, 
+    leadData.fullName,
+    additionalData.nombre_completo,
+    additionalData.complete_name
+  ];
+  
+  const fullName = fullNameSources.find(name => name && String(name).trim())?.toString().trim();
+  
+  if (fullName && (!leadData.firstName || !leadData.lastName)) {
+    // Limpiar el nombre (remover prefijos de test)
+    const cleanName = fullName.replace(/^<test lead: dummy data for [^>]+>$/, '').trim();
+    
+    if (cleanName) {
+      const nameParts = cleanName.split(' ').filter(part => part.trim());
       if (nameParts.length > 0) {
         leadData.firstName = nameParts[0];
-        leadData.lastName = nameParts.slice(1).join(' ') || leadData.lastName || '';
+        leadData.lastName = nameParts.slice(1).join(' ') || '';
+        logDebug(`Nombre extraído de full_name: ${leadData.firstName} ${leadData.lastName}`);
       }
     }
   }
 
-  // Mapear platform a source si no hay source definido
+  // 2. MAPEAR phone_number si no hay phone
+  if (!leadData.phone && (additionalData.phone_number || leadData.phoneNumber)) {
+    const phoneValue = String(additionalData.phone_number || leadData.phoneNumber).trim();
+    // Limpiar prefijos de test y formato p:
+    const cleanPhone = phoneValue.replace(/^p:/, '').replace(/^<test lead: dummy data for [^>]+>$/, '').trim();
+    if (cleanPhone) {
+      leadData.phone = cleanPhone;
+      logDebug(`Teléfono extraído: ${cleanPhone}`);
+    }
+  }
+
+  // 3. MAPEAR marca_y_modelo a carMake y carModel
+  if (!leadData.carMake && !leadData.carModel && (additionalData.marca_y_modelo || leadData.makeModel)) {
+    const makeModelValue = String(additionalData.marca_y_modelo || leadData.makeModel).trim();
+    // Limpiar prefijos de test
+    const cleanMakeModel = makeModelValue.replace(/^<test lead: dummy data for [^>]+>$/, '').trim();
+    
+    if (cleanMakeModel) {
+      const parts = cleanMakeModel.split(' ').filter(part => part.trim());
+      if (parts.length > 0) {
+        leadData.carMake = parts[0]; // Primera palabra = marca
+        leadData.carModel = parts.slice(1).join(' ') || ''; // Resto = modelo
+        logDebug(`Vehículo extraído: ${leadData.carMake} ${leadData.carModel}`);
+      }
+    }
+  }
+
+  // 4. MAPEAR platform a source si no hay source definido
   if (!leadData.source && (additionalData.platform || leadData.platform)) {
     const platform = String(additionalData.platform || leadData.platform).toLowerCase();
     if (platform === 'fb' || platform === 'facebook') {
@@ -268,6 +334,13 @@ const processLeadData = async (
     } else {
       leadData.source = platform;
     }
+    logDebug(`Plataforma mapeada: ${platform} -> ${leadData.source}`);
+  }
+
+  // 5. USAR campaign_name si no hay campaign
+  if (!leadData.campaign && (additionalData.campaign_name || leadData.campaignName)) {
+    leadData.campaign = String(additionalData.campaign_name || leadData.campaignName).trim();
+    logDebug(`Campaña extraída: ${leadData.campaign}`);
   }
 
   // Valores por defecto para campos obligatorios
@@ -311,18 +384,62 @@ const processLeadData = async (
   // Preparar datos del lead (incluyendo campos adicionales en el mensaje si existen)
   let messageContent = leadData.message ? String(leadData.message) : '';
   
-  // Agregar campos adicionales al mensaje si existen
-  if (Object.keys(additionalData).length > 0) {
-    const additionalInfo = Object.entries(additionalData)
-      .filter(([, value]) => value)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join('\n');
-    
-    if (additionalInfo) {
-      messageContent = messageContent 
-        ? `${messageContent}\n\n--- Información adicional ---\n${additionalInfo}`
-        : `--- Información adicional ---\n${additionalInfo}`;
-    }
+  // Construir mensaje específico para leads de Facebook/Instagram
+  const fbInfo = [];
+  
+  // Información de la campaña
+  if (additionalData.campaign_name || leadData.campaignName) {
+    fbInfo.push(`Campaña: ${additionalData.campaign_name || leadData.campaignName}`);
+  }
+  if (additionalData.ad_name || leadData.adName) {
+    fbInfo.push(`Anuncio: ${additionalData.ad_name || leadData.adName}`);
+  }
+  if (additionalData.form_name || leadData.formName) {
+    fbInfo.push(`Formulario: ${additionalData.form_name || leadData.formName}`);
+  }
+  
+  // Información del vehículo de interés
+  if (leadData.carMake || leadData.carModel) {
+    fbInfo.push(`Vehículo de interés: ${leadData.carMake || ''} ${leadData.carModel || ''}`.trim());
+  }
+  
+  // Información de origen
+  if (additionalData.platform || leadData.platform) {
+    const platform = String(additionalData.platform || leadData.platform).toLowerCase();
+    const platformName = platform === 'fb' ? 'Facebook' : platform === 'ig' ? 'Instagram' : platform;
+    fbInfo.push(`Plataforma: ${platformName}`);
+  }
+  
+  if (additionalData.is_organic || leadData.isOrganic) {
+    const isOrganic = String(additionalData.is_organic || leadData.isOrganic).toLowerCase() === 'true';
+    fbInfo.push(`Tipo: ${isOrganic ? 'Orgánico' : 'Publicidad pagada'}`);
+  }
+  
+  // Construir mensaje final
+  if (fbInfo.length > 0) {
+    const fbInfoText = fbInfo.join(' | ');
+    messageContent = messageContent 
+      ? `${messageContent}\n\nInformación del lead:\n${fbInfoText}`
+      : `Lead de Facebook/Instagram:\n${fbInfoText}`;
+  }
+  
+  // Agregar otros campos adicionales si existen
+  const otherFields = Object.entries(additionalData)
+    .filter(([key, value]) => {
+      // Excluir campos ya procesados
+      const processedFields = [
+        'full_name', 'phone_number', 'marca_y_modelo', 'platform', 
+        'campaign_name', 'ad_name', 'form_name', 'is_organic', 'created_time'
+      ];
+      return value && !processedFields.includes(key);
+    })
+    .map(([key, value]) => `${key}: ${value}`)
+    .join('\n');
+  
+  if (otherFields) {
+    messageContent = messageContent 
+      ? `${messageContent}\n\n--- Información técnica ---\n${otherFields}`
+      : `--- Información técnica ---\n${otherFields}`;
   }
 
         const leadPayload = {
