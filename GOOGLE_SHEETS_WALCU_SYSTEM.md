@@ -208,10 +208,33 @@ Mensaje: ${originalMessage}`;
 
 ## 🔍 Gestión de Duplicados
 
-### Identificación de Leads Existentes
-- **Clave única**: Email del cliente
-- **Actualización**: Siempre actualiza datos existentes
-- **Estado Walcu**: Evita reenvío si `walcuStatus === 'sent'`
+### ✅ Identificación de Leads Existentes (MEJORADO)
+- **✅ Clave única principal**: Facebook Lead ID (`id` del Excel)
+- **✅ Fallback**: Email del cliente si no hay Facebook ID
+- **✅ Actualización**: Siempre actualiza datos existentes
+- **✅ Estado Walcu**: Evita reenvío si `walcuStatus === 'sent'`
+
+### Lógica de Detección de Duplicados
+```typescript
+// 1. Prioridad: Facebook Lead ID (identificador único real)
+if (facebookLeadId) {
+  existingLead = await prisma.lead.findFirst({
+    where: { facebookLeadId: facebookLeadId }
+  });
+}
+
+// 2. Fallback: Email si no hay Facebook ID
+else {
+  existingLead = await prisma.lead.findFirst({
+    where: { email: email }
+  });
+}
+```
+
+### Ejemplos de Facebook Lead IDs
+- `l:780430904885877` - Lead orgánico
+- `l:788759960749870` - Lead de campaña pagada
+- `l:2008522989882930` - Lead con información completa
 
 ### Estados de Walcu
 - `pending`: Pendiente de envío
@@ -313,6 +336,7 @@ node scripts/create-user.mjs
 - ✅ **Logs detallados**: Muestra qué leads se saltan por fecha
 
 ### Mapeo Mejorado de Campos ✅
+- ✅ **id**: Facebook Lead ID como identificador único (evita duplicados reales)
 - ✅ **full_name**: Extracción automática a firstName + lastName
 - ✅ **phone_number**: Procesamiento del formato `p:+34...`
 - ✅ **marca_y_modelo**: Separación automática en carMake + carModel

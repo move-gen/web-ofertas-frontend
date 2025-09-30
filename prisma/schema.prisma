@@ -136,6 +136,9 @@ model Lead {
   sheetName   String?  // Nombre de la hoja de Google Sheets de origen
   leadType    String   @default("sales") // sales (ventas) o appraisal (tasaciones)
   
+  // Identificador único de Facebook/Instagram
+  facebookLeadId String? @unique // ID único del lead de Facebook (l:780430904885877)
+  
   // Estado de envío a Walcu
   walcuLeadId String?  // ID del lead en Walcu CRM
   walcuStatus String   @default("pending") // pending, sent, failed

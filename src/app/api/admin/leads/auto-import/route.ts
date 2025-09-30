@@ -343,6 +343,13 @@ const processLeadData = async (
     logDebug(`Campaña extraída: ${leadData.campaign}`);
   }
 
+  // 6. EXTRAER Facebook Lead ID como identificador único
+  const facebookLeadId = additionalData.id || leadData.leadId || leadData.id;
+  if (facebookLeadId) {
+    leadData.facebookLeadId = String(facebookLeadId).trim();
+    logDebug(`Facebook Lead ID extraído: ${leadData.facebookLeadId}`);
+  }
+
   // Valores por defecto para campos obligatorios
   if (!leadData.firstName) {
     leadData.firstName = 'Cliente';
@@ -365,10 +372,24 @@ const processLeadData = async (
     }
   }
 
-  // Buscar si ya existe un lead con este email
-  const existingLead = await prisma.lead.findFirst({
-    where: { email: emailStr }
-  });
+  // Buscar si ya existe un lead con este Facebook ID (identificador único)
+  let existingLead = null;
+  
+  if (leadData.facebookLeadId) {
+    // Priorizar búsqueda por Facebook Lead ID (identificador único real)
+    existingLead = await prisma.lead.findFirst({
+      where: { 
+        facebookLeadId: String(leadData.facebookLeadId)
+      }
+    });
+    logDebug(`Búsqueda de duplicado por Facebook ID ${leadData.facebookLeadId}: ${existingLead ? 'ENCONTRADO' : 'NO ENCONTRADO'}`);
+  } else {
+    // Fallback: buscar por email si no hay Facebook ID
+    existingLead = await prisma.lead.findFirst({
+      where: { email: emailStr }
+    });
+    logDebug(`Búsqueda de duplicado por email ${emailStr}: ${existingLead ? 'ENCONTRADO' : 'NO ENCONTRADO'}`);
+  }
 
   // Intentar encontrar el coche relacionado si se proporciona SKU
   let carId = null;
@@ -423,6 +444,13 @@ const processLeadData = async (
       : `Lead de Facebook/Instagram:\n${fbInfoText}`;
   }
   
+  // Incluir Facebook Lead ID en el mensaje para identificación única
+  if (leadData.facebookLeadId) {
+    messageContent = messageContent 
+      ? `${messageContent}\n\nFB_ID:${leadData.facebookLeadId}`
+      : `FB_ID:${leadData.facebookLeadId}`;
+  }
+  
   // Agregar otros campos adicionales si existen
   const otherFields = Object.entries(additionalData)
     .filter(([key, value]) => {
@@ -459,6 +487,7 @@ const processLeadData = async (
           campaign: leadData.campaign ? String(leadData.campaign) : 'sheets_auto_import',
           sheetName: sheetName, // Nombre de la hoja de origen específica
           leadType: 'appraisal', // Leads de Google Sheets son tasaciones
+          facebookLeadId: leadData.facebookLeadId ? String(leadData.facebookLeadId) : null, // ID único de Facebook
           walcuStatus: 'pending'
         };
 
