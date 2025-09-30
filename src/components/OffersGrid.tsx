@@ -44,7 +44,7 @@ export default function OffersGrid({ offers }: OffersGridProps) {
               className="group block overflow-hidden rounded-lg hover:scale-105 transition-transform duration-300"
             >
               {/* Solo imagen de portada - responsive para móvil */}
-              <div className="relative h-64 sm:h-80 bg-gray-100">
+              <div className="relative h-[21.6rem] sm:h-[27rem] bg-gray-100">
                 {offer.coverImageUrl ? (
                   <Image
                     src={offer.coverImageUrl}

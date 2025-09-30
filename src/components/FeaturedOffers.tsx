@@ -137,7 +137,7 @@ export default function FeaturedOffers() {
               className="group block overflow-hidden rounded-lg hover:scale-105 transition-transform duration-300"
             >
               {/* Solo imagen de portada - responsive para móvil */}
-              <div className="relative h-80 sm:h-96 bg-gray-100">
+              <div className="relative h-[27rem] sm:h-[32.4rem] bg-gray-100">
                 {offer.coverImageUrl ? (
                   <Image
                     src={offer.coverImageUrl}
