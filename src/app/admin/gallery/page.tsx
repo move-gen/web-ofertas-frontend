@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, Plus, Save, X, MoveUp, MoveDown } from 'lucide-react';
 import Image from 'next/image';
+import ImageUpload from '@/components/ImageUpload';
 
 interface GalleryImage {
   id: number;
@@ -202,12 +203,12 @@ export default function GalleryAdminPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">URL de la Imagen</label>
-                <Input
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                  required
+                <label className="block text-sm font-medium mb-1">Imagen</label>
+                <ImageUpload
+                  value={formData.imageUrl || undefined}
+                  onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url || '' }))}
+                  accept="image/*"
+                  maxSize={5}
                 />
               </div>
               
