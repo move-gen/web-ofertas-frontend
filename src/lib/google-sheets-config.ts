@@ -13,7 +13,7 @@ export const GOOGLE_SHEETS_CONFIG = {
   COLUMN_MAPPINGS: {
     // Información personal
     firstName: [
-      'nombre', 'first_name', 'firstname', 'first name', 'name',
+      'nombre', 'first_name', 'firstname', 'first name',
       'cliente', 'contacto', 'persona', 'usuario'
     ],
     lastName: [

@@ -219,6 +219,11 @@ const processSheet = async (
       try {
         // Mapear datos de la fila
         const { leadData, additionalData } = mapSheetRowToLead(row, headers, columnMapping, unmappedColumns);
+        
+        logDebug(`Datos mapeados fila ${i + 2}`, {
+          leadData,
+          additionalData: Object.keys(additionalData).length > 0 ? additionalData : 'Sin datos adicionales'
+        });
 
         // FILTRO POR FECHA: Procesar solo leads de hoy
         const createdTime = leadData.createdTime || additionalData.created_time || additionalData.created_at || additionalData.date;
@@ -283,7 +288,7 @@ const processLeadData = async (
   rowIndex: number
 ) => {
   // Extraer datos de forma flexible
-  // 1. PRIORIZAR full_name para extraer nombres
+  // 1. PRIORIZAR full_name para extraer nombres (SIEMPRE sobrescribir)
   const fullNameSources = [
     additionalData.full_name, 
     leadData.fullName,
@@ -293,18 +298,25 @@ const processLeadData = async (
   
   const fullName = fullNameSources.find(name => name && String(name).trim())?.toString().trim();
   
-  if (fullName && (!leadData.firstName || !leadData.lastName)) {
+  if (fullName) {
     // Limpiar el nombre (remover prefijos de test)
     const cleanName = fullName.replace(/^<test lead: dummy data for [^>]+>$/, '').trim();
     
-    if (cleanName) {
+    if (cleanName && cleanName !== '<test lead: dummy data for full_name>') {
       const nameParts = cleanName.split(' ').filter(part => part.trim());
       if (nameParts.length > 0) {
+        // SIEMPRE sobrescribir con full_name si está disponible
         leadData.firstName = nameParts[0];
         leadData.lastName = nameParts.slice(1).join(' ') || '';
-        logDebug(`Nombre extraído de full_name: ${leadData.firstName} ${leadData.lastName}`);
+        logDebug(`✅ Nombre SOBRESCRITO desde full_name: ${leadData.firstName} ${leadData.lastName}`);
       }
     }
+  }
+  
+  // Si no tenemos firstName después del full_name, usar valores por defecto
+  if (!leadData.firstName || String(leadData.firstName).includes('anuncio') || String(leadData.firstName).includes('Nuevo')) {
+    leadData.firstName = leadData.firstName || 'Sin nombre';
+    logDebug(`⚠️ Usando firstName por defecto: ${leadData.firstName}`);
   }
 
   // 2. MAPEAR phone_number si no hay phone
