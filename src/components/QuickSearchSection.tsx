@@ -98,25 +98,6 @@ export default function QuickSearchSection() {
                   ))}
                 </div>
                 
-                {/* Botón Ver más / Ver menos */}
-                {allModels.length > 25 && (
-                  <div className="mt-6 text-center">
-                    <button
-                      onClick={() => setShowAllModels(!showAllModels)}
-                      className="inline-flex items-center gap-2 text-blue-700 font-semibold hover:text-blue-800 transition-colors"
-                    >
-                      {showAllModels ? 'Ver menos' : `Ver más (${allModels.length - 25} modelos más)`}
-                      <svg 
-                        className={`w-4 h-4 transition-transform ${showAllModels ? 'rotate-180' : ''}`}
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                  </div>
-                )}
               </>
             )}
           </div>
@@ -155,10 +136,28 @@ export default function QuickSearchSection() {
 
       {/* CTA inferior */}
       <div className="mt-8">
-        <Link href="/buscador" className="w-full flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium border px-6 py-3 rounded-3xl border-zinc-200 bg-transparent text-neutral-600 hover:bg-zinc-50">
-          <span className="text-base font-bold">Ver más</span>
-          <svg width="8" height="15" viewBox="0 0 8 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px] transform rotate-90"><path d="M3.64645 14.3536C3.84171 14.5488 4.15829 14.5488 4.35355 14.3536L7.53553 11.1716C7.7308 10.9763 7.7308 10.6597 7.53553 10.4645C7.34027 10.2692 7.02369 10.2692 6.82843 10.4645L4 13.2929L1.17157 10.4645C0.97631 10.2692 0.659728 10.2692 0.464466 10.4645C0.269203 10.6597 0.269203 10.9763 0.464466 11.1716L3.64645 14.3536ZM4 0L3.5 -2.18557e-08L3.5 14L4 14L4.5 14L4.5 2.18557e-08L4 0Z" fill="#7D7A7A"/></svg>
-        </Link>
+        {activeTab === 'models' && allModels.length > 25 && !showAllModels ? (
+          <button 
+            onClick={() => setShowAllModels(true)}
+            className="w-full flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium border px-6 py-3 rounded-3xl border-zinc-200 bg-transparent text-neutral-600 hover:bg-zinc-50 transition-colors"
+          >
+            <span className="text-base font-bold">Ver más ({allModels.length - 25} modelos más)</span>
+            <svg width="8" height="15" viewBox="0 0 8 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px] transform rotate-90"><path d="M3.64645 14.3536C3.84171 14.5488 4.15829 14.5488 4.35355 14.3536L7.53553 11.1716C7.7308 10.9763 7.7308 10.6597 7.53553 10.4645C7.34027 10.2692 7.02369 10.2692 6.82843 10.4645L4 13.2929L1.17157 10.4645C0.97631 10.2692 0.659728 10.2692 0.464466 10.4645C0.269203 10.6597 0.269203 10.9763 0.464466 11.1716L3.64645 14.3536ZM4 0L3.5 -2.18557e-08L3.5 14L4 14L4.5 14L4.5 2.18557e-08L4 0Z" fill="#7D7A7A"/></svg>
+          </button>
+        ) : activeTab === 'models' && showAllModels ? (
+          <button 
+            onClick={() => setShowAllModels(false)}
+            className="w-full flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium border px-6 py-3 rounded-3xl border-zinc-200 bg-transparent text-neutral-600 hover:bg-zinc-50 transition-colors"
+          >
+            <span className="text-base font-bold">Ver menos</span>
+            <svg width="8" height="15" viewBox="0 0 8 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px] transform -rotate-90"><path d="M3.64645 14.3536C3.84171 14.5488 4.15829 14.5488 4.35355 14.3536L7.53553 11.1716C7.7308 10.9763 7.7308 10.6597 7.53553 10.4645C7.34027 10.2692 7.02369 10.2692 6.82843 10.4645L4 13.2929L1.17157 10.4645C0.97631 10.2692 0.659728 10.2692 0.464466 10.4645C0.269203 10.6597 0.269203 10.9763 0.464466 11.1716L3.64645 14.3536ZM4 0L3.5 -2.18557e-08L3.5 14L4 14L4.5 14L4.5 2.18557e-08L4 0Z" fill="#7D7A7A"/></svg>
+          </button>
+        ) : (
+          <Link href="/buscador" className="w-full flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium border px-6 py-3 rounded-3xl border-zinc-200 bg-transparent text-neutral-600 hover:bg-zinc-50">
+            <span className="text-base font-bold">Ver más</span>
+            <svg width="8" height="15" viewBox="0 0 8 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px] transform rotate-90"><path d="M3.64645 14.3536C3.84171 14.5488 4.15829 14.5488 4.35355 14.3536L7.53553 11.1716C7.7308 10.9763 7.7308 10.6597 7.53553 10.4645C7.34027 10.2692 7.02369 10.2692 6.82843 10.4645L4 13.2929L1.17157 10.4645C0.97631 10.2692 0.659728 10.2692 0.464466 10.4645C0.269203 10.6597 0.269203 10.9763 0.464466 11.1716L3.64645 14.3536ZM4 0L3.5 -2.18557e-08L3.5 14L4 14L4.5 14L4.5 2.18557e-08L4 0Z" fill="#7D7A7A"/></svg>
+          </Link>
+        )}
       </div>
     </section>
   );
