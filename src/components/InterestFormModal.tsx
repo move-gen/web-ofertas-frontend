@@ -223,11 +223,6 @@ export default function InterestFormModal({ isOpen, onClose, car }: InterestForm
                     Tu interés en el {car.make} {car.model} ha sido registrado exitosamente. 
                     Nuestro equipo te contactará pronto con más información.
                   </p>
-                  <p className="text-sm text-gray-500 mb-6">
-                    ✅ Lead creado en Walcu CRM<br/>
-                    ✅ Vehículo asociado al lead<br/>
-                    ✅ Notificación enviada al equipo
-                  </p>
                   <button
                     onClick={handleClose}
                     className="bg-blue-600 text-white font-semibold px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"

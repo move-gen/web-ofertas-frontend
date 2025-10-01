@@ -176,11 +176,6 @@ export default function ContactForm({ isOpen, onClose }: ContactFormProps) {
                 Tu mensaje ha sido enviado exitosamente a nuestro equipo. 
                 Te contactaremos pronto.
               </p>
-              <p className="text-sm text-gray-500 mb-6">
-                ✅ Lead creado en Walcu CRM<br/>
-                ✅ Cliente registrado/actualizado<br/>
-                ✅ Notificación enviada al equipo
-              </p>
               <button
                 onClick={handleClose}
                 className="bg-blue-600 text-white font-semibold px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"

@@ -139,10 +139,25 @@ export default function CarCard({ car }: CarCardProps) {
                   </div>
               )}
           </div>
-          <div className="text-right">
-            <p className="text-xl font-bold text-gray-900">
-              {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(car.regularPrice)}
-            </p>
+          <div className="flex justify-between items-end">
+            {/* Precio al contado tachado (solo si hay precio financiado) */}
+            {car.financedPrice && (
+              <div className="text-left">
+                <p className="text-xs text-gray-400 mb-1">Precio Contado</p>
+                <p className="text-sm text-gray-500 line-through">
+                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(car.regularPrice)}
+                </p>
+              </div>
+            )}
+            {/* Precio principal */}
+            <div className="text-right">
+              <p className="text-xs text-gray-400 mb-1">
+                {car.financedPrice ? 'Precio Financiado' : 'Precio Contado'}
+              </p>
+              <p className="text-xl font-bold text-gray-900">
+                {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(car.financedPrice || car.regularPrice)}
+              </p>
+            </div>
           </div>
         </div>
       </div>
