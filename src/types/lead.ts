@@ -18,6 +18,7 @@ export interface Lead {
   campaign?: string;
   sheetName?: string;
   leadType: 'sales' | 'appraisal';
+  facebookLeadId?: string;
   walcuLeadId?: string;
   walcuStatus: 'pending' | 'sent' | 'failed';
   walcuError?: string;

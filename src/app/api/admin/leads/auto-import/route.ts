@@ -218,20 +218,23 @@ const processSheet = async (
         // Mapear datos de la fila
         const { leadData, additionalData } = mapSheetRowToLead(row, headers, columnMapping, unmappedColumns);
 
-        // FILTRO POR FECHA: Solo procesar leads de hoy
+        // FILTRO POR FECHA: TEMPORAL - Procesar todos los leads para debug
         const createdTime = leadData.createdTime || additionalData.created_time || additionalData.created_at || additionalData.date;
         if (createdTime) {
           try {
             const createdDate = new Date(String(createdTime));
             const createdDateStr = createdDate.toISOString().split('T')[0]; // YYYY-MM-DD
             
-            if (createdDateStr !== todayStr) {
-              logDebug(`Saltando lead de fila ${i + 2} - fecha ${createdDateStr} no es de hoy (${todayStr})`);
-              results.skipped++;
-              continue;
-            }
+            logDebug(`Lead de fila ${i + 2} - fecha ${createdDateStr} (hoy es ${todayStr})`);
             
-            logDebug(`Procesando lead de fila ${i + 2} - fecha ${createdDateStr} es de hoy`);
+            // TEMPORAL: Comentado filtro por fecha para debug
+            // if (createdDateStr !== todayStr) {
+            //   logDebug(`Saltando lead de fila ${i + 2} - fecha ${createdDateStr} no es de hoy (${todayStr})`);
+            //   results.skipped++;
+            //   continue;
+            // }
+            
+            logDebug(`Procesando lead de fila ${i + 2} - fecha ${createdDateStr}`);
           } catch (dateError) {
             logError(`Error parseando fecha en fila ${i + 2}: ${createdTime}`, dateError);
             logDebug(`Lead de fila ${i + 2} con fecha inválida, procesando de todas formas`);
@@ -376,15 +379,12 @@ const processLeadData = async (
   let existingLead = null;
   
   if (leadData.facebookLeadId) {
-    // Priorizar búsqueda por Facebook Lead ID (identificador único real)
     existingLead = await prisma.lead.findFirst({
-      where: { 
-        facebookLeadId: String(leadData.facebookLeadId)
-      }
+      where: { facebookLeadId: String(leadData.facebookLeadId) }
     });
     logDebug(`Búsqueda de duplicado por Facebook ID ${leadData.facebookLeadId}: ${existingLead ? 'ENCONTRADO' : 'NO ENCONTRADO'}`);
   } else {
-    // Fallback: buscar por email si no hay Facebook ID
+    // Buscar por email como fallback
     existingLead = await prisma.lead.findFirst({
       where: { email: emailStr }
     });
@@ -487,7 +487,7 @@ const processLeadData = async (
           campaign: leadData.campaign ? String(leadData.campaign) : 'sheets_auto_import',
           sheetName: sheetName, // Nombre de la hoja de origen específica
           leadType: 'appraisal', // Leads de Google Sheets son tasaciones
-          facebookLeadId: leadData.facebookLeadId ? String(leadData.facebookLeadId) : null, // ID único de Facebook
+          facebookLeadId: leadData.facebookLeadId ? String(leadData.facebookLeadId) : null,
           walcuStatus: 'pending'
         };
 
