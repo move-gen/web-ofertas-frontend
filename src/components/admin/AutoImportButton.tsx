@@ -32,9 +32,10 @@ interface AutoImportResult {
 
 interface AutoImportButtonProps {
   onImportComplete: () => void;
+  onLog?: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
 }
 
-export default function AutoImportButton({ onImportComplete }: AutoImportButtonProps) {
+export default function AutoImportButton({ onImportComplete, onLog }: AutoImportButtonProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AutoImportResult | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -43,6 +44,8 @@ export default function AutoImportButton({ onImportComplete }: AutoImportButtonP
     setLoading(true);
     setResult(null);
     setShowResult(false);
+
+    onLog?.('🚀 Iniciando importación automática desde Google Sheets...', 'info');
 
     try {
       const response = await fetch('/api/admin/leads/auto-import', {
@@ -56,13 +59,36 @@ export default function AutoImportButton({ onImportComplete }: AutoImportButtonP
       setResult(data);
       setShowResult(true);
 
-      if (data.success) {
+      if (data.success && data.data) {
+        const { created, updated, processed, skipped, totalLeads, sentToWalcu, walcuErrors } = data.data;
+        
+        onLog?.(`✅ Importación completada: ${totalLeads} leads procesados`, 'success');
+        onLog?.(`📊 Resultados: ${created} creados, ${updated} actualizados, ${skipped} saltados`, 'info');
+        
+        if (sentToWalcu > 0) {
+          onLog?.(`🎯 Enviados a Walcu: ${sentToWalcu} leads nuevos (solo los que no existían)`, 'success');
+        }
+        
+        if (walcuErrors > 0) {
+          onLog?.(`⚠️ Errores en Walcu: ${walcuErrors} leads fallaron al enviar`, 'warning');
+        }
+
+        if (data.data.errors && data.data.errors.length > 0) {
+          data.data.errors.forEach((error: string) => {
+            onLog?.(`❌ Error: ${error}`, 'error');
+          });
+        }
+
         onImportComplete();
+      } else {
+        onLog?.(`❌ Error en auto-import: ${data.error}`, 'error');
       }
-    } catch {
+    } catch (error) {
+      const errorMessage = 'Error de conexión durante la importación automática';
+      onLog?.(`❌ ${errorMessage}`, 'error');
       setResult({
         success: false,
-        error: 'Error de conexión durante la importación automática'
+        error: errorMessage
       });
       setShowResult(true);
     } finally {

@@ -18,6 +18,8 @@ import {
   FileSpreadsheet,
   Send,
   Sheet,
+  Eye,
+  FileText
 } from 'lucide-react';
 import GoogleSheetsImporter from '@/components/admin/GoogleSheetsImporter';
 import LeadDetailsModal from '@/components/admin/LeadDetailsModal';
@@ -44,6 +46,8 @@ export default function AdminLeadsPage() {
   const [sendingToWalcu, setSendingToWalcu] = useState<string | null>(null);
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [bulkSending, setBulkSending] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [showLogs, setShowLogs] = useState(false);
 
   // Cargar leads
   const fetchLeads = useCallback(async () => {
@@ -266,13 +270,32 @@ export default function AdminLeadsPage() {
 
   // Formatear fecha
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
+    const date = new Date(dateString);
+    const today = new Date();
+    const isToday = date.toDateString() === today.toDateString();
+    
+    if (isToday) {
+      return `Hoy ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+    
+    return date.toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Función para agregar logs
+  const addLog = (message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
+    const timestamp = new Date().toLocaleTimeString('es-ES');
+    const logMessage = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+    setLogs(prev => [logMessage, ...prev].slice(0, 100)); // Mantener solo los últimos 100 logs
+  };
+
+  // Limpiar logs
+  const clearLogs = () => {
+    setLogs([]);
   };
 
   return (
@@ -290,10 +313,27 @@ export default function AdminLeadsPage() {
               </p>
             </div>
         <div className="flex gap-3">
+          <button
+            onClick={() => setShowLogs(!showLogs)}
+            className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors ${
+              showLogs 
+                ? 'bg-gray-600 text-white hover:bg-gray-700' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            {showLogs ? 'Ocultar Logs' : 'Ver Logs'}
+            {logs.length > 0 && (
+              <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 ml-1">
+                {logs.length}
+              </span>
+            )}
+          </button>
           <AutoImportButton
             onImportComplete={() => {
               fetchLeads(); // Recargar leads después de importar
             }}
+            onLog={addLog}
           />
           <button
             onClick={() => setShowImporter(true)}
@@ -344,6 +384,40 @@ export default function AdminLeadsPage() {
         </div>
           </div>
         </div>
+
+        {/* Sección de Logs */}
+        {showLogs && (
+          <div className="mb-6 bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-sm max-h-96 overflow-y-auto">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-white font-semibold">Logs de Importación y Walcu</h3>
+              <button
+                onClick={clearLogs}
+                className="text-gray-400 hover:text-white text-xs bg-gray-700 px-2 py-1 rounded"
+              >
+                Limpiar
+              </button>
+            </div>
+            {logs.length === 0 ? (
+              <div className="text-gray-500 italic">No hay logs disponibles</div>
+            ) : (
+              <div className="space-y-1">
+                {logs.map((log, index) => (
+                  <div 
+                    key={index} 
+                    className={`${
+                      log.includes('ERROR') ? 'text-red-400' :
+                      log.includes('SUCCESS') ? 'text-green-400' :
+                      log.includes('WARNING') ? 'text-yellow-400' :
+                      'text-gray-300'
+                    }`}
+                  >
+                    {log}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -464,11 +538,11 @@ export default function AdminLeadsPage() {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <div className="flex items-center gap-3">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                    <div className="flex items-center gap-2">
                       <input
                         type="checkbox"
                         checked={selectedLeads.size > 0 && selectedLeads.size === leads.filter(l => l.walcuStatus !== 'sent').length}
@@ -484,22 +558,22 @@ export default function AdminLeadsPage() {
                       Cliente
                     </div>
                   </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                         Vehículo
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
                         Mensaje
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                         Estado Walcu
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Hoja de Origen
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                        Origen
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-36">
                         Fecha
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                         Acciones
                       </th>
                     </tr>
@@ -514,7 +588,7 @@ export default function AdminLeadsPage() {
                         onClick={() => openLeadDetails(lead)}
                       >
                         {/* Cliente */}
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-3 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 mr-3">
                               <input
@@ -552,7 +626,7 @@ export default function AdminLeadsPage() {
                         </td>
 
                         {/* Vehículo */}
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-3 whitespace-nowrap">
                           {lead.car ? (
                             <div className="flex items-center">
                               {lead.car.images?.[0] ? (
@@ -584,7 +658,7 @@ export default function AdminLeadsPage() {
                         </td>
 
                         {/* Mensaje */}
-                        <td className="px-6 py-4">
+                        <td className="px-3 py-3">
                           <div className="text-sm text-gray-900 max-w-xs">
                             {lead.message ? (
                               <div className="flex items-start gap-2">
@@ -603,7 +677,7 @@ export default function AdminLeadsPage() {
                         </td>
 
                         {/* Estado Walcu */}
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-3 whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             {getStatusIcon(lead.walcuStatus)}
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(lead.walcuStatus)}`}>
@@ -624,7 +698,7 @@ export default function AdminLeadsPage() {
                         </td>
 
                         {/* Hoja de Origen */}
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-3 whitespace-nowrap">
                           {lead.sheetName ? (
                             <div className="flex items-center gap-2">
                               <div className="p-1 bg-green-100 rounded">
@@ -652,7 +726,7 @@ export default function AdminLeadsPage() {
                         </td>
 
                         {/* Fecha */}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-500">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {formatDate(lead.createdAt)}
@@ -660,7 +734,7 @@ export default function AdminLeadsPage() {
                         </td>
 
                         {/* Acciones */}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-3 py-3 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                             {lead.walcuStatus !== 'sent' ? (
                               <button

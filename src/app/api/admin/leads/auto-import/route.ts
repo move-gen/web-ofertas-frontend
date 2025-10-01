@@ -218,7 +218,7 @@ const processSheet = async (
         // Mapear datos de la fila
         const { leadData, additionalData } = mapSheetRowToLead(row, headers, columnMapping, unmappedColumns);
 
-        // FILTRO POR FECHA: TEMPORAL - Procesar todos los leads para debug
+        // FILTRO POR FECHA: Procesar solo leads de hoy
         const createdTime = leadData.createdTime || additionalData.created_time || additionalData.created_at || additionalData.date;
         if (createdTime) {
           try {
@@ -227,20 +227,23 @@ const processSheet = async (
             
             logDebug(`Lead de fila ${i + 2} - fecha ${createdDateStr} (hoy es ${todayStr})`);
             
-            // TEMPORAL: Comentado filtro por fecha para debug
-            // if (createdDateStr !== todayStr) {
-            //   logDebug(`Saltando lead de fila ${i + 2} - fecha ${createdDateStr} no es de hoy (${todayStr})`);
-            //   results.skipped++;
-            //   continue;
-            // }
+            if (createdDateStr !== todayStr) {
+              logDebug(`Saltando lead de fila ${i + 2} - fecha ${createdDateStr} no es de hoy (${todayStr})`);
+              results.skipped++;
+              continue;
+            }
             
-            logDebug(`Procesando lead de fila ${i + 2} - fecha ${createdDateStr}`);
+            logDebug(`Procesando lead de fila ${i + 2} - fecha ${createdDateStr} ✅`);
           } catch (dateError) {
             logError(`Error parseando fecha en fila ${i + 2}: ${createdTime}`, dateError);
-            logDebug(`Lead de fila ${i + 2} con fecha inválida, procesando de todas formas`);
+            logDebug(`Lead de fila ${i + 2} con fecha inválida, saltando`);
+            results.skipped++;
+            continue;
           }
         } else {
-          logDebug(`Lead de fila ${i + 2} sin fecha created_time, procesando de todas formas`);
+          logDebug(`Lead de fila ${i + 2} sin fecha created_time, saltando`);
+          results.skipped++;
+          continue;
         }
 
         // Procesar el lead (misma lógica que antes pero con sheetName específico)
@@ -272,6 +275,8 @@ const processLeadData = async (
     leads: unknown[];
     sheetsProcessed: string[];
     totalSheets: number;
+    sentToWalcu: number;
+    walcuErrors: number;
   },
   rowIndex: number
 ) => {
@@ -593,6 +598,9 @@ const processLeadData = async (
         walcuStatus: 'sent'
       }
     });
+    
+    results.sentToWalcu++;
+    logDebug(`✅ Lead ${lead.id} enviado exitosamente a Walcu (ID: ${walcuResponse.data._id})`);
   } catch (walcuError) {
     logError(`Error enviando lead ${lead.id} a Walcu`, walcuError);
     
@@ -603,6 +611,9 @@ const processLeadData = async (
         walcuError: walcuError instanceof Error ? walcuError.message : 'Error desconocido'
       }
     });
+    
+    results.walcuErrors++;
+    logDebug(`❌ Error enviando lead ${lead.id} a Walcu: ${walcuError instanceof Error ? walcuError.message : 'Error desconocido'}`);
   }
 };
 
@@ -713,7 +724,9 @@ export async function POST() {
       errors: [] as string[],
       leads: [] as unknown[],
       sheetsProcessed: [] as string[],
-      totalSheets: allSheets.length
+      totalSheets: allSheets.length,
+      sentToWalcu: 0,
+      walcuErrors: 0
     };
 
     logDebug(`Iniciando procesamiento de ${allSheets.length} hojas`, {
@@ -758,7 +771,9 @@ export async function POST() {
         spreadsheetId,
         totalSheets: results.totalSheets,
         sheetsProcessed: results.sheetsProcessed,
-        sheetsWithData: results.sheetsProcessed.length
+        sheetsWithData: results.sheetsProcessed.length,
+        sentToWalcu: results.sentToWalcu,
+        walcuErrors: results.walcuErrors
       }
     });
 
