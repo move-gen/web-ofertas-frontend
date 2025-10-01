@@ -124,6 +124,7 @@ export async function POST(request: NextRequest) {
         source: body.source,
         medium: body.medium,
         campaign: body.campaign,
+        leadType: 'sales', // Leads del formulario web son de ventas (clientes que quieren comprar)
         walcuStatus: 'pending'
       }
     });
