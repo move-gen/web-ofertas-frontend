@@ -60,7 +60,7 @@ export default function AutoImportButton({ onImportComplete, onLog }: AutoImport
       setShowResult(true);
 
       if (data.success && data.data) {
-        const { created, updated, processed, skipped, totalLeads, sentToWalcu, walcuErrors } = data.data;
+        const { created, updated, skipped, totalLeads, sentToWalcu, walcuErrors } = data.data;
         
         onLog?.(`✅ Importación completada: ${totalLeads} leads procesados`, 'success');
         onLog?.(`📊 Resultados: ${created} creados, ${updated} actualizados, ${skipped} saltados`, 'info');
@@ -83,7 +83,7 @@ export default function AutoImportButton({ onImportComplete, onLog }: AutoImport
       } else {
         onLog?.(`❌ Error en auto-import: ${data.error}`, 'error');
       }
-    } catch (error) {
+    } catch {
       const errorMessage = 'Error de conexión durante la importación automática';
       onLog?.(`❌ ${errorMessage}`, 'error');
       setResult({

@@ -157,6 +157,8 @@ const processSheet = async (
     leads: unknown[];
     sheetsProcessed: string[];
     totalSheets: number;
+    sentToWalcu: number;
+    walcuErrors: number;
   }
 ) => {
   logDebug(`=== PROCESANDO HOJA: ${sheetName} ===`);
