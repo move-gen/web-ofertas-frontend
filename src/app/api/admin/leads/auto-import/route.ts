@@ -260,6 +260,10 @@ const processLeadData = async (
   },
   rowIndex: number
 ) => {
+  logDebug(`\n🔍 PROCESANDO LEAD de hoja "${sheetName}" (fila ${rowIndex + 2})`);
+  logDebug(`📋 leadData recibido:`, leadData);
+  logDebug(`📋 additionalData recibido:`, additionalData);
+  
   // Extraer datos de forma flexible
   // 1. PRIORIZAR full_name para extraer nombres (SIEMPRE sobrescribir)
   const fullNameSources = [
@@ -356,10 +360,18 @@ const processLeadData = async (
   }
 
   // 6. EXTRAER Facebook Lead ID como identificador único
+  logDebug(`🔍 Buscando Facebook Lead ID en:`, {
+    'additionalData.id': additionalData.id,
+    'leadData.leadId': leadData.leadId,
+    'leadData.id': leadData.id
+  });
+  
   const facebookLeadId = additionalData.id || leadData.leadId || leadData.id;
   if (facebookLeadId) {
     leadData.facebookLeadId = String(facebookLeadId).trim();
     logDebug(`✅ Facebook Lead ID extraído: ${leadData.facebookLeadId}`);
+  } else {
+    logDebug(`⚠️ NO se encontró Facebook Lead ID en ningún campo`);
   }
 
   // RESUMEN FINAL de datos procesados
@@ -408,9 +420,10 @@ const processLeadData = async (
     }
   }
 
-  // Buscar si ya existe un lead con este Facebook ID (identificador único)
+  // DOBLE VERIFICACIÓN DE DUPLICADOS: Facebook ID Y Email
   let existingLead = null;
   
+  // 1. Buscar por Facebook ID (más confiable)
   if (leadData.facebookLeadId) {
     existingLead = await prisma.lead.findFirst({
       where: { facebookLeadId: String(leadData.facebookLeadId) }
@@ -419,18 +432,33 @@ const processLeadData = async (
     if (existingLead) {
       logDebug(`🔍 DUPLICADO ENCONTRADO por Facebook ID ${leadData.facebookLeadId}:`);
       logDebug(`   - Lead existente: ${existingLead.id} (${existingLead.firstName} ${existingLead.lastName})`);
+      logDebug(`   - Email: ${existingLead.email}`);
       logDebug(`   - Estado Walcu: ${existingLead.walcuStatus}`);
       logDebug(`   - Walcu Lead ID: ${existingLead.walcuLeadId || 'No enviado'}`);
+      logDebug(`   ⚠️ SALTANDO importación - lead ya existe`);
+      results.skipped++;
+      return; // Salir sin procesar
     } else {
-      logDebug(`✅ NO hay duplicado para Facebook ID ${leadData.facebookLeadId} - es un lead NUEVO`);
+      logDebug(`✅ NO hay duplicado para Facebook ID ${leadData.facebookLeadId}`);
     }
-  } else {
-    // Buscar por email como fallback
-    existingLead = await prisma.lead.findFirst({
-      where: { email: emailStr }
-    });
-    logDebug(`Búsqueda de duplicado por email ${emailStr}: ${existingLead ? 'ENCONTRADO' : 'NO ENCONTRADO'}`);
   }
+  
+  // 2. Buscar por email como segunda verificación
+  const existingByEmail = await prisma.lead.findFirst({
+    where: { email: emailStr }
+  });
+  
+  if (existingByEmail) {
+    logDebug(`🔍 DUPLICADO ENCONTRADO por email ${emailStr}:`);
+    logDebug(`   - Lead existente: ${existingByEmail.id} (${existingByEmail.firstName} ${existingByEmail.lastName})`);
+    logDebug(`   - Facebook ID: ${existingByEmail.facebookLeadId || 'No tiene'}`);
+    logDebug(`   - Estado Walcu: ${existingByEmail.walcuStatus}`);
+    logDebug(`   ⚠️ SALTANDO importación - email ya existe`);
+    results.skipped++;
+    return; // Salir sin procesar
+  }
+  
+  logDebug(`✅ Lead NUEVO - no existe por Facebook ID ni por email`);
 
   // Intentar encontrar el coche relacionado si se proporciona SKU
   let carId = null;
@@ -550,148 +578,9 @@ const processLeadData = async (
 
   results.leads.push(lead);
 
-  // Verificar si el lead ya fue enviado exitosamente a Walcu
-  const shouldSendToWalcu = lead.walcuStatus !== 'sent';
-  
-  if (!shouldSendToWalcu) {
-    logDebug(`🚫 Lead ${lead.id} (FB ID: ${lead.facebookLeadId}) ya fue enviado a Walcu (ID: ${lead.walcuLeadId})`);
-    logDebug(`   ❌ NO se enviará duplicado a Walcu - estado: ${lead.walcuStatus}`);
-    return; // No enviar automáticamente si ya fue enviado
-  }
-
-  if (existingLead && existingLead.walcuStatus === 'sent') {
-    logDebug(`🚫 Lead duplicado ${existingLead.id} ya fue enviado a Walcu (ID: ${existingLead.walcuLeadId})`);
-    logDebug(`   ❌ NO se enviará duplicado a Walcu para FB ID: ${leadData.facebookLeadId}`);
-    return; // No enviar si el lead existente ya fue enviado
-  }
-
-  logDebug(`🚀 Lead ${lead.id} (FB ID: ${lead.facebookLeadId}) será enviado a Walcu (estado: ${lead.walcuStatus})`);
-
-  // Enviar automáticamente a Walcu como lead de adquisición/tasación
-  try {
-    const { WalcuCRMService } = await import('@/services/walcu-crm');
-    const walcuService = new WalcuCRMService();
-    
-    // Preparar datos del vehículo del cliente (que quiere vender)
-    const carData = {
-      make: leadData.carMake ? String(leadData.carMake) : 'Sin especificar',
-      model: leadData.carModel ? String(leadData.carModel) : 'Consulta general',
-      year: typeof leadData.carYear === 'number' ? leadData.carYear : new Date().getFullYear(),
-      license_plate: leadData.carLicensePlate ? String(leadData.carLicensePlate) : '',
-      stock_number: leadData.carStockNumber ? String(leadData.carStockNumber) : '',
-      category: 'car' as const,
-      type: 'used' as const
-    };
-    
-    logDebug(`🚗 Datos del vehículo para Walcu:`, {
-      make: carData.make,
-      model: carData.model,
-      year: carData.year,
-      license_plate: carData.license_plate,
-      stock_number: carData.stock_number
-    });
-
-    // Preparar mensaje con campos adicionales no mapeados
-    let fullMessage = leadData.message ? String(leadData.message) : 'Cliente interesado en vender/tasar su vehículo';
-    
-    // Si tenemos información del vehículo, agregarla al mensaje
-    if (leadData.carMake && leadData.carModel) {
-      fullMessage += ` - Vehículo: ${leadData.carMake} ${leadData.carModel}`;
-      if (leadData.carYear) {
-        fullMessage += ` (${leadData.carYear})`;
-      }
-    }
-    
-    // Añadir campos adicionales al mensaje
-    if (Object.keys(additionalData).length > 0) {
-      const additionalInfo = Object.entries(additionalData)
-        .filter(([, value]) => value)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(', ');
-      
-      if (additionalInfo) {
-        fullMessage += ` | Información adicional: ${additionalInfo}`;
-      }
-    }
-
-            // Importar el servicio de construcción de payloads
-            const { buildWalcuPayload, determineLeadType, formatLeadMessage } = await import('@/lib/walcu-payload-builder');
-            
-            // Determinar el tipo de lead (appraisal para Google Sheets)
-            const leadType = determineLeadType(leadData.source ? String(leadData.source) : undefined, sheetName);
-            
-            // Preparar datos del cliente con nombres correctos
-            const clientData = {
-              foreign_id: `@${Date.now()}`,
-              first_name: String(leadData.firstName || 'Cliente'),
-              last_name: String(leadData.lastName || 'Facebook'),
-              email: String(leadData.email || emailStr),
-              phone: leadData.phone ? String(leadData.phone) : undefined
-            };
-            
-            logDebug(`👤 Datos del cliente para Walcu:`, {
-              first_name: clientData.first_name,
-              last_name: clientData.last_name,
-              email: clientData.email,
-              phone: clientData.phone
-            });
-            
-            // Preparar datos del lead
-            const leadInfo = {
-              foreign_id: `lead_${Date.now()}`,
-              inquiry: formatLeadMessage(leadType, fullMessage),
-              car: {
-                make: carData.make,
-                model: carData.model,
-                year: carData.year,
-                license_plate: carData.license_plate,
-                stock_number: carData.stock_number
-              }
-            };
-            
-            // Crear payload según el tipo de lead
-            const leadPayload = buildWalcuPayload(leadType, clientData, leadInfo);
-            
-            logDebug(`📤 Enviando como ${leadType} lead desde hoja: ${sheetName}`);
-            logDebug(`📋 Payload completo para Walcu:`, JSON.stringify(leadPayload, null, 2));
-            
-            // Log específico para verificar que los datos se ven correctamente
-            logDebug(`🔍 Verificación datos visibles en Walcu:`, {
-              cliente: `${clientData.first_name} ${clientData.last_name}`,
-              email: clientData.email,
-              telefono: clientData.phone,
-              vehiculo: `${leadInfo.car.make} ${leadInfo.car.model} (${leadInfo.car.year})`,
-              consulta: leadInfo.inquiry,
-              tipo_lead: leadType
-            });
-    
-    const walcuResponse = await walcuService.api.post("/leadimporttasks", leadPayload);
-    
-    // Actualizar el lead con el ID de Walcu
-    await prisma.lead.update({
-      where: { id: lead.id },
-      data: { 
-        walcuLeadId: walcuResponse.data._id || undefined,
-        walcuStatus: 'sent'
-      }
-    });
-    
-    results.sentToWalcu++;
-    logDebug(`✅ Lead ${lead.id} enviado exitosamente a Walcu (ID: ${walcuResponse.data._id})`);
-  } catch (walcuError) {
-    logError(`Error enviando lead ${lead.id} a Walcu`, walcuError);
-    
-    await prisma.lead.update({
-      where: { id: lead.id },
-      data: { 
-        walcuStatus: 'failed',
-        walcuError: walcuError instanceof Error ? walcuError.message : 'Error desconocido'
-      }
-    });
-    
-    results.walcuErrors++;
-    logDebug(`❌ Error enviando lead ${lead.id} a Walcu: ${walcuError instanceof Error ? walcuError.message : 'Error desconocido'}`);
-  }
+  logDebug(`✅ Lead de TASACIÓN ${lead.id} (FB ID: ${lead.facebookLeadId}) guardado correctamente`);
+  logDebug(`📋 Los leads de Google Sheets (tasaciones) NO se envían automáticamente a Walcu`);
+  logDebug(`🔧 Para enviar a Walcu, usar el botón manual en la tabla de administración`);
 };
 
 // Función mejorada para mapear datos del sheet a formato de lead

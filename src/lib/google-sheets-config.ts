@@ -11,6 +11,10 @@ export const GOOGLE_SHEETS_CONFIG = {
   
   // Mapeo flexible de columnas - acepta cualquier variación
   COLUMN_MAPPINGS: {
+    // ID único de Facebook Lead
+    leadId: [
+      'id', 'lead_id', 'facebook_lead_id', 'fb_lead_id', 'lead_identifier'
+    ],
     // Información personal
     firstName: [
       'nombre', 'first_name', 'firstname', 'first name',
