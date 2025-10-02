@@ -291,8 +291,10 @@ const processLeadData = async (
   
   // Si no tenemos firstName después del full_name, usar valores por defecto
   if (!leadData.firstName || String(leadData.firstName).includes('anuncio') || String(leadData.firstName).includes('Nuevo')) {
-    leadData.firstName = leadData.firstName || 'Sin nombre';
-    logDebug(`⚠️ Usando firstName por defecto: ${leadData.firstName}`);
+    // Para leads de Facebook sin nombre real, usar "Cliente Facebook"
+    leadData.firstName = 'Cliente';
+    leadData.lastName = 'Facebook';
+    logDebug(`⚠️ Usando nombres por defecto para lead sin nombre real: ${leadData.firstName} ${leadData.lastName}`);
   }
 
   // 2. MAPEAR phone_number si no hay phone
@@ -372,6 +374,17 @@ const processLeadData = async (
     source: leadData.source,
     campaign: leadData.campaign
   });
+
+  // VERIFICAR que no hay contaminación de datos
+  if (leadData.firstName && String(leadData.firstName).includes('l:')) {
+    logError(`🚨 ERROR: Facebook Lead ID contaminando firstName: ${leadData.firstName}`);
+    leadData.firstName = 'Cliente';
+    leadData.lastName = 'Facebook';
+  }
+  if (leadData.lastName && String(leadData.lastName).includes('l:')) {
+    logError(`🚨 ERROR: Facebook Lead ID contaminando lastName: ${leadData.lastName}`);
+    leadData.lastName = 'Facebook';
+  }
 
   // Valores por defecto para campos obligatorios
   if (!leadData.firstName) {
@@ -561,17 +574,33 @@ const processLeadData = async (
     
     // Preparar datos del vehículo del cliente (que quiere vender)
     const carData = {
-      make: leadData.carMake ? String(leadData.carMake) : '',
-      model: leadData.carModel ? String(leadData.carModel) : '',
+      make: leadData.carMake ? String(leadData.carMake) : 'Sin especificar',
+      model: leadData.carModel ? String(leadData.carModel) : 'Consulta general',
       year: typeof leadData.carYear === 'number' ? leadData.carYear : new Date().getFullYear(),
       license_plate: leadData.carLicensePlate ? String(leadData.carLicensePlate) : '',
       stock_number: leadData.carStockNumber ? String(leadData.carStockNumber) : '',
       category: 'car' as const,
       type: 'used' as const
     };
+    
+    logDebug(`🚗 Datos del vehículo para Walcu:`, {
+      make: carData.make,
+      model: carData.model,
+      year: carData.year,
+      license_plate: carData.license_plate,
+      stock_number: carData.stock_number
+    });
 
     // Preparar mensaje con campos adicionales no mapeados
-    let fullMessage = leadData.message ? String(leadData.message) : 'Cliente interesado en vender su vehículo';
+    let fullMessage = leadData.message ? String(leadData.message) : 'Cliente interesado en vender/tasar su vehículo';
+    
+    // Si tenemos información del vehículo, agregarla al mensaje
+    if (leadData.carMake && leadData.carModel) {
+      fullMessage += ` - Vehículo: ${leadData.carMake} ${leadData.carModel}`;
+      if (leadData.carYear) {
+        fullMessage += ` (${leadData.carYear})`;
+      }
+    }
     
     // Añadir campos adicionales al mensaje
     if (Object.keys(additionalData).length > 0) {
@@ -595,8 +624,8 @@ const processLeadData = async (
             const clientData = {
               foreign_id: `@${Date.now()}`,
               first_name: String(leadData.firstName || 'Cliente'),
-              last_name: String(leadData.lastName || ''),
-              email: String(leadData.email),
+              last_name: String(leadData.lastName || 'Facebook'),
+              email: String(leadData.email || emailStr),
               phone: leadData.phone ? String(leadData.phone) : undefined
             };
             
@@ -625,6 +654,16 @@ const processLeadData = async (
             
             logDebug(`📤 Enviando como ${leadType} lead desde hoja: ${sheetName}`);
             logDebug(`📋 Payload completo para Walcu:`, JSON.stringify(leadPayload, null, 2));
+            
+            // Log específico para verificar que los datos se ven correctamente
+            logDebug(`🔍 Verificación datos visibles en Walcu:`, {
+              cliente: `${clientData.first_name} ${clientData.last_name}`,
+              email: clientData.email,
+              telefono: clientData.phone,
+              vehiculo: `${leadInfo.car.make} ${leadInfo.car.model} (${leadInfo.car.year})`,
+              consulta: leadInfo.inquiry,
+              tipo_lead: leadType
+            });
     
     const walcuResponse = await walcuService.api.post("/leadimporttasks", leadPayload);
     
