@@ -402,7 +402,15 @@ const processLeadData = async (
     existingLead = await prisma.lead.findFirst({
       where: { facebookLeadId: String(leadData.facebookLeadId) }
     });
-    logDebug(`Búsqueda de duplicado por Facebook ID ${leadData.facebookLeadId}: ${existingLead ? 'ENCONTRADO' : 'NO ENCONTRADO'}`);
+    
+    if (existingLead) {
+      logDebug(`🔍 DUPLICADO ENCONTRADO por Facebook ID ${leadData.facebookLeadId}:`);
+      logDebug(`   - Lead existente: ${existingLead.id} (${existingLead.firstName} ${existingLead.lastName})`);
+      logDebug(`   - Estado Walcu: ${existingLead.walcuStatus}`);
+      logDebug(`   - Walcu Lead ID: ${existingLead.walcuLeadId || 'No enviado'}`);
+    } else {
+      logDebug(`✅ NO hay duplicado para Facebook ID ${leadData.facebookLeadId} - es un lead NUEVO`);
+    }
   } else {
     // Buscar por email como fallback
     existingLead = await prisma.lead.findFirst({
@@ -533,11 +541,18 @@ const processLeadData = async (
   const shouldSendToWalcu = lead.walcuStatus !== 'sent';
   
   if (!shouldSendToWalcu) {
-    logDebug(`Lead ${lead.id} ya fue enviado exitosamente a Walcu (ID: ${lead.walcuLeadId}), omitiendo reenvío automático`);
+    logDebug(`🚫 Lead ${lead.id} (FB ID: ${lead.facebookLeadId}) ya fue enviado a Walcu (ID: ${lead.walcuLeadId})`);
+    logDebug(`   ❌ NO se enviará duplicado a Walcu - estado: ${lead.walcuStatus}`);
     return; // No enviar automáticamente si ya fue enviado
   }
 
-  logDebug(`Lead ${lead.id} será enviado a Walcu automáticamente (estado actual: ${lead.walcuStatus})`);
+  if (existingLead && existingLead.walcuStatus === 'sent') {
+    logDebug(`🚫 Lead duplicado ${existingLead.id} ya fue enviado a Walcu (ID: ${existingLead.walcuLeadId})`);
+    logDebug(`   ❌ NO se enviará duplicado a Walcu para FB ID: ${leadData.facebookLeadId}`);
+    return; // No enviar si el lead existente ya fue enviado
+  }
+
+  logDebug(`🚀 Lead ${lead.id} (FB ID: ${lead.facebookLeadId}) será enviado a Walcu (estado: ${lead.walcuStatus})`);
 
   // Enviar automáticamente a Walcu como lead de adquisición/tasación
   try {
@@ -576,14 +591,21 @@ const processLeadData = async (
             // Determinar el tipo de lead (appraisal para Google Sheets)
             const leadType = determineLeadType(leadData.source ? String(leadData.source) : undefined, sheetName);
             
-            // Preparar datos del cliente
+            // Preparar datos del cliente con nombres correctos
             const clientData = {
               foreign_id: `@${Date.now()}`,
-              first_name: String(leadData.firstName),
+              first_name: String(leadData.firstName || 'Cliente'),
               last_name: String(leadData.lastName || ''),
               email: String(leadData.email),
               phone: leadData.phone ? String(leadData.phone) : undefined
             };
+            
+            logDebug(`👤 Datos del cliente para Walcu:`, {
+              first_name: clientData.first_name,
+              last_name: clientData.last_name,
+              email: clientData.email,
+              phone: clientData.phone
+            });
             
             // Preparar datos del lead
             const leadInfo = {
@@ -601,7 +623,8 @@ const processLeadData = async (
             // Crear payload según el tipo de lead
             const leadPayload = buildWalcuPayload(leadType, clientData, leadInfo);
             
-            logDebug(`Enviando como ${leadType} lead desde hoja: ${sheetName}`);
+            logDebug(`📤 Enviando como ${leadType} lead desde hoja: ${sheetName}`);
+            logDebug(`📋 Payload completo para Walcu:`, JSON.stringify(leadPayload, null, 2));
     
     const walcuResponse = await walcuService.api.post("/leadimporttasks", leadPayload);
     

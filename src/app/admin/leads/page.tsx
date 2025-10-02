@@ -540,7 +540,10 @@ export default function AdminLeadsPage() {
                 <table className="min-w-full divide-y divide-gray-200 text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                    ID
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-44">
                     <div className="flex items-center gap-2">
                       <input
                         type="checkbox"
@@ -586,6 +589,21 @@ export default function AdminLeadsPage() {
                         className="hover:bg-gray-50 cursor-pointer"
                         onClick={() => openLeadDetails(lead)}
                       >
+                        {/* ID */}
+                        <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-500">
+                          <div className="font-mono">
+                            {lead.facebookLeadId ? (
+                              <span className="text-blue-600" title={lead.facebookLeadId}>
+                                {lead.facebookLeadId.replace('l:', '')}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">
+                                #{lead.id.slice(-6)}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
                         {/* Cliente */}
                         <td className="px-3 py-3 whitespace-nowrap">
                           <div className="flex items-center">
