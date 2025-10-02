@@ -560,21 +560,11 @@ const processLeadData = async (
           walcuStatus: 'pending'
         };
 
-  let lead;
-  if (existingLead) {
-    // Siempre actualizar el lead existente con los nuevos datos
-    lead = await prisma.lead.update({
-      where: { id: existingLead.id },
-      data: leadPayload
-    });
-    results.updated++;
-  } else {
-    // Crear nuevo lead
-    lead = await prisma.lead.create({
-      data: leadPayload
-    });
-    results.created++;
-  }
+  // Como ya verificamos duplicados arriba y salimos si existe, aquí solo creamos leads nuevos
+  const lead = await prisma.lead.create({
+    data: leadPayload
+  });
+  results.created++;
 
   results.leads.push(lead);
 

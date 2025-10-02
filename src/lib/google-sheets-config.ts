@@ -118,9 +118,6 @@ export const GOOGLE_SHEETS_CONFIG = {
     ],
     
     // Campos específicos de Facebook/Instagram Leads
-    leadId: [
-      'id', 'lead_id', 'facebook_id', 'fb_id'
-    ],
     adId: [
       'ad_id', 'anuncio_id', 'advertisement_id'
     ],
