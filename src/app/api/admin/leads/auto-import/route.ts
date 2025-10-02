@@ -200,10 +200,7 @@ const processSheet = async (
       unmappedColumns
     });
 
-    // Obtener la fecha de hoy para filtrar
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
-    logDebug(`Filtrando leads por fecha de hoy: ${todayStr}`);
+    logDebug(`Procesando TODOS los leads de la hoja ${sheetName} (sin filtro de fecha)`);
 
     // Procesar cada fila de esta hoja
     for (let i = 0; i < dataRows.length; i++) {
@@ -225,33 +222,9 @@ const processSheet = async (
           additionalData: Object.keys(additionalData).length > 0 ? additionalData : 'Sin datos adicionales'
         });
 
-        // FILTRO POR FECHA: Procesar solo leads de hoy
+        // SIN FILTRO DE FECHA: Procesar todos los leads, solo evitar duplicados por Facebook ID
         const createdTime = leadData.createdTime || additionalData.created_time || additionalData.created_at || additionalData.date;
-        if (createdTime) {
-          try {
-            const createdDate = new Date(String(createdTime));
-            const createdDateStr = createdDate.toISOString().split('T')[0]; // YYYY-MM-DD
-            
-            logDebug(`Lead de fila ${i + 2} - fecha ${createdDateStr} (hoy es ${todayStr})`);
-            
-            if (createdDateStr !== todayStr) {
-              logDebug(`Saltando lead de fila ${i + 2} - fecha ${createdDateStr} no es de hoy (${todayStr})`);
-              results.skipped++;
-              continue;
-            }
-            
-            logDebug(`Procesando lead de fila ${i + 2} - fecha ${createdDateStr} ✅`);
-          } catch (dateError) {
-            logError(`Error parseando fecha en fila ${i + 2}: ${createdTime}`, dateError);
-            logDebug(`Lead de fila ${i + 2} con fecha inválida, saltando`);
-            results.skipped++;
-            continue;
-          }
-        } else {
-          logDebug(`Lead de fila ${i + 2} sin fecha created_time, saltando`);
-          results.skipped++;
-          continue;
-        }
+        logDebug(`Lead de fila ${i + 2} - fecha: ${createdTime || 'Sin fecha'} - procesando sin filtro de fecha`);
 
         // Procesar el lead (misma lógica que antes pero con sheetName específico)
         await processLeadData(leadData, additionalData, sheetName, results, i);
@@ -299,17 +272,20 @@ const processLeadData = async (
   const fullName = fullNameSources.find(name => name && String(name).trim())?.toString().trim();
   
   if (fullName) {
-    // Limpiar el nombre (remover prefijos de test)
-    const cleanName = fullName.replace(/^<test lead: dummy data for [^>]+>$/, '').trim();
+    // Verificar si es un dato de prueba de Facebook
+    const isTestData = fullName.includes('<test lead: dummy data') || fullName.includes('test lead: dummy data');
     
-    if (cleanName && cleanName !== '<test lead: dummy data for full_name>') {
-      const nameParts = cleanName.split(' ').filter(part => part.trim());
+    if (!isTestData) {
+      // Es un nombre real, usarlo
+      const nameParts = fullName.split(' ').filter(part => part.trim());
       if (nameParts.length > 0) {
-        // SIEMPRE sobrescribir con full_name si está disponible
+        // SIEMPRE sobrescribir con full_name real
         leadData.firstName = nameParts[0];
         leadData.lastName = nameParts.slice(1).join(' ') || '';
-        logDebug(`✅ Nombre SOBRESCRITO desde full_name: ${leadData.firstName} ${leadData.lastName}`);
+        logDebug(`✅ Nombre REAL extraído desde full_name: ${leadData.firstName} ${leadData.lastName}`);
       }
+    } else {
+      logDebug(`⚠️ Datos de prueba detectados en full_name: ${fullName} - manteniendo nombres originales`);
     }
   }
   
@@ -322,27 +298,39 @@ const processLeadData = async (
   // 2. MAPEAR phone_number si no hay phone
   if (!leadData.phone && (additionalData.phone_number || leadData.phoneNumber)) {
     const phoneValue = String(additionalData.phone_number || leadData.phoneNumber).trim();
-    // Limpiar prefijos de test y formato p:
-    const cleanPhone = phoneValue.replace(/^p:/, '').replace(/^<test lead: dummy data for [^>]+>$/, '').trim();
-    if (cleanPhone) {
-      leadData.phone = cleanPhone;
-      logDebug(`Teléfono extraído: ${cleanPhone}`);
+    
+    // Verificar si es un dato de prueba
+    const isTestPhone = phoneValue.includes('<test lead: dummy data') || phoneValue.includes('test lead: dummy data');
+    
+    if (!isTestPhone) {
+      // Limpiar formato p: de teléfonos reales
+      const cleanPhone = phoneValue.replace(/^p:/, '').trim();
+      if (cleanPhone) {
+        leadData.phone = cleanPhone;
+        logDebug(`✅ Teléfono REAL extraído: ${cleanPhone}`);
+      }
+    } else {
+      logDebug(`⚠️ Datos de prueba detectados en phone_number: ${phoneValue} - omitiendo`);
     }
   }
 
   // 3. MAPEAR marca_y_modelo a carMake y carModel
   if (!leadData.carMake && !leadData.carModel && (additionalData.marca_y_modelo || leadData.makeModel)) {
     const makeModelValue = String(additionalData.marca_y_modelo || leadData.makeModel).trim();
-    // Limpiar prefijos de test
-    const cleanMakeModel = makeModelValue.replace(/^<test lead: dummy data for [^>]+>$/, '').trim();
     
-    if (cleanMakeModel) {
-      const parts = cleanMakeModel.split(' ').filter(part => part.trim());
+    // Verificar si es un dato de prueba
+    const isTestVehicle = makeModelValue.includes('<test lead: dummy data') || makeModelValue.includes('test lead: dummy data');
+    
+    if (!isTestVehicle) {
+      // Es un vehículo real
+      const parts = makeModelValue.split(' ').filter(part => part.trim());
       if (parts.length > 0) {
         leadData.carMake = parts[0]; // Primera palabra = marca
         leadData.carModel = parts.slice(1).join(' ') || ''; // Resto = modelo
-        logDebug(`Vehículo extraído: ${leadData.carMake} ${leadData.carModel}`);
+        logDebug(`✅ Vehículo REAL extraído: ${leadData.carMake} ${leadData.carModel}`);
       }
+    } else {
+      logDebug(`⚠️ Datos de prueba detectados en marca_y_modelo: ${makeModelValue} - omitiendo`);
     }
   }
 
@@ -369,8 +357,21 @@ const processLeadData = async (
   const facebookLeadId = additionalData.id || leadData.leadId || leadData.id;
   if (facebookLeadId) {
     leadData.facebookLeadId = String(facebookLeadId).trim();
-    logDebug(`Facebook Lead ID extraído: ${leadData.facebookLeadId}`);
+    logDebug(`✅ Facebook Lead ID extraído: ${leadData.facebookLeadId}`);
   }
+
+  // RESUMEN FINAL de datos procesados
+  logDebug(`📋 RESUMEN FINAL del lead:`, {
+    facebookLeadId: leadData.facebookLeadId,
+    firstName: leadData.firstName,
+    lastName: leadData.lastName,
+    email: leadData.email || additionalData.email,
+    phone: leadData.phone,
+    carMake: leadData.carMake,
+    carModel: leadData.carModel,
+    source: leadData.source,
+    campaign: leadData.campaign
+  });
 
   // Valores por defecto para campos obligatorios
   if (!leadData.firstName) {
