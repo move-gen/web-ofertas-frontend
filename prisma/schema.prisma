@@ -75,6 +75,9 @@ model Car {
   // Source tracking
   source                  String    @default("feed") // "feed" or "manual"
   
+  // Foto especial para ofertas
+  offerImageUrl           String?   // URL de la foto especial que aparece solo en ofertas
+  
   images                  Image[]
   offers                  Offer[]   @relation("CarToOffer")
   leads                   Lead[]

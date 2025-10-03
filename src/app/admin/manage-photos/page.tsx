@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
 
-type CarWithImages = Car & { images: CarImage[] };
+type CarWithImages = Car & { images: CarImage[]; offerImageUrl?: string | null };
 
 function ManagePhotosContent() {
     const [searchTerm, setSearchTerm] = useState('');
@@ -23,7 +23,9 @@ function ManagePhotosContent() {
     const [isLoadingCar, setIsLoadingCar] = useState(false);
 
     const [isUploading, setIsUploading] = useState(false);
+    const [isUploadingOffer, setIsUploadingOffer] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const offerFileInputRef = useRef<HTMLInputElement>(null);
 
     const [reducer, forceUpdate] = useReducer(x => x + 1, 0);
 
@@ -167,6 +169,59 @@ function ManagePhotosContent() {
         }
     };
 
+    const handleOfferUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!event.target.files || !selectedCar) return;
+        const file = event.target.files[0];
+        setIsUploadingOffer(true);
+        try {
+            const token = getToken();
+            const response = await fetch(`/api/cars/${selectedCar.id}/offer-image`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': file.type,
+                    'X-Vercel-Filename': file.name,
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: file,
+            });
+            if (!response.ok) throw new Error('La subida de foto de oferta ha fallado');
+            
+            // Actualizar el coche seleccionado con la nueva imagen de oferta
+            const result = await response.json();
+            setSelectedCar(prev => prev ? { ...prev, offerImageUrl: result.offerImageUrl } : null);
+            
+            alert('Foto de oferta subida correctamente');
+        } catch (error) {
+            console.error(error);
+            alert('Error al subir la foto de oferta.');
+        } finally {
+            setIsUploadingOffer(false);
+            if(offerFileInputRef.current) offerFileInputRef.current.value = "";
+        }
+    };
+
+    const handleDeleteOfferImage = async () => {
+        if (!selectedCar) return;
+        try {
+            const token = getToken();
+            const response = await fetch(`/api/cars/${selectedCar.id}/offer-image`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (!response.ok) throw new Error('Error al eliminar la foto de oferta');
+            
+            // Actualizar el coche seleccionado eliminando la imagen de oferta
+            setSelectedCar(prev => prev ? { ...prev, offerImageUrl: null } : null);
+            
+            alert('Foto de oferta eliminada correctamente');
+        } catch (error) {
+            console.error(error);
+            alert('Error al eliminar la foto de oferta.');
+        }
+    };
+
 
     return (
         <div className="space-y-8">
@@ -281,6 +336,89 @@ function ManagePhotosContent() {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {selectedCar && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Foto Especial para Ofertas</CardTitle>
+                        <CardDescription>
+                            Esta foto aparecerá únicamente cuando el coche esté incluido en una oferta. 
+                            En el buscador normal se seguirá mostrando la foto principal.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Upload Section */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-medium">Subir Foto de Oferta</h3>
+                                <div className="relative border-2 border-dashed border-blue-300 rounded-lg p-6 flex items-center justify-center h-48 bg-blue-50">
+                                    <div className="text-center">
+                                        <Upload className="mx-auto h-8 w-8 text-blue-500" />
+                                        <p className="mt-2 text-sm text-blue-600">Subir foto especial para ofertas</p>
+                                        <Button 
+                                            size="sm" 
+                                            className="mt-2 bg-blue-500 hover:bg-blue-600" 
+                                            onClick={() => offerFileInputRef.current?.click()} 
+                                            disabled={isUploadingOffer}
+                                        >
+                                            {isUploadingOffer ? <Loader2 className="h-4 w-4 animate-spin" /> : "Seleccionar Foto"}
+                                        </Button>
+                                        <input
+                                            type="file"
+                                            ref={offerFileInputRef}
+                                            onChange={handleOfferUpload}
+                                            className="hidden"
+                                            accept="image/jpeg, image/png, image/webp"
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    Esta foto solo se mostrará en la sección de ofertas, no en el buscador principal.
+                                </p>
+                            </div>
+
+                            {/* Preview Section */}
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-medium">Vista Previa</h3>
+                                <div className="relative h-48 bg-gray-100 rounded-lg overflow-hidden">
+                                    {selectedCar.offerImageUrl ? (
+                                        <>
+                                            <Image
+                                                src={selectedCar.offerImageUrl}
+                                                alt={`Foto de oferta de ${selectedCar.name}`}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                            <div className="absolute top-2 right-2">
+                                                <Button 
+                                                    size="icon" 
+                                                    variant="destructive" 
+                                                    className="h-8 w-8"
+                                                    onClick={handleDeleteOfferImage}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            <div className="absolute bottom-2 left-2">
+                                                <div className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                                    Foto de Oferta
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <div className="text-center text-gray-400">
+                                                <Upload className="mx-auto h-8 w-8 mb-2" />
+                                                <p className="text-sm">No hay foto de oferta</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
