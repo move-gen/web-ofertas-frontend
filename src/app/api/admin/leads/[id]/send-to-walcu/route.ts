@@ -96,6 +96,9 @@ export async function POST(
       const leadInfo = {
         foreign_id: `lead_${Date.now()}`,
         inquiry: formatLeadMessage(leadType, fullMessage),
+        source: lead.source || 'Web Ofertas Marketing',
+        medium: lead.medium || 'https://ofertas.miguelleon.es/',
+        campaign: lead.campaign || (leadType === 'appraisal' ? 'car_appraisal' : 'car_interest'),
         car: {
           make: carData.make,
           model: carData.model,

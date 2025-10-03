@@ -36,6 +36,9 @@ export async function POST(request: NextRequest) {
         sales_lead: {
           foreign_id: `lead_${Date.now()}`,
           inquiry: message,
+          source: body.source || 'Web Ofertas Marketing',
+          medium: body.medium || 'https://ofertas.miguelleon.es/',
+          campaign: body.campaign || 'car_interest',
           car: {
             make: car.make,
             model: car.model,

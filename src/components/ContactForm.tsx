@@ -85,6 +85,9 @@ export default function ContactForm({ isOpen, onClose }: ContactFormProps) {
           email: formData.email,
           phone: formData.phone,
           message: formData.message,
+          source: 'Web Ofertas Marketing',
+          medium: 'https://ofertas.miguelleon.es/',
+          campaign: 'contact_form',
           car: {
             make: "Contacto",
             model: "General",

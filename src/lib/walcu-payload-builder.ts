@@ -21,6 +21,9 @@ export interface WalcuCarData {
 export interface WalcuLeadData {
   foreign_id: string;
   inquiry: string;
+  source?: string;
+  medium?: string;
+  campaign?: string;
   car?: WalcuCarData;
 }
 
@@ -49,7 +52,12 @@ export function buildWalcuPayload(
       ...basePayload,
       payload: {
         ...basePayload.payload,
-        sales_lead: leadData
+        sales_lead: {
+          ...leadData,
+          source: leadData.source || 'Web Ofertas Marketing',
+          medium: leadData.medium || 'https://ofertas.miguelleon.es/',
+          campaign: leadData.campaign || 'car_interest'
+        }
       }
     };
   } else {
@@ -58,7 +66,12 @@ export function buildWalcuPayload(
       ...basePayload,
       payload: {
         ...basePayload.payload,
-        appraisal_lead: leadData
+        appraisal_lead: {
+          ...leadData,
+          source: leadData.source || 'Web Ofertas Marketing',
+          medium: leadData.medium || 'https://ofertas.miguelleon.es/',
+          campaign: leadData.campaign || 'car_appraisal'
+        }
       }
     };
   }
