@@ -37,22 +37,32 @@ function ManagePhotosContent() {
         if (!idParam) return;
         const id = parseInt(idParam, 10);
         if (isNaN(id)) return;
+        
+        // Si ya tenemos este coche seleccionado, no hacer nada
+        if (selectedCar && selectedCar.id === id) return;
+        
         (async () => {
             try {
                 setIsLoadingCar(true);
+                setSelectedCar(null); // Limpiar selección actual
                 const token = getToken();
                 const response = await fetch(`/api/cars/${id}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if (!response.ok) return;
+                if (!response.ok) {
+                    console.error('Error al cargar el coche:', response.statusText);
+                    return;
+                }
                 const data: CarWithImages = await response.json();
                 setSelectedCar(data);
+                console.log('✅ Coche cargado desde URL:', data.name);
+            } catch (error) {
+                console.error('Error al cargar el coche:', error);
             } finally {
                 setIsLoadingCar(false);
             }
         })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [searchParams, selectedCar]);
 
     // Effect for searching cars
     useEffect(() => {
@@ -228,7 +238,12 @@ function ManagePhotosContent() {
             <Card>
                 <CardHeader>
                     <CardTitle>Paso 1: Buscar Vehículo</CardTitle>
-                    <CardDescription>Busca un vehículo por su matrícula para gestionar sus fotos.</CardDescription>
+                    <CardDescription>
+                        {searchParams.get('id') ? 
+                            'Vehículo cargado desde oferta. Puedes buscar otro vehículo si lo necesitas.' : 
+                            'Busca un vehículo por su matrícula para gestionar sus fotos.'
+                        }
+                    </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="relative w-full max-w-lg">

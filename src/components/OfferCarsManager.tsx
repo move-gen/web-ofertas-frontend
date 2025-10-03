@@ -90,11 +90,19 @@ export default function OfferCarsManager({ initialCars, offerId }: OfferCarsMana
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <Link href={`/admin/manage-photos?id=${car.id}`} className="text-indigo-600 hover:text-indigo-900 mr-4">Editar Fotos</Link>
-                <Button variant="ghost" size="sm" onClick={() => handleRemoveFromOffer(car.id)} className="text-red-600 hover:text-red-900 mr-4">Eliminar</Button>
-                <Button variant="ghost" size="sm" onClick={() => handleToggleSold(car.id, car.isSold)} className="text-green-600 hover:text-green-900">
-                  {car.isSold ? 'Marcar como Disponible' : 'Marcar como Vendido'}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Link href={`/admin/manage-photos?id=${car.id}`}>
+                    <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300">
+                      Editar Fotos
+                    </Button>
+                  </Link>
+                  <Button variant="ghost" size="sm" onClick={() => handleRemoveFromOffer(car.id)} className="text-red-600 hover:text-red-900">
+                    Eliminar
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleToggleSold(car.id, car.isSold)} className="text-green-600 hover:text-green-900">
+                    {car.isSold ? 'Marcar como Disponible' : 'Marcar como Vendido'}
+                  </Button>
+                </div>
               </td>
             </tr>
           ))}
