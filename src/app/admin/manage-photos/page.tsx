@@ -34,35 +34,60 @@ function ManagePhotosContent() {
     // Preload car by id if provided via query
     useEffect(() => {
         const idParam = searchParams.get('id');
-        if (!idParam) return;
+        console.log('🔍 Parámetro ID detectado:', idParam);
+        
+        if (!idParam) {
+            console.log('❌ No hay parámetro ID en la URL');
+            return;
+        }
+        
         const id = parseInt(idParam, 10);
-        if (isNaN(id)) return;
+        if (isNaN(id)) {
+            console.log('❌ ID inválido:', idParam);
+            return;
+        }
         
-        // Si ya tenemos este coche seleccionado, no hacer nada
-        if (selectedCar && selectedCar.id === id) return;
+        console.log('🚗 Intentando cargar coche con ID:', id);
         
-        (async () => {
+        const loadCar = async () => {
             try {
                 setIsLoadingCar(true);
-                setSelectedCar(null); // Limpiar selección actual
+                setSelectedCar(null);
+                
                 const token = getToken();
+                console.log('🔑 Token obtenido:', token ? 'SÍ' : 'NO');
+                
                 const response = await fetch(`/api/cars/${id}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                
+                console.log('📡 Respuesta del servidor:', response.status, response.statusText);
+                
                 if (!response.ok) {
-                    console.error('Error al cargar el coche:', response.statusText);
+                    const errorText = await response.text();
+                    console.error('❌ Error del servidor:', errorText);
+                    alert(`Error al cargar el coche: ${response.status} ${response.statusText}`);
                     return;
                 }
+                
                 const data: CarWithImages = await response.json();
+                console.log('✅ Coche cargado exitosamente:', data.name, 'ID:', data.id);
+                
+                // Simular que el coche fue encontrado en una búsqueda
+                setSearchTerm(data.name || data.numberplate || `ID: ${data.id}`);
+                setSearchResults([data]);
                 setSelectedCar(data);
-                console.log('✅ Coche cargado desde URL:', data.name);
+                
             } catch (error) {
-                console.error('Error al cargar el coche:', error);
+                console.error('❌ Error al cargar el coche:', error);
+                alert('Error de conexión al cargar el coche');
             } finally {
                 setIsLoadingCar(false);
             }
-        })();
-    }, [searchParams, selectedCar]);
+        };
+        
+        loadCar();
+    }, [searchParams]);
 
     // Effect for searching cars
     useEffect(() => {
@@ -240,7 +265,7 @@ function ManagePhotosContent() {
                     <CardTitle>Paso 1: Buscar Vehículo</CardTitle>
                     <CardDescription>
                         {searchParams.get('id') ? 
-                            'Vehículo cargado desde oferta. Puedes buscar otro vehículo si lo necesitas.' : 
+                            'Vehículo cargado automáticamente desde la gestión de ofertas. El coche aparece seleccionado abajo.' : 
                             'Busca un vehículo por su matrícula para gestionar sus fotos.'
                         }
                     </CardDescription>
@@ -252,8 +277,8 @@ function ManagePhotosContent() {
                             id="car-search"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Buscar por nombre o matrícula..."
-                            className="pl-10"
+                            placeholder={searchParams.get('id') ? "Coche cargado automáticamente" : "Buscar por nombre o matrícula..."}
+                            className={`pl-10 ${searchParams.get('id') ? 'bg-blue-50 border-blue-200' : ''}`}
                             disabled={!!selectedCar}
                         />
                         {isSearching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin" />}
