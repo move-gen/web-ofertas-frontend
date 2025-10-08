@@ -41,7 +41,7 @@ export async function POST(
 
   const file = request.body;
   const contentType = request.headers.get('content-type');
-  const filename = request.headers.get('x-vercel-filename') || `car-${carId}-offer-image.jpg`;
+  const filename = request.headers.get('x-vercel-filename') || `offer-${carId}-${Date.now()}.jpg`;
 
   if (!file || !contentType) {
     return NextResponse.json({ error: 'No file to upload or content type missing' }, { status: 400 });
@@ -58,7 +58,7 @@ export async function POST(
     }
 
     // Subir imagen a Vercel Blob
-    const blob = await put(`offer-images/${filename}`, file, {
+    const blob = await put(filename, file, {
       access: 'public',
       contentType,
     });
