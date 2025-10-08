@@ -26,22 +26,16 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  console.log('🚀 POST /api/cars/[id]/offer-image iniciado');
-  
   const { id } = await params;
-  console.log('📋 Car ID recibido:', id);
   
   // Verificar autenticación de admin
   const isAdmin = await verifyAdmin(request);
-  console.log('🔐 Verificación de admin:', isAdmin ? 'AUTORIZADO' : 'NO AUTORIZADO');
-  
   if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const carId = parseInt(id, 10);
   if (isNaN(carId)) {
-    console.log('❌ ID de coche inválido:', id);
     return NextResponse.json({ error: 'Invalid car ID' }, { status: 400 });
   }
 
@@ -49,70 +43,74 @@ export async function POST(
   const contentType = request.headers.get('content-type');
   const filename = request.headers.get('x-vercel-filename') || `offer-${carId}-${Date.now()}.jpg`;
 
-  console.log('📁 Detalles del archivo:', {
-    hasFile: !!file,
-    contentType,
-    filename
-  });
-
   if (!file || !contentType) {
-    console.log('❌ Archivo o content-type faltante');
     return NextResponse.json({ error: 'No file to upload or content type missing' }, { status: 400 });
   }
 
   try {
-    console.log('🔍 Verificando existencia del coche...');
     // Verificar que el coche existe
     const car = await prisma.car.findUnique({
       where: { id: carId }
     });
 
     if (!car) {
-      console.log('❌ Coche no encontrado con ID:', carId);
       return NextResponse.json({ error: 'Car not found' }, { status: 404 });
     }
 
-    console.log('✅ Coche encontrado:', car.name);
-    console.log('📤 Iniciando subida a Vercel Blob...');
+    // Usar el mismo sistema híbrido que el banner
+    const isProduction = process.env.NODE_ENV === 'production';
+    const hasBlobToken = process.env.BLOB_READ_WRITE_TOKEN;
+    
+    let imageUrl;
 
-    // Subir imagen a Vercel Blob
-    const blob = await put(filename, file, {
-      access: 'public',
-      contentType,
-    });
-
-    console.log('✅ Imagen subida exitosamente:', blob.url);
-    console.log('💾 Actualizando base de datos...');
+    if (isProduction && hasBlobToken) {
+      // Usar Vercel Blob en producción
+      const blob = await put(filename, file, {
+        access: 'public',
+        contentType,
+      });
+      imageUrl = blob.url;
+    } else {
+      // Usar base64 como fallback
+      const chunks = [];
+      const reader = file.getReader();
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      
+      const bytes = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
+      let offset = 0;
+      for (const chunk of chunks) {
+        bytes.set(chunk, offset);
+        offset += chunk.length;
+      }
+      
+      const buffer = Buffer.from(bytes);
+      const base64 = buffer.toString('base64');
+      imageUrl = `data:${contentType};base64,${base64}`;
+    }
 
     // Actualizar el coche con la URL de la imagen de oferta
     const updatedCar = await prisma.car.update({
       where: { id: carId },
       data: {
-        offerImageUrl: blob.url,
+        offerImageUrl: imageUrl,
       },
     });
 
-    console.log('✅ Base de datos actualizada exitosamente');
-
     return NextResponse.json({ 
       success: true, 
-      offerImageUrl: blob.url,
+      offerImageUrl: imageUrl,
       message: 'Foto de oferta subida correctamente'
     });
 
   } catch (error) {
-    console.error('❌ Failed to upload offer image:', error);
-    console.error('❌ Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : 'No stack trace',
-      name: error instanceof Error ? error.name : 'Unknown error type'
-    });
-    
+    console.error('Failed to upload offer image:', error);
     return NextResponse.json(
-      { 
-        error: 'An internal server error occurred during file upload.',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'An internal server error occurred during file upload.' },
       { status: 500 }
     );
   }

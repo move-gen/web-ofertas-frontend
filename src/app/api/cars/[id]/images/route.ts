@@ -48,16 +48,47 @@ export async function POST(
   }
 
   try {
-    const blob = await put(filename, file, {
-      access: 'public',
-      contentType,
-    });
+    // Usar el mismo sistema híbrido que el banner
+    const isProduction = process.env.NODE_ENV === 'production';
+    const hasBlobToken = process.env.BLOB_READ_WRITE_TOKEN;
+    
+    let imageUrl;
 
-    // Now, save the blob URL to our database
+    if (isProduction && hasBlobToken) {
+      // Usar Vercel Blob en producción
+      const blob = await put(filename, file, {
+        access: 'public',
+        contentType,
+      });
+      imageUrl = blob.url;
+    } else {
+      // Usar base64 como fallback
+      const chunks = [];
+      const reader = file.getReader();
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+      }
+      
+      const bytes = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0));
+      let offset = 0;
+      for (const chunk of chunks) {
+        bytes.set(chunk, offset);
+        offset += chunk.length;
+      }
+      
+      const buffer = Buffer.from(bytes);
+      const base64 = buffer.toString('base64');
+      imageUrl = `data:${contentType};base64,${base64}`;
+    }
+
+    // Now, save the image URL to our database
     const newImage = await prisma.image.create({
       data: {
         carId: carId,
-        url: blob.url,
+        url: imageUrl,
         source: 'manual', // Mark this image as manually uploaded
         isPrimary: false, // By default, new images are not primary
       },
