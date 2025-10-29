@@ -150,3 +150,5 @@ Si tienes problemas con la gestión de usuarios:
 - [ ] Logs de actividad de usuarios
 - [ ] Roles más granulares
 - [ ] Integración con sistemas de autenticación externos
+
+

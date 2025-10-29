@@ -7,7 +7,7 @@ import {
   MobileNavHeader,
   MobileNavToggle,
   MobileNavMenu,
-} from "@/components/ui/resizable-navbar";
+} from "@/components/ui/static-navbar";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";

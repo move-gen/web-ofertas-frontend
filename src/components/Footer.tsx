@@ -42,32 +42,23 @@ const Footer = () => {
           </div>
 
           {/* Middle Section: Links */}
-          <div className="md:col-span-5 grid grid-cols-2 sm:grid-cols-3 gap-8 text-sm">
+          <div className="md:col-span-5 grid grid-cols-2 gap-8 text-sm">
             <div>
               <h5 className="text-blue-300 font-bold text-xs mb-3 tracking-wider">OFERTAS</h5>
               <ul className="space-y-2">
-                <li><Link href="/buscador" className="hover:text-white">Ver Todas</Link></li>
-                <li><Link href="#" className="hover:text-white">Coches Nuevos</Link></li>
-                <li><Link href="#" className="hover:text-white">KM 0</Link></li>
-                <li><Link href="#" className="hover:text-white">Segunda Mano</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="text-blue-300 font-bold text-xs mb-3 tracking-wider">SOPORTE</h5>
-              <ul className="space-y-2">
-                <li><Link href="/contact" className="hover:text-white">Contacto</Link></li>
-                <li><Link href="#" className="hover:text-white">Preguntas Frecuentes</Link></li>
-                <li><Link href="#" className="hover:text-white">Financiación</Link></li>
-                <li><Link href="#" className="hover:text-white">Garantía</Link></li>
+                <li><Link href="/ofertas" className="hover:text-white">Ver Todas</Link></li>
+                <li><Link href="/ofertas?tipo=nuevos" className="hover:text-white">Coches Nuevos</Link></li>
+                <li><Link href="/ofertas?tipo=km0" className="hover:text-white">KM 0</Link></li>
+                <li><Link href="/ofertas?tipo=segundamano" className="hover:text-white">Segunda Mano</Link></li>
               </ul>
             </div>
             <div>
               <h5 className="text-blue-300 font-bold text-xs mb-3 tracking-wider">EMPRESA</h5>
               <ul className="space-y-2">
-                <li><Link href="#" className="hover:text-white">Sobre Nosotros</Link></li>
-                <li><Link href="#" className="hover:text-white">Delegaciones</Link></li>
-                <li><Link href="#" className="hover:text-white">Blog</Link></li>
-                <li><Link href="#" className="hover:text-white">Trabaja con nosotros</Link></li>
+                <li><Link href="/condiciones-financiacion" className="hover:text-white">Financiación</Link></li>
+                <li><Link href="/contact" className="hover:text-white">Contacto</Link></li>
+                <li><Link href="/buscador" className="hover:text-white">Buscador</Link></li>
+                <li><Link href="/delegaciones" className="hover:text-white">Delegaciones</Link></li>
               </ul>
             </div>
           </div>

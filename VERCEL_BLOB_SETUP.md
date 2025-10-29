@@ -125,3 +125,5 @@ Si sigues teniendo problemas:
 4. **Intenta regenerar** el token de acceso
 
 Una vez configurado correctamente, podrás subir fotos de oferta sin problemas.
+
+

@@ -177,3 +177,5 @@ export default function CarCardOffer({ car }: CarCardOfferProps) {
     </motion.div>
   );
 }
+
+
