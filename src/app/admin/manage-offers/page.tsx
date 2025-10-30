@@ -35,13 +35,6 @@ export default function ManageOffersPage() {
   const [searchResults, setSearchResults] = useState<Car[]>([]);
   const [selectedCars, setSelectedCars] = useState<Car[]>([]);
   
-  // Campos del banner promocional
-  const [hasPromotionalBanner, setHasPromotionalBanner] = useState(false);
-  const [bannerImageUrl, setBannerImageUrl] = useState('');
-  // const [bannerTitle, setBannerTitle] = useState('');
-  // const [bannerSubtitle, setBannerSubtitle] = useState('');
-  const [bannerSize, setBannerSize] = useState<'small' | 'medium' | 'large'>('medium');
-  
   // Campos de títulos personalizados (Figma style)
   const [offerTitleCustom, setOfferTitleCustom] = useState('');
   const [offerSubtitleCustom, setOfferSubtitleCustom] = useState('');
@@ -128,12 +121,6 @@ export default function ManageOffersPage() {
       return;
     }
     
-    // Validar campos del banner si está habilitado
-    if (hasPromotionalBanner && !bannerImageUrl) {
-      setFeedback({ message: 'Si habilitas el banner promocional, debes subir una imagen.', type: 'error' });
-      return;
-    }
-    
     setIsLoading(true);
     setFeedback(null);
     try {
@@ -144,11 +131,6 @@ export default function ManageOffersPage() {
         body: JSON.stringify({ 
           title: offerTitle, 
           cars: selectedCars.map(c => c.id),
-          hasPromotionalBanner,
-          bannerImageUrl: hasPromotionalBanner ? bannerImageUrl : null,
-          // bannerTitle: hasPromotionalBanner ? bannerTitle : null,
-          // bannerSubtitle: hasPromotionalBanner ? bannerSubtitle : null,
-          bannerSize: hasPromotionalBanner ? bannerSize : null,
           offerTitle: offerTitleCustom || null,
           offerSubtitle: offerSubtitleCustom || null,
           innerImageUrl: innerImageUrl,
@@ -166,11 +148,6 @@ export default function ManageOffersPage() {
       setSelectedCars([]);
       setSearchTerm('');
       setSearchResults([]);
-      setHasPromotionalBanner(false);
-      setBannerImageUrl('');
-      // setBannerTitle('');
-      // setBannerSubtitle('');
-      setBannerSize('medium');
       setOfferTitleCustom('');
       setOfferSubtitleCustom('');
       setInnerImageUrl(null);
@@ -228,41 +205,9 @@ export default function ManageOffersPage() {
               />
             </div>
 
-            {/* Sección Banner Promocional */}
-            <div className="border-t pt-6">
-              <div className="flex items-center space-x-2 mb-4">
-                <Checkbox
-                  id="has-banner"
-                  checked={hasPromotionalBanner}
-                  onCheckedChange={(checked) => setHasPromotionalBanner(checked as boolean)}
-                  disabled={isLoading}
-                />
-                <Label htmlFor="has-banner" className="text-sm font-medium">
-                  Añadir Banner Promocional
-                </Label>
-              </div>
-
-              {hasPromotionalBanner && (
-                <div className="space-y-4 pl-6 border-l-2 border-blue-200">
-                  <div>
-                    <Label className="block text-sm font-medium text-gray-700 mb-1">
-                      Imagen del Banner
-                    </Label>
-                    <ImageUpload
-                      value={bannerImageUrl}
-                      onChange={(url) => setBannerImageUrl(url || '')}
-                      accept="image/*"
-                      maxSize={5}
-                    />
-                  </div>
-                </div>
-              )}
-
-            </div>
-
             {/* Sección Títulos Personalizados */}
             <div className="border-t pt-6 space-y-4">
-              <h3 className="text-sm font-semibold text-gray-900">Títulos Personalizados (estilo Figma)</h3>
+              <h3 className="text-sm font-semibold text-gray-900">Títulos Personalizados</h3>
               <div>
                 <Label className="block text-sm font-medium text-gray-700 mb-1">
                   Título Principal
