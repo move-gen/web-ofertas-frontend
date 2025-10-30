@@ -52,10 +52,10 @@ export default function AboutAndStats() {
         <motion.section 
             ref={statsRef}
             style={{ backgroundColor }}
-            className="py-24 sm:py-32"
+            className="py-20 sm:py-24"
         >
-            <div className="mx-auto px-6 max-w-[1390px]">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-24">
+            <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
                     {statsData.map((stat, index) => (
                         <div key={index} className="relative pl-8 flex flex-col justify-between" style={{ minHeight: '300px' }}>
                             <div>

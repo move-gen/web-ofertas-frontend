@@ -57,15 +57,15 @@ export default function QuickSearchSection() {
   const modelsToShow = showAllModels ? allModels : allModels.slice(0, 25);
 
   return (
-    <section className="py-20 bg-white">
-      <div className="mx-auto px-6 max-w-[1390px]">
+    <section className="py-12 bg-white">
+      <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
         {/* Título */}
-        <div className="text-4xl font-bold tracking-tighter text-blue-950 w-full mb-8 max-md:text-3xl max-md:text-center max-sm:text-2xl">
+        <div className="text-xl md:text-2xl font-bold tracking-tighter text-blue-950 w-full mb-4 max-md:text-xl max-md:text-center">
           Formas de empezar a buscar
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-8 flex-wrap text-sm mb-4">
+        <div className="flex items-center gap-4 flex-wrap text-xs mb-2">
           <button onClick={() => setActiveTab('models')} className={activeTab === 'models' ? 'text-blue-700 font-bold' : 'text-neutral-600 font-bold'}>
             Modelos
           </button>
@@ -79,21 +79,21 @@ export default function QuickSearchSection() {
             Precios
           </button>
         </div>
-        <div className="w-full h-px bg-zinc-200 mb-10"></div>
+        <div className="w-full h-px bg-zinc-200 mb-4"></div>
 
         {/* Contenido por pestaña */}
         <div>
           {activeTab === 'models' && (
             <div>
               {loading ? (
-                <div className="flex justify-center items-center py-8">
-                  <div className="text-gray-500">Cargando modelos...</div>
+                <div className="flex justify-center items-center py-4">
+                  <div className="text-gray-500 text-xs">Cargando modelos...</div>
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-3 text-base text-neutral-600">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-0 text-xs text-neutral-600">
                     {modelsToShow.map((model, idx) => (
-                      <div key={`model-${idx}`} className="leading-10 hover:text-blue-700 transition-colors cursor-pointer">
+                      <div key={`model-${idx}`} className="leading-6 hover:text-blue-700 transition-colors cursor-pointer">
                         <Link href={`/buscador?makeAndModel=${encodeURIComponent(model)}`}>{model}</Link>
                       </div>
                     ))}
@@ -105,9 +105,9 @@ export default function QuickSearchSection() {
           )}
 
           {activeTab === 'brands' && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-12 gap-y-3 text-base text-neutral-600">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-0 text-xs text-neutral-600">
               {POPULAR_BRANDS.map((brand, idx) => (
-                <div key={`brand-${idx}`} className="leading-10 hover:text-blue-700 transition-colors cursor-pointer">
+                <div key={`brand-${idx}`} className="leading-6 hover:text-blue-700 transition-colors cursor-pointer">
                   <Link href={`/buscador?make=${encodeURIComponent(brand)}`}>{brand}</Link>
                 </div>
               ))}
@@ -115,9 +115,9 @@ export default function QuickSearchSection() {
           )}
 
           {activeTab === 'fees' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3 text-base text-neutral-600">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0 text-xs text-neutral-600">
               {FEE_RANGES.map((fee) => (
-                <div key={`fee-${fee}`} className="leading-10 hover:text-blue-700 transition-colors cursor-pointer">
+                <div key={`fee-${fee}`} className="leading-6 hover:text-blue-700 transition-colors cursor-pointer">
                   <Link href={`/buscador?feeMax=${fee}`}>{`Hasta ${fee} €/mes`}</Link>
                 </div>
               ))}
@@ -125,9 +125,9 @@ export default function QuickSearchSection() {
           )}
 
           {activeTab === 'prices' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3 text-base text-neutral-600">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-0 text-xs text-neutral-600">
               {PRICE_RANGES.map((range, idx) => (
-                <div key={`price-${idx}`} className="leading-10 hover:text-blue-700 transition-colors cursor-pointer">
+                <div key={`price-${idx}`} className="leading-6 hover:text-blue-700 transition-colors cursor-pointer">
                   <Link href={range.url}>{range.label}</Link>
                 </div>
               ))}
@@ -136,27 +136,27 @@ export default function QuickSearchSection() {
         </div>
 
         {/* CTA inferior */}
-        <div className="mt-12">
+        <div className="mt-4">
           {activeTab === 'models' && allModels.length > 25 && !showAllModels ? (
             <button 
               onClick={() => setShowAllModels(true)}
-              className="w-full flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium border px-6 py-3 rounded-3xl border-zinc-200 bg-transparent text-neutral-600 hover:bg-zinc-50 transition-colors"
+              className="w-full flex items-center justify-center gap-2 whitespace-nowrap text-xs font-medium border px-4 py-2 rounded-full border-zinc-200 bg-transparent text-neutral-600 hover:bg-zinc-50 transition-colors"
             >
-              <span className="text-base font-bold">Ver más ({allModels.length - 25} modelos más)</span>
-              <svg width="8" height="15" viewBox="0 0 8 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px] transform rotate-90"><path d="M3.64645 14.3536C3.84171 14.5488 4.15829 14.5488 4.35355 14.3536L7.53553 11.1716C7.7308 10.9763 7.7308 10.6597 7.53553 10.4645C7.34027 10.2692 7.02369 10.2692 6.82843 10.4645L4 13.2929L1.17157 10.4645C0.97631 10.2692 0.659728 10.2692 0.464466 10.4645C0.269203 10.6597 0.269203 10.9763 0.464466 11.1716L3.64645 14.3536ZM4 0L3.5 -2.18557e-08L3.5 14L4 14L4.5 14L4.5 2.18557e-08L4 0Z" fill="#7D7A7A"/></svg>
+              <span className="font-bold">Ver más ({allModels.length - 25} modelos más)</span>
+              <svg width="8" height="15" viewBox="0 0 8 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[12px] h-[12px] transform rotate-90"><path d="M3.64645 14.3536C3.84171 14.5488 4.15829 14.5488 4.35355 14.3536L7.53553 11.1716C7.7308 10.9763 7.7308 10.6597 7.53553 10.4645C7.34027 10.2692 7.02369 10.2692 6.82843 10.4645L4 13.2929L1.17157 10.4645C0.97631 10.2692 0.659728 10.2692 0.464466 10.4645C0.269203 10.6597 0.269203 10.9763 0.464466 11.1716L3.64645 14.3536ZM4 0L3.5 -2.18557e-08L3.5 14L4 14L4.5 14L4.5 2.18557e-08L4 0Z" fill="#7D7A7A"/></svg>
             </button>
           ) : activeTab === 'models' && showAllModels ? (
             <button 
               onClick={() => setShowAllModels(false)}
-              className="w-full flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium border px-6 py-3 rounded-3xl border-zinc-200 bg-transparent text-neutral-600 hover:bg-zinc-50 transition-colors"
+              className="w-full flex items-center justify-center gap-2 whitespace-nowrap text-xs font-medium border px-4 py-2 rounded-full border-zinc-200 bg-transparent text-neutral-600 hover:bg-zinc-50 transition-colors"
             >
-              <span className="text-base font-bold">Ver menos</span>
-              <svg width="8" height="15" viewBox="0 0 8 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px] transform -rotate-90"><path d="M3.64645 14.3536C3.84171 14.5488 4.15829 14.5488 4.35355 14.3536L7.53553 11.1716C7.7308 10.9763 7.7308 10.6597 7.53553 10.4645C7.34027 10.2692 7.02369 10.2692 6.82843 10.4645L4 13.2929L1.17157 10.4645C0.97631 10.2692 0.659728 10.2692 0.464466 10.4645C0.269203 10.6597 0.269203 10.9763 0.464466 11.1716L3.64645 14.3536ZM4 0L3.5 -2.18557e-08L3.5 14L4 14L4.5 14L4.5 2.18557e-08L4 0Z" fill="#7D7A7A"/></svg>
+              <span className="font-bold">Ver menos</span>
+              <svg width="8" height="15" viewBox="0 0 8 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[12px] h-[12px] transform -rotate-90"><path d="M3.64645 14.3536C3.84171 14.5488 4.15829 14.5488 4.35355 14.3536L7.53553 11.1716C7.7308 10.9763 7.7308 10.6597 7.53553 10.4645C7.34027 10.2692 7.02369 10.2692 6.82843 10.4645L4 13.2929L1.17157 10.4645C0.97631 10.2692 0.659728 10.2692 0.464466 10.4645C0.269203 10.6597 0.269203 10.9763 0.464466 11.1716L3.64645 14.3536ZM4 0L3.5 -2.18557e-08L3.5 14L4 14L4.5 14L4.5 2.18557e-08L4 0Z" fill="#7D7A7A"/></svg>
             </button>
           ) : (
-            <Link href="/buscador" className="w-full flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium border px-6 py-3 rounded-3xl border-zinc-200 bg-transparent text-neutral-600 hover:bg-zinc-50">
-              <span className="text-base font-bold">Ver más</span>
-              <svg width="8" height="15" viewBox="0 0 8 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px] transform rotate-90"><path d="M3.64645 14.3536C3.84171 14.5488 4.15829 14.5488 4.35355 14.3536L7.53553 11.1716C7.7308 10.9763 7.7308 10.6597 7.53553 10.4645C7.34027 10.2692 7.02369 10.2692 6.82843 10.4645L4 13.2929L1.17157 10.4645C0.97631 10.2692 0.659728 10.2692 0.464466 10.4645C0.269203 10.6597 0.269203 10.9763 0.464466 11.1716L3.64645 14.3536ZM4 0L3.5 -2.18557e-08L3.5 14L4 14L4.5 14L4.5 2.18557e-08L4 0Z" fill="#7D7A7A"/></svg>
+            <Link href="/buscador" className="w-full flex items-center justify-center gap-2 whitespace-nowrap text-xs font-medium border px-4 py-2 rounded-full border-zinc-200 bg-transparent text-neutral-600 hover:bg-zinc-50">
+              <span className="font-bold">Ver más</span>
+              <svg width="8" height="15" viewBox="0 0 8 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[12px] h-[12px] transform rotate-90"><path d="M3.64645 14.3536C3.84171 14.5488 4.15829 14.5488 4.35355 14.3536L7.53553 11.1716C7.7308 10.9763 7.7308 10.6597 7.53553 10.4645C7.34027 10.2692 7.02369 10.2692 6.82843 10.4645L4 13.2929L1.17157 10.4645C0.97631 10.2692 0.659728 10.2692 0.464466 10.4645C0.269203 10.6597 0.269203 10.9763 0.464466 11.1716L3.64645 14.3536ZM4 0L3.5 -2.18557e-08L3.5 14L4 14L4.5 14L4.5 2.18557e-08L4 0Z" fill="#7D7A7A"/></svg>
             </Link>
           )}
         </div>

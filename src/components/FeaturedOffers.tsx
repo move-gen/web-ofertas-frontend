@@ -45,24 +45,24 @@ export default function FeaturedOffers() {
 
   if (loading) {
     return (
-      <section className="relative bg-white pt-32 pb-20 -mt-24 md:-mt-32">
-        <div className="mx-auto px-6 max-w-[1390px]">
-          {/* Cabecera con imagen lateral montada sobre el hero */}
-          <div className="mb-16 grid grid-cols-1 md:grid-cols-[400px,1fr] items-start gap-12">
-            <div className="flex justify-center md:justify-start -mt-12 md:-mt-24">
+      <section className="relative bg-white pt-20 pb-12 z-10">
+        <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
+          {/* Cabecera con imagen lateral montada parcialmente sobre el hero */}
+          <div className="mb-10 grid grid-cols-1 md:grid-cols-3 items-start gap-4">
+            <div className="flex justify-center md:justify-end -mt-24 md:-mt-32 md:-mr-8">
               <Image
                 src="/da4b1e18005fecdf893baf1e80d2e20b0c15e062.png"
                 alt="Decoración ofertas"
                 width={374}
                 height={374}
-                className="w-72 h-72 md:w-[400px] md:h-[400px] object-contain"
+                className="w-[200px] h-[200px] md:w-[260px] md:h-[260px] object-contain"
                 priority
               />
             </div>
-            <div className="text-center md:text-left md:pt-8">
-              <h2 className="text-4xl md:text-5xl font-bold text-blue-950 mb-6">Últimas Ofertas</h2>
-              <p className="text-lg text-neutral-600 max-w-2xl">
-                Encuentra promociones activas por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
+            <div className="text-center md:text-left md:col-span-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-blue-950 mb-3">Últimas Ofertas</h2>
+              <p className="text-sm md:text-base text-neutral-600 max-w-2xl">
+                Encuentra <strong>promociones activas</strong> por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
               </p>
             </div>
           </div>
@@ -76,24 +76,24 @@ export default function FeaturedOffers() {
 
   if (offers.length === 0) {
     return (
-      <section className="relative bg-white pt-32 pb-20 -mt-24 md:-mt-32">
-      <div className="mx-auto px-6 max-w-[1390px]">
-        {/* Cabecera con imagen lateral montada sobre el hero */}
-        <div className="mb-16 grid grid-cols-1 md:grid-cols-[400px,1fr] items-start gap-12">
-          <div className="flex justify-center md:justify-start -mt-12 md:-mt-24">
+      <section className="relative bg-white pt-20 pb-12 z-10">
+      <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
+        {/* Cabecera con imagen lateral montada parcialmente sobre el hero */}
+        <div className="mb-10 grid grid-cols-1 md:grid-cols-3 items-start gap-4">
+          <div className="flex justify-center md:justify-end -mt-24 md:-mt-32 md:-mr-8">
             <Image
               src="/da4b1e18005fecdf893baf1e80d2e20b0c15e062.png"
               alt="Decoración ofertas"
               width={374}
               height={374}
-              className="w-72 h-72 md:w-[400px] md:h-[400px] object-contain"
+              className="w-[200px] h-[200px] md:w-[260px] md:h-[260px] object-contain"
               priority
             />
           </div>
-          <div className="text-center md:text-left md:pt-8">
-            <h2 className="text-4xl md:text-5xl font-bold text-blue-950 mb-6">Últimas Ofertas</h2>
-            <p className="text-lg text-neutral-600 max-w-2xl">
-              Encuentra promociones activas por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
+          <div className="text-center md:text-left md:col-span-2">
+            <h2 className="text-2xl md:text-3xl font-bold text-blue-950 mb-3">Últimas Ofertas</h2>
+            <p className="text-sm md:text-base text-neutral-600 max-w-2xl">
+              Encuentra <strong>promociones activas</strong> por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
             </p>
           </div>
         </div>
@@ -106,38 +106,38 @@ export default function FeaturedOffers() {
   }
 
   return (
-    <section className="relative bg-white pt-32 pb-20 -mt-24 md:-mt-32">
-      <div className="mx-auto px-6 max-w-[1390px]">
-        {/* Cabecera con imagen lateral montada sobre el hero */}
-        <div className="mb-16 grid grid-cols-1 md:grid-cols-[400px,1fr] items-start gap-12">
-          <div className="flex justify-center md:justify-start -mt-12 md:-mt-24">
+    <section className="relative bg-white pt-20 pb-12 z-10">
+      <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
+        {/* Cabecera con imagen lateral montada parcialmente sobre el hero */}
+        <div className="mb-10 grid grid-cols-1 md:grid-cols-3 items-start gap-4">
+          <div className="flex justify-center md:justify-end -mt-24 md:-mt-32 md:-mr-8">
             <Image
               src="/da4b1e18005fecdf893baf1e80d2e20b0c15e062.png"
               alt="Decoración ofertas"
               width={374}
               height={374}
-              className="w-72 h-72 md:w-[400px] md:h-[400px] object-contain"
+              className="w-[200px] h-[200px] md:w-[260px] md:h-[260px] object-contain"
               priority
             />
           </div>
-          <div className="text-center md:text-left md:pt-8">
-            <h2 className="text-4xl md:text-5xl font-bold text-blue-950 mb-6">Últimas Ofertas</h2>
-            <p className="text-lg text-neutral-600 max-w-2xl">
-              Encuentra promociones activas por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
+          <div className="text-center md:text-left md:col-span-2">
+            <h2 className="text-2xl md:text-3xl font-bold text-blue-950 mb-3">Últimas Ofertas</h2>
+            <p className="text-sm md:text-base text-neutral-600 max-w-2xl">
+              Encuentra <strong>promociones activas</strong> por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
             </p>
           </div>
         </div>
 
         {/* Grid de ofertas - Solo imágenes limpias */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {offers.map((offer) => (
             <Link 
               key={offer.id} 
               href={`/ofertas/${offer.slug}`}
-              className="group block overflow-hidden rounded-lg hover:scale-105 transition-transform duration-300"
+              className="group block overflow-hidden rounded-[20px] border border-gray-200/70 hover:scale-105 transition-transform duration-300 shadow-sm hover:shadow-md"
             >
               {/* Solo imagen de portada - responsive para móvil */}
-              <div className="relative h-[27rem] sm:h-[32.4rem] bg-gray-100">
+              <div className="relative aspect-square bg-gray-100">
                 {offer.coverImageUrl ? (
                   <Image
                     src={offer.coverImageUrl}
@@ -157,10 +157,10 @@ export default function FeaturedOffers() {
         </div>
 
         {/* Botón para ver todas las ofertas */}
-        <div className="text-center mt-16">
+        <div className="text-center mt-8">
           <Link 
             href="/ofertas"
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-base"
+            className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm"
           >
             Ver más
           </Link>

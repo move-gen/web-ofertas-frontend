@@ -82,8 +82,8 @@ export default async function HomePage() {
       <QuickSearchSection />
 
       {/* Sección de reseñas */}
-      <section className="py-20 bg-white">
-        <div className="mx-auto px-6 max-w-[1390px]">
+      <section className="py-16 bg-white">
+        <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
           <Image
             src="/reseñas.png"
             alt="Reseñas y puntuación de confianza Miguel León"
@@ -96,10 +96,10 @@ export default async function HomePage() {
       </section>
 
       {/* Entregas que Apasionan */}
-      <section className="py-20 bg-gray-50">
-        <div className="relative mx-auto w-full h-[858px] max-w-[1390px] px-6 max-md:h-auto">
+      <section className="py-16 bg-gray-50">
+        <div className="relative mx-auto w-full h-[858px] max-w-[1390px] px-6 md:px-24 max-md:h-auto">
           {/* Fondo blanco con borde */}
-          <div className="absolute left-6 right-6 bg-white border border-solid border-zinc-200 h-[722px] rounded-[40px] top-[136px]"></div>
+          <div className="absolute left-6 md:left-24 right-6 md:right-24 bg-white border border-solid border-zinc-200 h-[722px] rounded-[40px] top-[136px]"></div>
           
           {/* Imagen de llaves */}
           <Image
