@@ -91,9 +91,9 @@ export default function QuickSearchSection() {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-5 gap-x-6 gap-y-2 text-base text-neutral-600">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-3 text-base text-neutral-600">
                     {modelsToShow.map((model, idx) => (
-                      <div key={`model-${idx}`} className="leading-10 hover:text-blue-700 transition-colors">
+                      <div key={`model-${idx}`} className="leading-10 hover:text-blue-700 transition-colors cursor-pointer">
                         <Link href={`/buscador?makeAndModel=${encodeURIComponent(model)}`}>{model}</Link>
                       </div>
                     ))}
@@ -105,9 +105,9 @@ export default function QuickSearchSection() {
           )}
 
           {activeTab === 'brands' && (
-            <div className="grid grid-cols-4 gap-x-8 gap-y-2 text-base text-neutral-600">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-12 gap-y-3 text-base text-neutral-600">
               {POPULAR_BRANDS.map((brand, idx) => (
-                <div key={`brand-${idx}`} className="leading-10 hover:text-blue-700 transition-colors">
+                <div key={`brand-${idx}`} className="leading-10 hover:text-blue-700 transition-colors cursor-pointer">
                   <Link href={`/buscador?make=${encodeURIComponent(brand)}`}>{brand}</Link>
                 </div>
               ))}
@@ -115,9 +115,9 @@ export default function QuickSearchSection() {
           )}
 
           {activeTab === 'fees' && (
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-base text-neutral-600">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3 text-base text-neutral-600">
               {FEE_RANGES.map((fee) => (
-                <div key={`fee-${fee}`} className="leading-10 hover:text-blue-700 transition-colors">
+                <div key={`fee-${fee}`} className="leading-10 hover:text-blue-700 transition-colors cursor-pointer">
                   <Link href={`/buscador?feeMax=${fee}`}>{`Hasta ${fee} €/mes`}</Link>
                 </div>
               ))}
@@ -125,9 +125,9 @@ export default function QuickSearchSection() {
           )}
 
           {activeTab === 'prices' && (
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-base text-neutral-600">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-3 text-base text-neutral-600">
               {PRICE_RANGES.map((range, idx) => (
-                <div key={`price-${idx}`} className="leading-10 hover:text-blue-700 transition-colors">
+                <div key={`price-${idx}`} className="leading-10 hover:text-blue-700 transition-colors cursor-pointer">
                   <Link href={range.url}>{range.label}</Link>
                 </div>
               ))}

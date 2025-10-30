@@ -45,21 +45,21 @@ export default function FeaturedOffers() {
 
   if (loading) {
     return (
-      <section className="py-20 bg-white">
+      <section className="relative bg-white pt-32 pb-20 -mt-24 md:-mt-32">
         <div className="mx-auto px-6 max-w-[1390px]">
-          {/* Cabecera con imagen lateral (estilo Home2) */}
-          <div className="mb-16 grid grid-cols-1 md:grid-cols-[auto,1fr] items-center gap-8">
-            <div className="flex justify-center md:justify-start">
+          {/* Cabecera con imagen lateral montada sobre el hero */}
+          <div className="mb-16 grid grid-cols-1 md:grid-cols-[400px,1fr] items-start gap-12">
+            <div className="flex justify-center md:justify-start -mt-12 md:-mt-24">
               <Image
                 src="/da4b1e18005fecdf893baf1e80d2e20b0c15e062.png"
                 alt="Decoración ofertas"
                 width={374}
                 height={374}
-                className="w-56 h-56 md:w-80 md:h-80 object-contain"
+                className="w-72 h-72 md:w-[400px] md:h-[400px] object-contain"
                 priority
               />
             </div>
-            <div className="text-center md:text-left">
+            <div className="text-center md:text-left md:pt-8">
               <h2 className="text-4xl md:text-5xl font-bold text-blue-950 mb-6">Últimas Ofertas</h2>
               <p className="text-lg text-neutral-600 max-w-2xl">
                 Encuentra promociones activas por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
@@ -76,21 +76,21 @@ export default function FeaturedOffers() {
 
   if (offers.length === 0) {
     return (
-      <section className="py-20 bg-white">
+      <section className="relative bg-white pt-32 pb-20 -mt-24 md:-mt-32">
       <div className="mx-auto px-6 max-w-[1390px]">
-        {/* Cabecera con imagen lateral (estilo Home2) */}
-        <div className="mb-16 grid grid-cols-1 md:grid-cols-[auto,1fr] items-center gap-8">
-          <div className="flex justify-center md:justify-start">
+        {/* Cabecera con imagen lateral montada sobre el hero */}
+        <div className="mb-16 grid grid-cols-1 md:grid-cols-[400px,1fr] items-start gap-12">
+          <div className="flex justify-center md:justify-start -mt-12 md:-mt-24">
             <Image
               src="/da4b1e18005fecdf893baf1e80d2e20b0c15e062.png"
               alt="Decoración ofertas"
               width={374}
               height={374}
-              className="w-56 h-56 md:w-80 md:h-80 object-contain"
+              className="w-72 h-72 md:w-[400px] md:h-[400px] object-contain"
               priority
             />
           </div>
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-left md:pt-8">
             <h2 className="text-4xl md:text-5xl font-bold text-blue-950 mb-6">Últimas Ofertas</h2>
             <p className="text-lg text-neutral-600 max-w-2xl">
               Encuentra promociones activas por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
@@ -106,21 +106,21 @@ export default function FeaturedOffers() {
   }
 
   return (
-    <section className="py-20 bg-white">
+    <section className="relative bg-white pt-32 pb-20 -mt-24 md:-mt-32">
       <div className="mx-auto px-6 max-w-[1390px]">
-        {/* Cabecera con imagen lateral (estilo Home2) */}
-        <div className="mb-16 grid grid-cols-1 md:grid-cols-[auto,1fr] items-center gap-8">
-          <div className="flex justify-center md:justify-start">
+        {/* Cabecera con imagen lateral montada sobre el hero */}
+        <div className="mb-16 grid grid-cols-1 md:grid-cols-[400px,1fr] items-start gap-12">
+          <div className="flex justify-center md:justify-start -mt-12 md:-mt-24">
             <Image
               src="/da4b1e18005fecdf893baf1e80d2e20b0c15e062.png"
               alt="Decoración ofertas"
               width={374}
               height={374}
-              className="w-56 h-56 md:w-80 md:h-80 object-contain"
+              className="w-72 h-72 md:w-[400px] md:h-[400px] object-contain"
               priority
             />
           </div>
-          <div className="text-center md:text-left">
+          <div className="text-center md:text-left md:pt-8">
             <h2 className="text-4xl md:text-5xl font-bold text-blue-950 mb-6">Últimas Ofertas</h2>
             <p className="text-lg text-neutral-600 max-w-2xl">
               Encuentra promociones activas por tiempo limitado en todas nuestras islas. Elige la campaña que más se adapte a tus necesidades.
