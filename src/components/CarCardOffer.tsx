@@ -37,11 +37,29 @@ export default function CarCardOffer({ car }: CarCardOfferProps) {
     rootMargin: '50px', // Cargar antes de que sea visible
   });
 
+  const [aspectClass, setAspectClass] = useState('aspect-[4/3]');
   const [imageError, setImageError] = useState(false);
 
   // Priorizar la imagen de oferta si existe, sino usar la imagen principal
   const displayImage = car.offerImageUrl || 
     (car.images.find(img => img.isPrimary) || car.images[0])?.url;
+
+  useEffect(() => {
+    if (displayImage) {
+      // Preload image to determine aspect ratio
+      const img = new window.Image();
+      img.src = displayImage;
+      img.onload = () => {
+        const ar = img.naturalWidth / img.naturalHeight;
+        if (ar > 0.95 && ar < 1.05) {
+          setAspectClass('aspect-square');
+        }
+      };
+      img.onerror = () => {
+        setImageError(true);
+      };
+    }
+  }, [displayImage]);
 
   const monthlyPayment = car.financedPrice ? (car.financedPrice / 72).toFixed(0) : (car.regularPrice / 72).toFixed(0);
 
@@ -53,7 +71,7 @@ export default function CarCardOffer({ car }: CarCardOfferProps) {
       transition={{ duration: 0.8, ease: "easeOut" }}
       className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transition-shadow hover:shadow-xl h-full"
     >
-        <div className="relative w-full bg-gray-100 overflow-hidden aspect-[4/3]">
+        <div className={`relative w-full bg-gray-100 overflow-hidden ${aspectClass}`}>
           {displayImage && !imageError && inView ? (
             <Image
                 src={displayImage}
