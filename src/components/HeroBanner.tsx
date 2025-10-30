@@ -6,15 +6,15 @@ import Link from "next/link";
 
 export default function HeroBanner() {
   return (
-    <div className="relative w-full">
-      {/* Main Banner Image con bordes redondeados inferiores */}
+    <div className="relative w-full h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px]">
+      {/* Main Banner Image con bordes redondeados inferiores - responsive */}
       <Image
         src="/fondo de pantalla.png"
         alt="Banner Miguel León - Las mejores ofertas de coches en Canarias"
-        width={3840}
-        height={500}
-        className="block object-cover w-full h-[500px] rounded-b-[40px]"
+        fill
+        className="object-cover rounded-b-[40px]"
         priority
+        sizes="100vw"
       />
       
       {/* Logo eliminado - ya está en el header */}
