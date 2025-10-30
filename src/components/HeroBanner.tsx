@@ -6,13 +6,13 @@ import Link from "next/link";
 
 export default function HeroBanner() {
   return (
-    <div className="relative w-full h-[500px]">
+    <div className="relative w-full h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] xl:h-[600px] 2xl:h-[650px]">
       {/* Main Banner Image con bordes redondeados inferiores */}
       <Image
         src="/fondo de pantalla.png"
         alt="Banner Miguel León - Las mejores ofertas de coches en Canarias"
         fill
-        className="object-cover rounded-b-[40px]"
+        className="object-cover object-center rounded-b-[40px]"
         priority
         sizes="100vw"
         quality={90}
@@ -21,11 +21,11 @@ export default function HeroBanner() {
       {/* Logo eliminado - ya está en el header */}
 
       {/* Ver Catálogo Button (centrado) */}
-      <div className="absolute z-20 h-[40px] left-1/2 -translate-x-1/2 bottom-[40px] lg:bottom-[20px] xl:bottom-[15px] 2xl:bottom-[10px] w-[160px] max-md:w-[140px] max-sm:text-xs max-sm:w-[120px]">
-        <Link href="/buscador">
+      <div className="absolute z-30 h-[38px] sm:h-[40px] left-1/2 -translate-x-1/2 bottom-[32px] sm:bottom-[40px] md:bottom-[50px] lg:bottom-[60px] xl:bottom-[70px] 2xl:bottom-[80px] w-[120px] sm:w-[140px] md:w-[160px]">
+        <Link href="/buscador" className="block w-full h-full">
           <Button 
             variant="outline" 
-            className="w-full h-full rounded-full border-white bg-transparent text-white hover:bg-white/10 flex items-center justify-center gap-2 text-xs"
+            className="w-full h-full rounded-full border-2 border-white bg-transparent text-white hover:bg-white/10 flex items-center justify-center gap-2 text-xs font-medium shadow-lg"
           >
             <span className="tracking-tight">Ver Catálogo</span>
             <svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg">
