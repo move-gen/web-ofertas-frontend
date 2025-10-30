@@ -54,30 +54,32 @@ export default async function OfferPage({ params }: OfferPageProps) {
   }));
 
   return (
-    <div className="bg-gray-50">
+    <>
       {/* Banner promocional */}
       {offer.hasPromotionalBanner && offer.bannerImageUrl && (
-        <PromotionalBanner
-          imageUrl={offer.bannerImageUrl}
-          title=""
-          subtitle=""
-          size={offer.bannerSize as 'small' | 'medium' | 'large' || 'medium'}
-        />
+        <div className="pt-24">
+          <PromotionalBanner
+            imageUrl={offer.bannerImageUrl}
+            title=""
+            subtitle=""
+            size={offer.bannerSize as 'small' | 'medium' | 'large' || 'medium'}
+          />
+        </div>
       )}
 
       {/* Imagen interior grande (Hero) */}
       {offer.innerImageUrl && (
-        <div className="w-full bg-gray-50">
-          <Image
+        <div className="pt-16">
+          <img
             src={offer.innerImageUrl}
             alt={offer.offerTitle || offer.title}
-            width={1600}
-            height={51}
-            className="object-contain self-stretch w-full aspect-[31.25] max-md:max-w-full"
-            priority
+            className="w-full h-auto block"
+            style={{ display: 'block', margin: 0, padding: 0, verticalAlign: 'top' }}
           />
         </div>
       )}
+
+      <div className="bg-gray-50">
       
       {/* Sección de título personalizado */}
       {(offer.offerTitle || offer.offerSubtitle) && (
@@ -102,7 +104,7 @@ export default async function OfferPage({ params }: OfferPageProps) {
       
       {/* Grid de coches - Simple sin carrusel */}
       <div className="mx-auto px-6 md:px-24 py-12 max-w-[1390px]">
-        <HoverEffect items={carItems} className="lg:grid-cols-4 gap-5" />
+        <HoverEffect items={carItems} className="lg:grid-cols-4 gap-5 auto-rows-min" />
       </div>
 
       {/* Entregas que Apasionan */}
@@ -139,7 +141,8 @@ export default async function OfferPage({ params }: OfferPageProps) {
 
       {/* Contadores / métricas */}
       <AboutAndStats />
-    </div>
+      </div>
+    </>
   );
 }
 

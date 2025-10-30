@@ -69,7 +69,7 @@ export default function CarCardOffer({ car }: CarCardOfferProps) {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: inView ? 1 : 0, y: inView ? 0 : 50 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transition-shadow hover:shadow-xl h-full"
+      className="bg-white rounded-lg shadow-md overflow-hidden group flex flex-col transition-shadow hover:shadow-xl"
     >
         <div className={`relative w-full bg-gray-100 overflow-hidden ${aspectClass}`}>
           {displayImage && !imageError && inView ? (
