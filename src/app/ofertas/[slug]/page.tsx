@@ -64,14 +64,43 @@ export default async function OfferPage({ params }: OfferPageProps) {
           size={offer.bannerSize as 'small' | 'medium' | 'large' || 'medium'}
         />
       )}
+
+      {/* Imagen interior grande (Hero) */}
+      {offer.innerImageUrl && (
+        <div className="w-full bg-gray-50">
+          <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
+            <Image
+              src={offer.innerImageUrl}
+              alt={offer.offerTitle || offer.title}
+              width={1390}
+              height={44}
+              className="w-full h-auto object-contain aspect-[31.25]"
+              priority
+            />
+          </div>
+        </div>
+      )}
       
-      {/* Sección de título */}
-      <div className="flex flex-col items-center justify-center h-[20rem] bg-white dark:bg-black">
-        <p className="text-neutral-600 dark:text-neutral-200 text-base mb-5">
-          {offer.description || 'Descubre los vehículos incluidos en esta oferta especial.'}
-        </p>
-        <TypewriterEffectSmooth words={words} />
-      </div>
+      {/* Sección de título personalizado */}
+      {(offer.offerTitle || offer.offerSubtitle) && (
+        <header className="flex overflow-hidden flex-col items-center bg-gray-50 py-14">
+          {offer.offerTitle && (
+            <h1 className="text-5xl tracking-tighter text-center leading-[50px] text-blue-950 max-md:max-w-full max-md:text-4xl max-md:leading-[49px] font-[family-name:var(--font-poppins)]">
+              {offer.offerTitle.split('\n').map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i < offer.offerTitle!.split('\n').length - 1 && <br />}
+                </span>
+              ))}
+            </h1>
+          )}
+          {offer.offerSubtitle && (
+            <p className="mt-5 text-base text-center text-neutral-600 max-md:max-w-full font-[family-name:var(--font-lato)]">
+              {offer.offerSubtitle}
+            </p>
+          )}
+        </header>
+      )}
       
       {/* Grid de coches - Simple sin carrusel */}
       <div className="mx-auto px-6 md:px-24 py-12 max-w-[1390px]">

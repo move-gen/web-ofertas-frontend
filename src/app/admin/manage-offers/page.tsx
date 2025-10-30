@@ -42,7 +42,12 @@ export default function ManageOffersPage() {
   // const [bannerSubtitle, setBannerSubtitle] = useState('');
   const [bannerSize, setBannerSize] = useState<'small' | 'medium' | 'large'>('medium');
   
-  // Campo de foto de portada
+  // Campos de títulos personalizados (Figma style)
+  const [offerTitleCustom, setOfferTitleCustom] = useState('');
+  const [offerSubtitleCustom, setOfferSubtitleCustom] = useState('');
+  
+  // Campos de imágenes de la oferta
+  const [innerImageUrl, setInnerImageUrl] = useState<string | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   
   const [isLoading, setIsLoading] = useState(false);
@@ -144,6 +149,9 @@ export default function ManageOffersPage() {
           // bannerTitle: hasPromotionalBanner ? bannerTitle : null,
           // bannerSubtitle: hasPromotionalBanner ? bannerSubtitle : null,
           bannerSize: hasPromotionalBanner ? bannerSize : null,
+          offerTitle: offerTitleCustom || null,
+          offerSubtitle: offerSubtitleCustom || null,
+          innerImageUrl: innerImageUrl,
           coverImageUrl: coverImageUrl
         }),
       });
@@ -163,6 +171,9 @@ export default function ManageOffersPage() {
       // setBannerTitle('');
       // setBannerSubtitle('');
       setBannerSize('medium');
+      setOfferTitleCustom('');
+      setOfferSubtitleCustom('');
+      setInnerImageUrl(null);
       setCoverImageUrl(null);
       forceUpdate(); // Re-fetch offers
     } catch (error) {
@@ -247,10 +258,61 @@ export default function ManageOffersPage() {
                 </div>
               )}
 
-              {/* Campo de foto de portada */}
+            </div>
+
+            {/* Sección Títulos Personalizados */}
+            <div className="border-t pt-6 space-y-4">
+              <h3 className="text-sm font-semibold text-gray-900">Títulos Personalizados (estilo Figma)</h3>
               <div>
                 <Label className="block text-sm font-medium text-gray-700 mb-1">
-                  Foto de Portada de la Oferta
+                  Título Principal
+                </Label>
+                <Input
+                  value={offerTitleCustom}
+                  onChange={(e) => setOfferTitleCustom(e.target.value)}
+                  placeholder="Ej: Aprovecha las últimas cinco Citroën C3"
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Usa fuente Poppins - Texto grande y destacado
+                </p>
+              </div>
+              <div>
+                <Label className="block text-sm font-medium text-gray-700 mb-1">
+                  Subtítulo
+                </Label>
+                <Input
+                  value={offerSubtitleCustom}
+                  onChange={(e) => setOfferSubtitleCustom(e.target.value)}
+                  placeholder="Ej: Vehículos seleccionados con descuentos increíbles"
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Usa fuente Lato - Texto más pequeño
+                </p>
+              </div>
+            </div>
+
+            {/* Sección Imágenes de la Oferta */}
+            <div className="border-t pt-6 space-y-4">
+              <h3 className="text-sm font-semibold text-gray-900">Imágenes de la Oferta</h3>
+              <div>
+                <Label className="block text-sm font-medium text-gray-700 mb-1">
+                  Imagen Interior Grande (Hero)
+                </Label>
+                <ImageUpload
+                  value={innerImageUrl || ''}
+                  onChange={(url) => setInnerImageUrl(url)}
+                  accept="image/*"
+                  maxSize={5}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Imagen grande que aparece en la página de la oferta (relación aspecto 31:1 aprox.)
+                </p>
+              </div>
+              <div>
+                <Label className="block text-sm font-medium text-gray-700 mb-1">
+                  Imagen Exterior Cuadrada (Home)
                 </Label>
                 <ImageUpload
                   value={coverImageUrl || ''}
@@ -259,7 +321,7 @@ export default function ManageOffersPage() {
                   maxSize={5}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Esta imagen aparecerá como portada en la página de ofertas
+                  Imagen cuadrada que aparecerá en la página principal (home)
                 </p>
               </div>
             </div>

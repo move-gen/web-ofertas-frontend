@@ -42,6 +42,9 @@ export async function POST(req: NextRequest) {
       // bannerTitle, 
       // bannerSubtitle, 
       bannerSize,
+      offerTitle,
+      offerSubtitle,
+      innerImageUrl,
       coverImageUrl
     } = await req.json();
 
@@ -60,6 +63,9 @@ export async function POST(req: NextRequest) {
         // bannerTitle: hasPromotionalBanner ? bannerTitle : null,
         // bannerSubtitle: hasPromotionalBanner ? bannerSubtitle : null,
         bannerSize: hasPromotionalBanner ? bannerSize : null,
+        offerTitle: offerTitle || null,
+        offerSubtitle: offerSubtitle || null,
+        innerImageUrl: innerImageUrl || null,
         coverImageUrl: coverImageUrl || null,
         cars: {
           connect: cars.map((carId: number) => ({ id: carId })),
