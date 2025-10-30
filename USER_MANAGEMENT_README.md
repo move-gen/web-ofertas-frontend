@@ -152,3 +152,5 @@ Si tienes problemas con la gestión de usuarios:
 - [ ] Integración con sistemas de autenticación externos
 
 
+
+

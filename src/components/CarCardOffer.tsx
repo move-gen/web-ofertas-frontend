@@ -179,3 +179,5 @@ export default function CarCardOffer({ car }: CarCardOfferProps) {
 }
 
 
+
+
