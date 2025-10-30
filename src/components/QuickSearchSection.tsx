@@ -91,7 +91,7 @@ export default function QuickSearchSection() {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-0 text-xs text-neutral-600">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-2 text-xs text-neutral-600">
                     {modelsToShow.map((model, idx) => (
                       <div key={`model-${idx}`} className="leading-6 hover:text-blue-700 transition-colors cursor-pointer">
                         <Link href={`/buscador?makeAndModel=${encodeURIComponent(model)}`}>{model}</Link>
