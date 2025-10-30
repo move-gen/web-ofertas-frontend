@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function HeroBanner() {
   return (
-    <div className="relative w-full h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px]">
+    <div className="relative w-full h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px] xl:h-[550px] 2xl:h-[600px]">
       {/* Main Banner Image con bordes redondeados inferiores - responsive */}
       <Image
         src="/fondo de pantalla.png"
@@ -20,7 +20,7 @@ export default function HeroBanner() {
       {/* Logo eliminado - ya está en el header */}
 
       {/* Ver Catálogo Button (centrado) */}
-      <div className="absolute z-10 h-[40px] left-1/2 -translate-x-1/2 bottom-[40px] w-[160px] max-md:bottom-[50px] max-md:w-[140px] max-sm:text-xs max-sm:w-[120px]">
+      <div className="absolute z-20 h-[40px] left-1/2 -translate-x-1/2 bottom-[40px] w-[160px] max-md:bottom-[50px] max-md:w-[140px] max-sm:text-xs max-sm:w-[120px]">
         <Link href="/buscador">
           <Button 
             variant="outline" 
