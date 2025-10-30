@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function HeroBanner() {
   return (
-    <div className="relative w-full h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px] xl:h-[550px] 2xl:h-[600px]">
+    <div className="relative w-full h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px]">
       {/* Main Banner Image con bordes redondeados inferiores - responsive */}
       <Image
         src="/fondo de pantalla.png"
@@ -15,6 +15,7 @@ export default function HeroBanner() {
         className="object-cover rounded-b-[40px]"
         priority
         sizes="100vw"
+        quality={100}
       />
       
       {/* Logo eliminado - ya está en el header */}
