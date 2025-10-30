@@ -106,7 +106,7 @@ export default function FeaturedOffers() {
   }
 
   return (
-    <section className="relative bg-white pt-20 pb-12 z-10">
+    <section className="relative bg-white pt-20 pb-4 z-10">
       <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
         {/* Cabecera con imagen lateral montada parcialmente sobre el hero */}
         <div className="mb-10 grid grid-cols-1 md:grid-cols-3 items-start gap-4">
@@ -154,16 +154,6 @@ export default function FeaturedOffers() {
               </div>
             </Link>
           ))}
-        </div>
-
-        {/* Botón para ver todas las ofertas */}
-        <div className="text-center mt-8">
-          <Link 
-            href="/ofertas"
-            className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm"
-          >
-            Ver más
-          </Link>
         </div>
       </div>
     </section>

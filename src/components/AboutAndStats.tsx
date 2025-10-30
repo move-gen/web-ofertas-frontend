@@ -49,11 +49,11 @@ export default function AboutAndStats() {
   return (
     <>
         {/* Stats Section with Scroll Animation */}
-        <motion.section 
-            ref={statsRef}
-            style={{ backgroundColor }}
-            className="py-20 sm:py-24"
-        >
+    <motion.section 
+        ref={statsRef}
+        style={{ backgroundColor }}
+        className="py-4"
+    >
             <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
                     {statsData.map((stat, index) => (

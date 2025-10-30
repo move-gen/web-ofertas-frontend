@@ -82,7 +82,7 @@ export default async function HomePage() {
       <QuickSearchSection />
 
       {/* Sección de reseñas */}
-      <section className="py-16 bg-white">
+      <section className="py-4 bg-white">
         <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
           <Image
             src="/reseñas.png"
@@ -96,7 +96,7 @@ export default async function HomePage() {
       </section>
 
       {/* Entregas que Apasionan */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-4 bg-gray-50">
         <div className="relative mx-auto w-full h-[858px] max-w-[1390px] px-6 md:px-24 max-md:h-auto">
           {/* Fondo blanco con borde */}
           <div className="absolute left-6 md:left-24 right-6 md:right-24 bg-white border border-solid border-zinc-200 h-[722px] rounded-[40px] top-[136px]"></div>
@@ -107,16 +107,16 @@ export default async function HomePage() {
             alt="Llaves de entrega"
             width={400}
             height={400}
-            className="object-cover absolute top-0 h-[400px] left-[86px] w-[400px] max-md:relative max-md:top-0 max-md:left-0 max-md:mb-8 max-md:w-full max-md:h-auto"
+            className="object-cover absolute top-0 h-[400px] left-[86px] md:left-[110px] w-[400px] max-md:relative max-md:top-0 max-md:left-0 max-md:mb-8 max-md:w-full max-md:h-auto"
           />
           
           {/* Título */}
-          <div className="absolute text-4xl font-bold tracking-tighter h-[62px] left-[520px] text-blue-950 top-[186px] w-[477px] max-md:relative max-md:top-0 max-md:left-0 max-md:mb-6 max-md:w-full max-md:text-3xl max-md:text-center max-sm:text-3xl">
+          <div className="absolute text-4xl font-bold tracking-tighter h-[62px] left-[520px] md:left-[544px] text-blue-950 top-[186px] w-[477px] max-md:relative max-md:top-0 max-md:left-0 max-md:mb-6 max-md:w-full max-md:text-3xl max-md:text-center max-sm:text-3xl">
             Entregas que Apasionan
           </div>
           
           {/* Descripción */}
-          <div className="absolute text-base h-[54px] left-[520px] text-neutral-600 top-[258px] w-[528px] max-md:relative max-md:top-0 max-md:left-0 max-md:mb-10 max-md:w-full max-md:text-center max-sm:text-sm">
+          <div className="absolute text-base h-[54px] left-[520px] md:left-[544px] text-neutral-600 top-[258px] w-[528px] max-md:relative max-md:top-0 max-md:left-0 max-md:mb-10 max-md:w-full max-md:text-center max-sm:text-sm">
             <div>
               Cada entrega es un momento especial. Descubre cómo hacemos que <span className="font-bold">tu experiencia</span> sea única desde el primer contacto hasta las llaves en tus manos.
             </div>

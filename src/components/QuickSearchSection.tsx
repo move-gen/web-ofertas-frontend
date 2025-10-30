@@ -57,7 +57,7 @@ export default function QuickSearchSection() {
   const modelsToShow = showAllModels ? allModels : allModels.slice(0, 25);
 
   return (
-    <section className="py-12 bg-white">
+    <section className="py-4 bg-white">
       <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
         {/* Título */}
         <div className="text-xl md:text-2xl font-bold tracking-tighter text-blue-950 w-full mb-4 max-md:text-xl max-md:text-center">
