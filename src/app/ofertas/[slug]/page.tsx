@@ -68,16 +68,14 @@ export default async function OfferPage({ params }: OfferPageProps) {
       {/* Imagen interior grande (Hero) */}
       {offer.innerImageUrl && (
         <div className="w-full bg-gray-50">
-          <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
-            <Image
-              src={offer.innerImageUrl}
-              alt={offer.offerTitle || offer.title}
-              width={1390}
-              height={44}
-              className="w-full h-auto object-contain aspect-[31.25]"
-              priority
-            />
-          </div>
+          <Image
+            src={offer.innerImageUrl}
+            alt={offer.offerTitle || offer.title}
+            width={1600}
+            height={51}
+            className="object-contain self-stretch w-full aspect-[31.25] max-md:max-w-full"
+            priority
+          />
         </div>
       )}
       
