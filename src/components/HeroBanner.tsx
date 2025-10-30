@@ -12,7 +12,7 @@ export default function HeroBanner() {
         src="/fondo de pantalla.png"
         alt="Banner Miguel León - Las mejores ofertas de coches en Canarias"
         fill
-        className="object-cover rounded-b-[40px]"
+        className="object-contain rounded-b-[40px]"
         priority
         sizes="100vw"
         quality={100}
