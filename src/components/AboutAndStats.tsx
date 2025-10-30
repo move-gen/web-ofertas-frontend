@@ -52,7 +52,7 @@ export default function AboutAndStats() {
     <motion.section 
         ref={statsRef}
         style={{ backgroundColor }}
-        className="py-4"
+        className="pt-20 pb-20"
     >
             <div className="mx-auto px-6 md:px-24 max-w-[1390px]">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">

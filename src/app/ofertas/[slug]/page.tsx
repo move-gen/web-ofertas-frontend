@@ -111,7 +111,7 @@ export default async function OfferPage({ params }: OfferPageProps) {
       <section className="py-0 bg-gray-50">
         <div className="relative mx-auto w-full h-[858px] max-w-[1390px] px-6 md:px-24 max-md:h-auto">
           {/* Fondo blanco con borde */}
-          <div className="absolute left-6 md:left-24 right-6 md:right-24 bg-white border border-solid border-zinc-200 h-[722px] rounded-[40px] top-[136px]"></div>
+          <div className="absolute left-6 md:left-24 right-6 md:right-24 bg-white border border-solid border-zinc-200 h-[560px] rounded-[40px] top-[136px]"></div>
           
           {/* Imagen de llaves - superpuesta con la sección anterior */}
           <Image
