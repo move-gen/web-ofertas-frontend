@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function HeroBanner() {
   return (
-    <div className="relative w-full min-h-[500px] aspect-[3840/500]">
+    <div className="relative w-full h-[500px]">
       {/* Main Banner Image con bordes redondeados inferiores */}
       <Image
         src="/fondo de pantalla.png"
