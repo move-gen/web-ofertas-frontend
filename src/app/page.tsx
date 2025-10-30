@@ -111,12 +111,12 @@ export default async function HomePage() {
           />
           
           {/* Título */}
-          <div className="absolute text-4xl font-bold tracking-tighter h-[62px] left-[520px] md:left-[544px] text-blue-950 top-[186px] w-[477px] max-md:relative max-md:top-0 max-md:left-0 max-md:mb-6 max-md:w-full max-md:text-3xl max-md:text-center max-sm:text-3xl">
+          <div className="absolute text-4xl font-bold tracking-tighter h-[62px] left-[520px] md:left-[501px] text-blue-950 top-[186px] w-[477px] max-md:relative max-md:top-0 max-md:left-0 max-md:mb-6 max-md:w-full max-md:text-3xl max-md:text-center max-sm:text-3xl">
             Entregas que Apasionan
           </div>
           
           {/* Descripción */}
-          <div className="absolute text-base h-[54px] left-[520px] md:left-[544px] text-neutral-600 top-[258px] w-[528px] max-md:relative max-md:top-0 max-md:left-0 max-md:mb-10 max-md:w-full max-md:text-center max-sm:text-sm">
+          <div className="absolute text-base h-[54px] left-[520px] md:left-[501px] text-neutral-600 top-[258px] w-[528px] max-md:relative max-md:top-0 max-md:left-0 max-md:mb-10 max-md:w-full max-md:text-center max-sm:text-sm">
             <div>
               Cada entrega es un momento especial. Descubre cómo hacemos que <span className="font-bold">tu experiencia</span> sea única desde el primer contacto hasta las llaves en tus manos.
             </div>

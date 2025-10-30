@@ -134,10 +134,10 @@ export default function FeaturedOffers() {
             <Link 
               key={offer.id} 
               href={`/ofertas/${offer.slug}`}
-              className="group block overflow-hidden rounded-[20px] border border-gray-200/70 hover:scale-105 transition-transform duration-300 shadow-sm hover:shadow-md"
+              className="group block hover:scale-105 transition-transform duration-300"
             >
               {/* Solo imagen de portada - responsive para móvil */}
-              <div className="relative aspect-square bg-gray-100">
+              <div className="relative aspect-square overflow-hidden">
                 {offer.coverImageUrl ? (
                   <Image
                     src={offer.coverImageUrl}
@@ -147,7 +147,7 @@ export default function FeaturedOffers() {
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
                     <span className="text-gray-400 text-sm">Sin imagen de portada</span>
                   </div>
                 )}
