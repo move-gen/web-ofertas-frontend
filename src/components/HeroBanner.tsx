@@ -21,7 +21,7 @@ export default function HeroBanner() {
       {/* Logo eliminado - ya está en el header */}
 
       {/* Ver Catálogo Button (centrado) */}
-      <div className="absolute z-20 h-[40px] left-1/2 -translate-x-1/2 bottom-[40px] w-[160px] max-md:bottom-[50px] max-md:w-[140px] max-sm:text-xs max-sm:w-[120px]">
+      <div className="absolute z-20 h-[40px] left-1/2 -translate-x-1/2 bottom-[40px] lg:bottom-[20px] xl:bottom-[15px] 2xl:bottom-[10px] w-[160px] max-md:w-[140px] max-sm:text-xs max-sm:w-[120px]">
         <Link href="/buscador">
           <Button 
             variant="outline" 
