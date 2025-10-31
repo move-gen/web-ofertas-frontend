@@ -57,9 +57,11 @@ export default function CarPageClient({ car }: CarPageClientProps) {
   return (
     <>
       <div className="max-w-[1200px] mx-auto px-4 py-8 pt-24">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
           <div className="w-full lg:w-2/3">
-            <CarImageGallery images={car.images} carName={`${make} ${model}`} />
+            <div className="lg:h-[600px]">
+              <CarImageGallery images={car.images} carName={`${make} ${model}`} sidebarHeight={true} />
+            </div>
             <section className="mt-10">
               <h2 className="text-xl font-bold mb-4">Datos del vehículo</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">

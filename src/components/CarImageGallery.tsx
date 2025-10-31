@@ -8,17 +8,20 @@ import ImageCropper from './ImageCropper';
 interface CarImageGalleryProps {
   images: CarImage[];
   carName: string;
+  sidebarHeight?: boolean;
 }
 
-export default function CarImageGallery({ images, carName }: CarImageGalleryProps) {
+export default function CarImageGallery({ images, carName, sidebarHeight = false }: CarImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
   
   if (!images || images.length === 0) {
     return (
-      <div className="aspect-[4/3] bg-white rounded-xl flex items-center justify-center relative">
-        <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-cover w-full h-full rounded-xl" priority />
-        <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">Sin imágenes</span>
+      <div className={sidebarHeight ? 'h-full flex flex-col' : ''}>
+        <div className={`${sidebarHeight ? 'flex-1 min-h-0' : 'aspect-[4/3]'} bg-white rounded-xl flex items-center justify-center relative`}>
+          <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-cover w-full h-full rounded-xl" priority />
+          <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">Sin imágenes</span>
+        </div>
       </div>
     );
   }
@@ -28,9 +31,11 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
   
   if (validImages.length === 0) {
     return (
-      <div className="aspect-[4/3] bg-white rounded-xl flex items-center justify-center relative">
-        <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-cover w-full h-full rounded-xl" priority />
-        <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">Sin imágenes</span>
+      <div className={sidebarHeight ? 'h-full flex flex-col' : ''}>
+        <div className={`${sidebarHeight ? 'flex-1 min-h-0' : 'aspect-[4/3]'} bg-white rounded-xl flex items-center justify-center relative`}>
+          <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-cover w-full h-full rounded-xl" priority />
+          <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">Sin imágenes</span>
+        </div>
       </div>
     );
   }
@@ -47,9 +52,9 @@ export default function CarImageGallery({ images, carName }: CarImageGalleryProp
   };
 
   return (
-    <div>
+    <div className={sidebarHeight ? 'h-full flex flex-col' : ''}>
       {/* Imagen principal */}
-      <div className="aspect-[4/3] rounded-xl overflow-hidden relative bg-white">
+      <div className={`${sidebarHeight ? 'flex-1 min-h-0' : 'aspect-[4/3]'} rounded-xl overflow-hidden relative bg-white`}>
         {/* Flecha izquierda */}
         {validImages.length > 1 && (
           <button 
