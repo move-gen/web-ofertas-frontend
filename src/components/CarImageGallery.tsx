@@ -19,7 +19,7 @@ export default function CarImageGallery({ images, carName, sidebarHeight = false
     return (
       <div className={sidebarHeight ? 'h-full flex flex-col' : ''}>
         <div className={`${sidebarHeight ? 'flex-1 min-h-0' : 'aspect-[4/3]'} bg-white rounded-xl flex items-center justify-center relative`}>
-          <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-cover w-full h-full rounded-xl" priority />
+          <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-contain w-full h-full rounded-xl" priority />
           <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">Sin imágenes</span>
         </div>
       </div>
@@ -33,7 +33,7 @@ export default function CarImageGallery({ images, carName, sidebarHeight = false
     return (
       <div className={sidebarHeight ? 'h-full flex flex-col' : ''}>
         <div className={`${sidebarHeight ? 'flex-1 min-h-0' : 'aspect-[4/3]'} bg-white rounded-xl flex items-center justify-center relative`}>
-          <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-cover w-full h-full rounded-xl" priority />
+          <Image src={'/placeholder.svg'} alt="Placeholder Image" width={750} height={421} className="object-contain w-full h-full rounded-xl" priority />
           <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-xs font-semibold">Sin imágenes</span>
         </div>
       </div>
@@ -70,7 +70,7 @@ export default function CarImageGallery({ images, carName, sidebarHeight = false
           src={validImages[currentIndex].url}
           alt={carName}
           className="w-full h-full rounded-xl"
-          objectFit="cover"
+          objectFit="contain"
           onError={() => handleImageError(currentIndex)}
         />
         

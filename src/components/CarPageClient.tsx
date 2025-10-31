@@ -59,7 +59,7 @@ export default function CarPageClient({ car }: CarPageClientProps) {
       <div className="max-w-[1200px] mx-auto px-4 py-8 pt-24">
         <div className="flex flex-col lg:flex-row gap-8 lg:items-start">
           <div className="w-full lg:w-2/3">
-            <div className="lg:h-[600px]">
+            <div className="lg:h-[680px]">
               <CarImageGallery images={car.images} carName={`${make} ${model}`} sidebarHeight={true} />
             </div>
             <section className="mt-10">
@@ -100,13 +100,13 @@ export default function CarPageClient({ car }: CarPageClientProps) {
             </section>
           </div>
           <aside className="w-full lg:w-1/3 lg:sticky lg:top-8 h-fit">
-            <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
+            <div className="bg-white rounded-xl shadow-xl p-7 border border-gray-100 lg:min-h-[680px]">
               <h1 className="text-2xl font-bold leading-tight flex-1">{make} {model}</h1>
               <div className="text-base text-gray-700 font-medium mb-1">{version}</div>
               <div className="text-sm text-gray-500 mb-4">{year} | {kms?.toLocaleString()} km | {power} CV</div>
-              <div className="grid grid-cols-4 gap-4 mb-4 text-center">
+              <div className="grid grid-cols-4 gap-4 mb-5 text-center">
                   {mainFeatures.map(feature => (
-                      <div key={feature.name} className="flex flex-col items-center gap-1">
+                      <div key={feature.name} className="flex flex-col items-center gap-1.5">
                           {feature.icon}
                           <span className="text-xs">{feature.name}</span>
                       </div>
@@ -129,8 +129,8 @@ export default function CarPageClient({ car }: CarPageClientProps) {
               <a href="#" className="block text-blue-700 underline text-sm font-semibold mb-2">
                 Elige tu cuota desde <span className="font-bold">{monthlyFinancingFee}€</span>/mes
               </a>
-              <div className="bg-gray-50 rounded-lg p-4 mb-2 mt-4">
-                <ul className="space-y-2 text-sm">
+              <div className="bg-gray-50 rounded-lg p-5 mb-3 mt-5">
+                <ul className="space-y-2.5 text-sm">
                   <li className="flex items-center gap-2"><ShieldCheck className="text-blue-700" /> 15 días o 1.000km para probarlo</li>
                   <li className="flex items-center gap-2"><ShieldCheck className="text-blue-700" /> Revisión de 320 puntos</li>
                   <li className="flex items-center gap-2"><ShieldCheck className="text-blue-700" /> Garantía: {guarantee || '1 año y 7 meses'}</li>
