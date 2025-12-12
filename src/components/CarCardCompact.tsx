@@ -89,11 +89,10 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
   return (
     <div
       ref={ref}
-      className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 flex flex-col"
-      style={{ width: '400px', height: '400px', maxWidth: '400px' }}
+      className="bg-white w-full max-w-[400px] rounded-lg shadow-lg overflow-hidden border border-gray-200 flex flex-col h-full"
     >
       {/* PARTE SUPERIOR: Imagen Completa - Proporción exacta del HTML 400/260 */}
-      <div className="w-full relative flex-shrink-0" style={{ height: '260px', width: '100%' }}>
+      <div className="w-full relative flex-shrink-0" style={{ aspectRatio: '400/260' }}>
         {displayImage && !imageError && inView ? (
           <Image
             src={displayImage}
@@ -130,14 +129,14 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
         )}
       </div>
 
-      {/* PARTE INFERIOR: Información - Altura fija para mantener card cuadrada (400x400) */}
-      <div className="pl-5 pr-5 pt-2 pb-4 flex flex-col flex-shrink-0" style={{ height: '140px', overflow: 'hidden' }}>
+      {/* PARTE INFERIOR: Información - Mismo padding exacto del HTML */}
+      <div className="pl-5 pr-5 pt-2 pb-4 flex flex-col flex-shrink-0">
         {/* Cabecera: Nombre y Cuota */}
         <div className="flex justify-between items-start mb-1 relative">
-          <div className="flex-1 pr-2 pt-1 min-w-0">
-            <h2 className="text-[#0f172a] font-bold text-2xl leading-none mb-1 truncate">{modelName}</h2>
+          <div className="flex-1 pr-2 pt-1">
+            <h2 className="text-[#0f172a] font-bold text-2xl leading-none mb-1">{modelName}</h2>
             {version && (
-              <p className="text-gray-500 text-sm font-normal truncate">{version}</p>
+              <p className="text-gray-500 text-sm font-normal">{version}</p>
             )}
           </div>
           
@@ -178,7 +177,7 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
           {/* Transmisión */}
           <div className="flex flex-col items-center justify-center gap-1">
             <span className="material-symbols-outlined text-[#2b5ba9]">account_tree</span>
-            <span className="text-gray-500 text-[13px] font-medium truncate w-full text-center">
+            <span className="text-gray-500 text-[13px] font-medium">
               {car.transmission || 'N/A'}
             </span>
           </div>
@@ -186,7 +185,7 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
           {/* Combustible */}
           <div className="flex flex-col items-center justify-center gap-1">
             <span className="material-symbols-outlined text-emerald-500">eco</span>
-            <span className="text-gray-500 text-[13px] font-medium truncate w-full text-center">
+            <span className="text-gray-500 text-[13px] font-medium">
               {car.fuel || 'N/A'}
             </span>
           </div>
