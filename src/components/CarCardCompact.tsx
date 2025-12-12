@@ -11,10 +11,11 @@ interface Car {
   transmission: string | null;
   fuel: string | null;
   regularPrice: number;
-  financedPrice: number | null;
+  financedPrice?: number | null;
   images: { url: string; isPrimary?: boolean }[];
   offerImageUrl?: string | null;
   isSold?: boolean;
+  [key: string]: any; // Permitir propiedades adicionales para compatibilidad
 }
 
 interface CarCardCompactProps {
@@ -32,7 +33,9 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
 
   // Priorizar la imagen de oferta si existe, sino usar la imagen principal
   const displayImage = car.offerImageUrl || 
-    (car.images.find(img => img.isPrimary) || car.images[0])?.url;
+    (car.images && car.images.length > 0 
+      ? (car.images.find(img => img.isPrimary) || car.images[0])?.url 
+      : null);
 
   useEffect(() => {
     if (displayImage) {
@@ -45,7 +48,12 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
   }, [displayImage]);
 
   // Calcular cuota mensual (precio financiado / 72 meses)
-  const monthlyPayment = car.financedPrice ? (car.financedPrice / 72).toFixed(0) : (car.regularPrice / 72).toFixed(0);
+  // Si tiene monthlyFinancingFee (de CarData), usarlo directamente
+  const monthlyPayment = (car as any).monthlyFinancingFee 
+    ? (car as any).monthlyFinancingFee.toFixed(0)
+    : car.financedPrice 
+      ? (car.financedPrice / 72).toFixed(0) 
+      : (car.regularPrice / 72).toFixed(0);
 
   // Extraer nombre del modelo y versión del nombre completo
   // Intentar separar por el patrón común: marca modelo versión
@@ -160,7 +168,7 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
           <div className="flex flex-col items-center justify-center gap-1">
             <span className="material-symbols-outlined text-[#2b5ba9]">speed</span>
             <span className="text-gray-500 text-[13px] font-medium whitespace-nowrap">
-              {car.kms !== null ? `${formatKms(car.kms)} km` : 'N/A'}
+              {car.kms !== null && car.kms !== undefined ? `${formatKms(car.kms)} km` : 'N/A'}
             </span>
           </div>
 
