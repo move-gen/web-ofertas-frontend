@@ -90,10 +90,15 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
     <div
       ref={ref}
       className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 flex flex-col"
-      style={{ width: '100%', aspectRatio: '1/1', maxWidth: '400px' }}
+      style={{ 
+        width: '400px', 
+        height: '400px',
+        maxWidth: '400px',
+        margin: '-8px' // Compensa el p-2 (8px) del contenedor <a>
+      }}
     >
-      {/* PARTE SUPERIOR: Imagen Completa - Proporción 400/260 del HTML */}
-      <div className="w-full relative flex-shrink-0" style={{ aspectRatio: '400/260', width: '100%' }}>
+      {/* PARTE SUPERIOR: Imagen Completa - 260px exactos (65% de 400px) */}
+      <div className="w-full relative flex-shrink-0" style={{ height: '260px', width: '100%' }}>
         {displayImage && !imageError && inView ? (
           <Image
             src={displayImage}
