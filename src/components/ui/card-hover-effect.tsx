@@ -23,12 +23,13 @@ export const HoverEffect = ({
         "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
         className
       )}
+      style={{ gridAutoRows: 'minmax(min-content, max-content)' }}
     >
       {items.map((item, idx) => (
         <a
           href={item.link}
           key={item.id}
-          className="relative group flex p-2 w-full h-full"
+          className="relative group flex p-2 w-full justify-center"
           onMouseEnter={() => setHoveredIndex(idx)}
           onMouseLeave={() => setHoveredIndex(null)}
         >
