@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import CarCard from './CarCard';
+import CarCardCompact from './CarCardCompact';
 import { Car, CarFront, Tag, ShoppingCart, MapPin, SlidersHorizontal, Info, Building, Calendar, Gauge } from 'lucide-react';
 import { HoverEffect } from './ui/card-hover-effect';
 import OffersSkeleton from './OffersSkeleton';
@@ -170,7 +170,7 @@ export default function OffersClientPart() {
   const carItems = filteredCars.map(car => ({
     id: car.id,
     link: `/car/${car.id}`,
-    children: <CarCard car={car} />
+    children: <CarCardCompact car={car} />
   }));
 
   const getSortButtonVariant = (sort: SortType) => activeSort === sort ? 'default' : 'outline';

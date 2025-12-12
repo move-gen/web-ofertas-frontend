@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import CarCard from './CarCard'; 
+import CarCardCompact from './CarCardCompact'; 
 import { Car } from '@prisma/client';
 import { useWalcuCRM } from '@/hooks/useWalcuCRM';
 
@@ -234,7 +234,7 @@ export default function InterestFormModal({ isOpen, onClose, car }: InterestForm
               
               <div className="w-full lg:w-1/2 lg:pl-8 flex items-center justify-center">
                 <div className="w-full max-w-lg">
-                  <CarCard car={car} />
+                  <CarCardCompact car={car} />
                 </div>
               </div>
             </div>
@@ -384,7 +384,7 @@ export default function InterestFormModal({ isOpen, onClose, car }: InterestForm
                 <div className="hidden lg:block mb-4 p-2 bg-green-50 text-green-700 text-xs rounded text-center">
                   🖥️ Layout Desktop: Coche derecha
                 </div>
-                <CarCard car={car} />
+                <CarCardCompact car={car} />
               </div>
             </div>
           </div>

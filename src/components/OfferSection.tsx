@@ -1,7 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { Car, Offer, Image as CarImage } from '@prisma/client';
-import CarCardOffer from './CarCardOffer';
+import CarCardCompact from './CarCardCompact';
 import { Button } from './ui/button';
 
 type CarWithImages = Car & { images: CarImage[]; offerImageUrl?: string | null };
@@ -25,7 +25,7 @@ export default function OfferSection({ offer }: OfferSectionProps) {
         <p className="text-lg text-gray-600 text-center mb-8">{offer.description || ''}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {offer.cars.slice(0, visibleCars).map(car => (
-            <CarCardOffer key={car.id} car={car} />
+            <CarCardCompact key={car.id} car={car} />
           ))}
         </div>
         {visibleCars < offer.cars.length && (

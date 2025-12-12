@@ -1,4 +1,4 @@
-import CarCardOffer from '@/components/CarCardOffer';
+import CarCardCompact from '@/components/CarCardCompact';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import { HoverEffect } from '@/components/ui/card-hover-effect';
@@ -45,7 +45,7 @@ export default async function OfferPage({ params }: OfferPageProps) {
   const carItems = offer.cars.map((car) => ({
     id: car.id,
     link: `/car/${car.id}`,
-    children: <CarCardOffer car={car as CarWithImages} />,
+    children: <CarCardCompact car={car as CarWithImages} />,
   }));
 
   const words = offer.title.split(" ").map((word, index) => ({
