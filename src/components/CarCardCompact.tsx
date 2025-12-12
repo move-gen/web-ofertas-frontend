@@ -89,18 +89,17 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
   return (
     <div
       ref={ref}
-      className="bg-white w-full max-w-[400px] rounded-lg shadow-lg overflow-hidden border border-gray-200 flex flex-col"
-      style={{ height: '400px' }}
+      className="bg-white w-full max-w-[400px] rounded-lg shadow-lg overflow-hidden border border-gray-200"
     >
       {/* PARTE SUPERIOR: Imagen Completa */}
-      <div className="w-full relative" style={{ height: '260px', flexShrink: 0 }}>
+      <div className="w-full relative aspect-[400/260]">
         {displayImage && !imageError && inView ? (
           <Image
             src={displayImage}
             alt={car.name}
             fill
             sizes="(max-width: 768px) 100vw, 400px"
-            className="object-cover"
+            className="object-cover block"
             onError={() => {
               setImageError(true);
             }}
@@ -131,7 +130,7 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
       </div>
 
       {/* PARTE INFERIOR: Información */}
-      <div className="pl-5 pr-5 pt-2 pb-4 flex flex-col" style={{ height: '140px', flexShrink: 0 }}>
+      <div className="pl-5 pr-5 pt-2 pb-4">
         {/* Cabecera: Nombre y Cuota */}
         <div className="flex justify-between items-start mb-1 relative">
           <div className="flex-1 pr-2 pt-1">
