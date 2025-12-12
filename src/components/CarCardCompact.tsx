@@ -89,11 +89,11 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
   return (
     <div
       ref={ref}
-      className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 flex flex-col w-full"
-      style={{ aspectRatio: '1/1', maxWidth: '100%' }}
+      className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 flex flex-col"
+      style={{ width: '100%', aspectRatio: '1/1', maxWidth: '400px' }}
     >
-      {/* PARTE SUPERIOR: Imagen Completa - Proporción 400/260 */}
-      <div className="w-full relative flex-shrink-0" style={{ aspectRatio: '400/260' }}>
+      {/* PARTE SUPERIOR: Imagen Completa - Proporción 400/260 del HTML */}
+      <div className="w-full relative flex-shrink-0" style={{ aspectRatio: '400/260', width: '100%' }}>
         {displayImage && !imageError && inView ? (
           <Image
             src={displayImage}
@@ -133,82 +133,82 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
       {/* PARTE INFERIOR: Información - Optimizado para 140px */}
       <div className="pl-5 pr-5 pt-2 pb-4 flex flex-col justify-between flex-shrink-0 overflow-hidden" style={{ height: '140px' }}>
         {/* Cabecera: Nombre y Cuota */}
-        <div className="flex justify-between items-start relative" style={{ marginBottom: '2px' }}>
-          <div className="flex-1 pr-2" style={{ paddingTop: '2px' }}>
-            <h2 className="text-[#0f172a] font-bold text-2xl leading-none" style={{ marginBottom: '2px' }}>{modelName}</h2>
+        <div className="flex justify-between items-start relative" style={{ marginBottom: '4px' }}>
+          <div className="flex-1 pr-2" style={{ paddingTop: '4px' }}>
+            <h2 className="text-[#0f172a] font-bold leading-none" style={{ fontSize: '24px', marginBottom: '4px', lineHeight: '1' }}>{modelName}</h2>
             {version && (
-              <p className="text-gray-500 text-sm font-normal leading-tight">{version}</p>
+              <p className="text-gray-500 font-normal" style={{ fontSize: '14px', lineHeight: '1.2' }}>{version}</p>
             )}
           </div>
           
           {/* Etiqueta de Cuota */}
           <div className="text-right flex flex-col items-end">
-            <p className="text-[#2b5ba9] text-sm font-medium" style={{ marginBottom: '2px' }}>Cuota desde</p>
+            <p className="text-[#2b5ba9] font-medium" style={{ fontSize: '14px', marginBottom: '4px' }}>Cuota desde</p>
             <div 
               className="bg-[#2b5ba9] text-white pl-5 pr-5 rounded-l-full flex items-baseline shadow-sm" 
-              style={{ marginRight: '-20px', paddingTop: '4px', paddingBottom: '4px' }}
+              style={{ marginRight: '-20px', paddingTop: '6px', paddingBottom: '6px' }}
             >
-              <span className="font-bold text-2xl mr-1">{monthlyPayment} €</span>
-              <span className="text-xs font-light relative -top-1">mes</span>
+              <span className="font-bold mr-1" style={{ fontSize: '24px' }}>{monthlyPayment} €</span>
+              <span className="font-light relative -top-1" style={{ fontSize: '12px' }}>mes</span>
             </div>
           </div>
         </div>
 
         {/* Divisor Fino */}
-        <hr className="border-gray-200" style={{ marginTop: '2px', marginBottom: '4px' }} />
+        <hr className="border-gray-200" style={{ marginTop: '4px', marginBottom: '8px' }} />
 
         {/* Iconos y Características */}
-        <div className="grid grid-cols-4 gap-2 text-center" style={{ marginBottom: '4px' }}>
+        <div className="grid grid-cols-4 gap-2 text-center" style={{ marginBottom: '8px' }}>
           {/* Año */}
-          <div className="flex flex-col items-center justify-center" style={{ gap: '2px' }}>
+          <div className="flex flex-col items-center justify-center" style={{ gap: '4px' }}>
             <span className="material-symbols-outlined text-[#2b5ba9]">calendar_today</span>
-            <span className="text-gray-500 text-[13px] font-medium leading-tight">
+            <span className="text-gray-500 font-medium" style={{ fontSize: '13px', lineHeight: '1.2' }}>
               {car.year || 'N/A'}
             </span>
           </div>
           
           {/* Kilómetros */}
-          <div className="flex flex-col items-center justify-center" style={{ gap: '2px' }}>
+          <div className="flex flex-col items-center justify-center" style={{ gap: '4px' }}>
             <span className="material-symbols-outlined text-[#2b5ba9]">speed</span>
-            <span className="text-gray-500 text-[13px] font-medium whitespace-nowrap leading-tight">
+            <span className="text-gray-500 font-medium whitespace-nowrap" style={{ fontSize: '13px', lineHeight: '1.2' }}>
               {car.kms !== null && car.kms !== undefined ? `${formatKms(car.kms)} km` : 'N/A'}
             </span>
           </div>
 
           {/* Transmisión */}
-          <div className="flex flex-col items-center justify-center" style={{ gap: '2px' }}>
+          <div className="flex flex-col items-center justify-center" style={{ gap: '4px' }}>
             <span className="material-symbols-outlined text-[#2b5ba9]">account_tree</span>
-            <span className="text-gray-500 text-[13px] font-medium leading-tight">
+            <span className="text-gray-500 font-medium" style={{ fontSize: '13px', lineHeight: '1.2' }}>
               {car.transmission || 'N/A'}
             </span>
           </div>
 
           {/* Combustible */}
-          <div className="flex flex-col items-center justify-center" style={{ gap: '2px' }}>
+          <div className="flex flex-col items-center justify-center" style={{ gap: '4px' }}>
             <span className="material-symbols-outlined text-emerald-500">eco</span>
-            <span className="text-gray-500 text-[13px] font-medium leading-tight">
+            <span className="text-gray-500 font-medium" style={{ fontSize: '13px', lineHeight: '1.2' }}>
               {car.fuel || 'N/A'}
             </span>
           </div>
         </div>
 
         {/* Divisor Fino */}
-        <hr className="border-gray-200" style={{ marginTop: '2px', marginBottom: '4px' }} />
+        <hr className="border-gray-200" style={{ marginTop: '4px', marginBottom: '12px' }} />
 
         {/* Precios */}
         <div className="flex justify-between items-end px-1">
           {/* Precio Contado */}
           <div className="text-left">
-            <p className="text-gray-400 text-[13px] mb-0 leading-none font-light">Precio Contado</p>
-            <span className="text-[#333] text-[26px] font-normal tracking-tight leading-tight">
+            <p className="text-gray-400 mb-0 leading-none font-light" style={{ fontSize: '13px' }}>Precio Contado</p>
+            <span className="text-[#333] font-normal tracking-tight" style={{ fontSize: '26px', lineHeight: '1.2' }}>
               {formatPrice(car.regularPrice)}
             </span>
           </div>
 
           {/* Precio Financiado */}
           <div className="text-right">
-            <p className="text-gray-400 text-[13px] mb-0 leading-none font-light">Precio Financiado</p>
-            <span className="text-[#2b5ba9] text-[26px] font-bold tracking-tight leading-tight">
+            <p className="text-gray-400 mb-0 leading-none font-light" style={{ fontSize: '13px' }}>Precio Financiado</p>
+            <span className="text-[#2b5ba9] font-bold tracking-tight" style={{ fontSize: '26px', lineHeight: '1.2' }}>
               {formatPrice(car.financedPrice || car.regularPrice)}
             </span>
           </div>
