@@ -15,7 +15,7 @@ interface Car {
   images: { url: string; isPrimary?: boolean }[];
   offerImageUrl?: string | null;
   isSold?: boolean;
-  monthlyFinancingFee?: number; // Para compatibilidad con CarData
+  monthlyFinancingFee?: number | null; // Para compatibilidad con CarData y Prisma (puede ser null)
 }
 
 interface CarCardCompactProps {
@@ -50,6 +50,7 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
   // Calcular cuota mensual (precio financiado / 72 meses)
   // Si tiene monthlyFinancingFee (de CarData), usarlo directamente
   // Verificar explícitamente que sea un número (incluyendo 0) en lugar de verificación truthy
+  // monthlyFinancingFee puede ser number | null | undefined
   const monthlyPayment = typeof car.monthlyFinancingFee === 'number'
     ? car.monthlyFinancingFee.toFixed(0)
     : car.financedPrice 
