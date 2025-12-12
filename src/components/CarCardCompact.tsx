@@ -89,9 +89,9 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
   return (
     <div
       ref={ref}
-      className="bg-white w-full max-w-[400px] rounded-lg shadow-lg overflow-hidden border border-gray-200 flex flex-col h-full"
+      className="bg-white w-full max-w-[400px] rounded-lg shadow-lg overflow-hidden border border-gray-200 h-full flex flex-col"
     >
-      {/* PARTE SUPERIOR: Imagen Completa - Proporción exacta del HTML 400/260 */}
+      {/* PARTE SUPERIOR: Imagen Completa - EXACTO del HTML */}
       <div className="w-full relative flex-shrink-0" style={{ aspectRatio: '400/260' }}>
         {displayImage && !imageError && inView ? (
           <Image
@@ -129,8 +129,8 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
         )}
       </div>
 
-      {/* PARTE INFERIOR: Información - Mismo padding exacto del HTML */}
-      <div className="pl-5 pr-5 pt-2 pb-4 flex flex-col flex-shrink-0">
+      {/* PARTE INFERIOR: Información - EXACTO del HTML */}
+      <div className="pl-5 pr-5 pt-2 pb-4 flex-grow">
         {/* Cabecera: Nombre y Cuota */}
         <div className="flex justify-between items-start mb-1 relative">
           <div className="flex-1 pr-2 pt-1">
