@@ -89,19 +89,14 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
   return (
     <div
       ref={ref}
-      className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 flex flex-col"
+      className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 flex flex-col w-full max-w-[400px] mx-auto"
       style={{ 
-        width: '400px', 
-        height: '400px',
-        minWidth: '400px',
-        minHeight: '400px',
-        maxWidth: '400px',
-        flexShrink: 0,
-        margin: '-8px' // Compensa el p-2 (8px) del contenedor <a>
+        aspectRatio: '1 / 1',
+        margin: '-8px'
       }}
     >
-      {/* PARTE SUPERIOR: Imagen Completa - 260px exactos (65% de 400px) */}
-      <div className="w-full relative flex-shrink-0" style={{ height: '260px', width: '100%' }}>
+      {/* PARTE SUPERIOR: Imagen Completa - 65% de la altura total */}
+      <div className="w-full relative" style={{ height: '65%', flexShrink: 0 }}>
         {displayImage && !imageError && inView ? (
           <Image
             src={displayImage}
@@ -138,85 +133,85 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
         )}
       </div>
 
-      {/* PARTE INFERIOR: Información - 140px exactos como en HTML */}
-      <div className="pl-5 pr-5 pt-2 pb-4 flex-shrink-0" style={{ height: '140px' }}>
+      {/* PARTE INFERIOR: Información - 35% de la altura total */}
+      <div className="pl-5 pr-5 pt-2 pb-4" style={{ height: '35%', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
         {/* Cabecera: Nombre y Cuota */}
-        <div className="flex justify-between items-start mb-1 relative">
-          <div className="flex-1 pr-2 pt-1">
-            <h2 className="text-[#0f172a] font-bold text-2xl leading-none mb-1">{modelName}</h2>
+        <div className="flex justify-between items-start mb-[2%] relative flex-shrink-0">
+          <div className="flex-1 pr-2 pt-[2%]">
+            <h2 className="text-[#0f172a] font-bold text-[clamp(1.25rem,6vw,1.5rem)] leading-none mb-[2%]">{modelName}</h2>
             {version && (
-              <p className="text-gray-500 text-sm font-normal">{version}</p>
+              <p className="text-gray-500 text-[clamp(0.75rem,3.5vw,0.875rem)] font-normal">{version}</p>
             )}
           </div>
           
           {/* Etiqueta de Cuota */}
-          <div className="text-right flex flex-col items-end">
-            <p className="text-[#2b5ba9] text-sm font-medium mb-1">Cuota desde</p>
+          <div className="text-right flex flex-col items-end flex-shrink-0">
+            <p className="text-[#2b5ba9] text-[clamp(0.75rem,3.5vw,0.875rem)] font-medium mb-[2%]">Cuota desde</p>
             <div 
-              className="bg-[#2b5ba9] text-white py-1.5 pl-5 pr-5 rounded-l-full flex items-baseline shadow-sm" 
+              className="bg-[#2b5ba9] text-white py-[3%] pl-5 pr-5 rounded-l-full flex items-baseline shadow-sm whitespace-nowrap" 
               style={{ marginRight: '-20px' }}
             >
-              <span className="font-bold text-2xl mr-1">{monthlyPayment} €</span>
-              <span className="text-xs font-light relative -top-1">mes</span>
+              <span className="font-bold text-[clamp(1.25rem,6vw,1.5rem)] mr-1">{monthlyPayment} €</span>
+              <span className="text-[clamp(0.625rem,3vw,0.75rem)] font-light relative -top-1">mes</span>
             </div>
           </div>
         </div>
 
         {/* Divisor Fino */}
-        <hr className="border-gray-200 mb-2 mt-1" />
+        <hr className="border-gray-200 mb-[4%] mt-[2%] flex-shrink-0" />
 
         {/* Iconos y Características */}
-        <div className="grid grid-cols-4 gap-2 text-center mb-2 text-[#555]">
+        <div className="grid grid-cols-4 gap-2 text-center mb-[4%] text-[#555] flex-shrink-0">
           {/* Año */}
-          <div className="flex flex-col items-center justify-center gap-1">
-            <span className="material-symbols-outlined text-[#2b5ba9]">calendar_today</span>
-            <span className="text-gray-500 text-[13px] font-medium">
+          <div className="flex flex-col items-center justify-center gap-[2px]">
+            <span className="material-symbols-outlined text-[#2b5ba9]" style={{ fontSize: 'clamp(16px, 5vw, 20px)' }}>calendar_today</span>
+            <span className="text-gray-500 text-[clamp(0.7rem,3.25vw,0.8125rem)] font-medium">
               {car.year || 'N/A'}
             </span>
           </div>
           
           {/* Kilómetros */}
-          <div className="flex flex-col items-center justify-center gap-1">
-            <span className="material-symbols-outlined text-[#2b5ba9]">speed</span>
-            <span className="text-gray-500 text-[13px] font-medium whitespace-nowrap">
+          <div className="flex flex-col items-center justify-center gap-[2px]">
+            <span className="material-symbols-outlined text-[#2b5ba9]" style={{ fontSize: 'clamp(16px, 5vw, 20px)' }}>speed</span>
+            <span className="text-gray-500 text-[clamp(0.7rem,3.25vw,0.8125rem)] font-medium whitespace-nowrap">
               {car.kms !== null && car.kms !== undefined ? `${formatKms(car.kms)} km` : 'N/A'}
             </span>
           </div>
 
           {/* Transmisión */}
-          <div className="flex flex-col items-center justify-center gap-1">
-            <span className="material-symbols-outlined text-[#2b5ba9]">account_tree</span>
-            <span className="text-gray-500 text-[13px] font-medium">
+          <div className="flex flex-col items-center justify-center gap-[2px]">
+            <span className="material-symbols-outlined text-[#2b5ba9]" style={{ fontSize: 'clamp(16px, 5vw, 20px)' }}>account_tree</span>
+            <span className="text-gray-500 text-[clamp(0.7rem,3.25vw,0.8125rem)] font-medium">
               {car.transmission || 'N/A'}
             </span>
           </div>
 
           {/* Combustible */}
-          <div className="flex flex-col items-center justify-center gap-1">
-            <span className="material-symbols-outlined text-emerald-500">eco</span>
-            <span className="text-gray-500 text-[13px] font-medium">
+          <div className="flex flex-col items-center justify-center gap-[2px]">
+            <span className="material-symbols-outlined text-emerald-500" style={{ fontSize: 'clamp(16px, 5vw, 20px)' }}>eco</span>
+            <span className="text-gray-500 text-[clamp(0.7rem,3.25vw,0.8125rem)] font-medium">
               {car.fuel || 'N/A'}
             </span>
           </div>
         </div>
 
         {/* Divisor Fino */}
-        <hr className="border-gray-200 mb-3" />
+        <hr className="border-gray-200 mb-[6%] flex-shrink-0" />
 
         {/* Precios */}
-        <div className="flex justify-between items-end px-1">
+        <div className="flex justify-between items-end px-1 mt-auto">
           {/* Precio Contado */}
           <div className="text-left">
-            <p className="text-gray-400 text-[13px] mb-0 leading-none font-light">Precio Contado</p>
-            <span className="text-[#333] text-[26px] font-normal tracking-tight leading-tight">
+            <p className="text-gray-400 text-[clamp(0.7rem,3.25vw,0.8125rem)] mb-0 leading-none font-light">Precio Contado</p>
+            <span className="text-[#333] text-[clamp(1.375rem,6.5vw,1.625rem)] font-normal tracking-tight leading-tight">
               {formatPrice(car.regularPrice)}
             </span>
           </div>
 
           {/* Precio Financiado */}
           <div className="text-right">
-            <p className="text-gray-400 text-[13px] mb-0 leading-none font-light">Precio Financiado</p>
-            <span className="text-[#2b5ba9] text-[26px] font-bold tracking-tight leading-tight">
+            <p className="text-gray-400 text-[clamp(0.7rem,3.25vw,0.8125rem)] mb-0 leading-none font-light">Precio Financiado</p>
+            <span className="text-[#2b5ba9] text-[clamp(1.375rem,6.5vw,1.625rem)] font-bold tracking-tight leading-tight">
               {formatPrice(car.financedPrice || car.regularPrice)}
             </span>
           </div>
