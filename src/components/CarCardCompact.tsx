@@ -92,21 +92,18 @@ export default function CarCardCompact({ car }: CarCardCompactProps) {
       className="bg-white w-full max-w-[400px] rounded-lg shadow-lg overflow-hidden border border-gray-200"
     >
       {/* PARTE SUPERIOR: Imagen Completa */}
-      <div className="w-full relative aspect-[400/260]">
+      <div className="w-full">
         {displayImage && !imageError && inView ? (
-          <Image
+          <img
             src={displayImage}
             alt={car.name}
-            fill
-            sizes="(max-width: 768px) 100vw, 400px"
-            className="object-cover block"
+            className="w-full h-auto object-cover block"
             onError={() => {
               setImageError(true);
             }}
-            priority={false}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
+          <div className="w-full aspect-[400/260] flex items-center justify-center bg-gray-200">
             <Image
               src="/placeholder.svg"
               alt="Placeholder"
