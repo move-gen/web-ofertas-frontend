@@ -104,7 +104,7 @@ export default async function OfferPage({ params }: OfferPageProps) {
       
       {/* Grid de coches - Simple sin carrusel */}
       <div className="mx-auto px-6 md:px-24 py-12 max-w-[1390px]">
-        <HoverEffect items={carItems} className="lg:grid-cols-4 gap-5 auto-rows-min" />
+        <HoverEffect items={carItems} className="lg:grid-cols-4 gap-5" />
       </div>
 
       {/* Entregas que Apasionan */}
